@@ -408,8 +408,17 @@ body::after {
   gap: var(--spacing-md);
 }
 
+/* Power and Air Conditioner Image Row */
+.power-image-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-lg);
+}
+
 .power-section {
-  text-align: center;
+  flex: 0 0 auto;
 }
 
 .power-btn {
@@ -430,6 +439,96 @@ body::after {
   justify-content: center;
   gap: var(--spacing-xs);
   box-shadow: var(--liquid-glass-shadow-light), var(--liquid-glass-shadow-dark);
+}
+
+/* Air Conditioner Images - Enhanced & Aligned */
+.airConditioner-container {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.airConditioner-images {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-sm);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-normal);
+}
+
+.airConditioner-images:hover {
+  transform: translateY(-2px);
+}
+
+.ac-image-wrapper {
+  position: relative;
+  width: 160px;
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: var(--radius-sm);
+}
+
+.ac-main-image {
+  max-width: 95%;
+  max-height: 95%;
+  object-fit: contain;
+  transition: all var(--transition-normal);
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+}
+
+.ac-status-overlay {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+}
+
+.ac-status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--accent-red);
+  transition: all var(--transition-normal);
+}
+
+.ac-status-dot.active {
+  background: var(--accent-green);
+}
+
+.ac-image-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  text-align: center;
+}
+
+.ac-model-name {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: 0.3px;
+}
+
+.ac-status-text {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .power-btn:hover {

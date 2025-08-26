@@ -1,0 +1,1899 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Smart Air Conditioner - Energy Saving</title>
+
+    <!-- External Libraries -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="Assets/css/styles.css" />
+    <link rel="stylesheet" href="Assets/css/components.css" />
+    <link rel="stylesheet" href="Assets/css/responsive.css" />
+
+    <style>
+      /* Page Header Styling */
+      .header-left h1 {
+        font-size: 28px;
+        font-weight: 700;
+        margin-bottom: 5px;
+        background: linear-gradient(135deg, #fff 0%, #a8edea 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      .header-left p {
+        font-size: 14px;
+        color: rgba(255, 255, 255, 0.7);
+        margin: 0;
+      }
+
+      .header-right {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+      }
+
+      .user-profile {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .user-name {
+        color: rgba(255, 255, 255, 0.9);
+        font-weight: 500;
+      }
+
+      /* Page transitions for SPA functionality */
+      .page {
+        display: none;
+        opacity: 0;
+        transform: translateY(20px);
+        transition: all 0.3s ease-out;
+        width: 100%;
+        flex: 1;
+      }
+
+      .page.active {
+        display: block;
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      /* Dashboard-specific styles merged */
+      .dashboard-stats-cards {
+        display: flex;
+        gap: 20px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+      }
+
+      .dashboard-stat-card {
+        flex: 1;
+        min-width: 200px;
+        padding: 20px;
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        text-align: center;
+        transition: all 0.3s ease;
+      }
+
+      .dashboard-stat-card:hover {
+        background: rgba(255, 255, 255, 0.08);
+        transform: translateY(-2px);
+      }
+
+      .dashboard-stat-card.online {
+        border-color: rgba(82, 196, 26, 0.3);
+      }
+
+      .dashboard-stat-card.offline {
+        border-color: rgba(255, 77, 79, 0.3);
+      }
+
+      .dashboard-stat-card.total {
+        border-color: rgba(24, 144, 255, 0.3);
+      }
+
+      .dashboard-stat-number {
+        font-size: 36px;
+        font-weight: 700;
+        margin-bottom: 8px;
+      }
+
+      .dashboard-stat-card.online .dashboard-stat-number {
+        color: #52c41a;
+      }
+
+      .dashboard-stat-card.offline .dashboard-stat-number {
+        color: #ff4d4f;
+      }
+
+      .dashboard-stat-card.total .dashboard-stat-number {
+        color: #1890ff;
+      }
+
+      .dashboard-stat-label {
+        font-size: 14px;
+        color: rgba(255, 255, 255, 0.7);
+        font-weight: 500;
+      }
+
+      /* AC List Table styles */
+      .ac-list-table-container {
+        background: rgba(8, 7, 7, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 20px;
+        backdrop-filter: blur(20px);
+        overflow: hidden;
+        margin-top: 20px;
+      }
+
+      .ac-list-header {
+        padding: 20px 25px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.03);
+      }
+
+      .ac-list-header h3 {
+        font-size: 18px;
+        font-weight: 600;
+        color: white;
+        margin: 0;
+      }
+
+      .ac-table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      .ac-table th {
+        padding: 16px 20px;
+        text-align: left;
+        font-weight: 600;
+        font-size: 13px;
+        color: rgba(255, 255, 255, 0.8);
+        background: rgba(255, 255, 255, 0.03);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .ac-table td {
+        padding: 16px 20px;
+        font-size: 14px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        transition: background-color 0.2s ease;
+        color: rgba(255, 255, 255, 0.9);
+      }
+
+      .ac-table tbody tr:hover {
+        background: rgba(255, 255, 255, 0.05);
+      }
+
+      .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+      }
+
+      .status-badge.online {
+        background: rgba(82, 196, 26, 0.2);
+        color: #52c41a;
+        border: 1px solid rgba(82, 196, 26, 0.3);
+      }
+
+      .status-badge.offline {
+        background: rgba(255, 77, 79, 0.2);
+        color: #ff4d4f;
+        border: 1px solid rgba(255, 77, 79, 0.3);
+      }
+
+      .mode-badge {
+        padding: 4px 10px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 500;
+        text-transform: uppercase;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+      }
+
+      .mode-badge.auto {
+        background: rgba(24, 144, 255, 0.2);
+        color: #1890ff;
+      }
+
+      .mode-badge.dry {
+        background: rgba(250, 173, 20, 0.2);
+        color: #faad14;
+      }
+
+      .mode-badge.cold {
+        background: rgba(19, 194, 194, 0.2);
+        color: #13c2c2;
+      }
+
+      .mode-badge.fan {
+        background: rgba(114, 46, 209, 0.2);
+        color: #722ed1;
+      }
+
+      /* Top actions bar */
+      .dashboard-header-actions {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-bottom: 20px;
+      }
+
+      .dashboard-glass-btn {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 12px;
+        padding: 12px 20px;
+        color: white;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        backdrop-filter: blur(10px);
+        text-decoration: none;
+      }
+
+      .dashboard-glass-btn:hover {
+        background: rgba(255, 255, 255, 0.15);
+        border-color: rgba(255, 255, 255, 0.3);
+        transform: translateY(-2px);
+        color: white;
+      }
+
+      .dashboard-glass-btn i {
+        font-size: 16px;
+      }
+
+      .dashboard-glass-btn.export i {
+        color: #52c41a;
+      }
+
+      .dashboard-glass-btn.filter i {
+        color: #1890ff;
+      }
+
+      .dashboard-glass-btn.setting i {
+        color: #faad14;
+      }
+
+      .dashboard-glass-btn.add i {
+        color: #f5222d;
+      }
+
+      /* Modal styles */
+      .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.25);
+        backdrop-filter: blur(5px);
+        z-index: 1000;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .modal.show {
+        display: flex;
+      }
+
+      .modal-content {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 24px;
+        backdrop-filter: blur(10px);
+        padding: 30px;
+        width: 90%;
+        max-width: 500px;
+        max-height: 90vh;
+        overflow-y: auto;
+      }
+
+      .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+
+      .modal-header h3 {
+        margin: 0;
+        color: white;
+        font-size: 18px;
+        font-weight: 600;
+      }
+
+      .close-btn {
+        background: none;
+        border: none;
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 18px;
+        cursor: pointer;
+        padding: 8px;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+      }
+
+      .close-btn:hover {
+        color: white;
+        background: rgba(255, 255, 255, 0.1);
+      }
+
+      .form-group {
+        margin-bottom: 20px;
+      }
+
+      .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 14px;
+        font-weight: 500;
+      }
+
+      .glass-input,
+      .glass-select {
+        width: 100%;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 12px;
+        padding: 12px 16px;
+        color: white;
+        font-size: 14px;
+        transition: all 0.3s ease;
+      }
+
+      .glass-input:focus,
+      .glass-select:focus {
+        outline: none;
+        border-color: rgba(255, 255, 255, 0.4);
+        background: rgba(255, 255, 255, 0.12);
+      }
+
+      .glass-input::placeholder {
+        color: rgba(255, 255, 255, 0.5);
+      }
+
+      .glass-select option {
+        background: #1a1a1a;
+        color: white;
+      }
+
+      .form-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: flex-end;
+        margin-top: 30px;
+      }
+
+      /* Alert styling for placeholder pages */
+      .alert {
+        padding: 1rem;
+        border: 1px solid transparent;
+        border-radius: 0.5rem;
+        background: rgba(255, 255, 255, 0.1);
+        color: rgba(255, 255, 255, 0.9);
+        border-color: rgba(255, 255, 255, 0.2);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .alert-info {
+        background: rgba(59, 130, 246, 0.1);
+        border-color: rgba(59, 130, 246, 0.3);
+        color: #60a5fa;
+      }
+
+      .alert i {
+        font-size: 1.2rem;
+      }
+
+      /* Responsive navigation improvements - only override what's necessary */
+      @media (max-width: 991.98px) {
+        .nav-sidebar {
+          /* Mobile navigation adjustments */
+          width: 100%;
+          height: auto;
+          position: fixed;
+          bottom: 0;
+          top: auto;
+          left: 0;
+          z-index: 1001;
+          padding: var(--spacing-md, 15px);
+          transform: translateY(100%);
+          transition: transform var(--transition-normal, 0.3s ease);
+          flex-direction: row;
+          justify-content: space-around;
+        }
+
+        .nav-sidebar.mobile-open {
+          transform: translateY(0);
+        }
+
+        .nav-header {
+          display: none;
+        }
+
+        .nav-menu {
+          flex-direction: row;
+          justify-content: space-around;
+          gap: 0;
+          width: 100%;
+        }
+
+        .main-content {
+          margin-left: 0;
+          margin-bottom: 80px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Main Container -->
+    <div class="main-container">
+      <!-- Navigation Sidebar -->
+      <nav class="nav-sidebar glass-effect">
+        <div class="nav-header">
+          <i class="fas fa-snowflake"></i>
+        </div>
+
+        <ul class="nav-menu">
+          <li class="nav-item active">
+            <a
+              href="#control"
+              class="nav-link spa-nav-link"
+              data-page="control"
+            >
+              <i class="fas fa-tachometer-alt"></i>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a
+              href="#dashboard"
+              class="nav-link spa-nav-link"
+              data-page="dashboard"
+            >
+              <i class="fas fa-th-large"></i>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#energy" class="nav-link spa-nav-link" data-page="energy">
+              <i class="fas fa-leaf"></i>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a
+              href="#devices"
+              class="nav-link spa-nav-link"
+              data-page="devices"
+            >
+              <i class="fas fa-microchip"></i>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a
+              href="#analytics"
+              class="nav-link spa-nav-link"
+              data-page="analytics"
+            >
+              <i class="fas fa-chart-line"></i>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a
+              href="#settings"
+              class="nav-link spa-nav-link"
+              data-page="settings"
+            >
+              <i class="fas fa-cog"></i>
+            </a>
+          </li>
+        </ul>
+      </nav>
+
+      <!-- Main Content Area -->
+      <main class="main-content">
+        <!-- Top Header -->
+        <header class="top-header glass-effect">
+          <div class="header-left">
+            <h1 class="page-title" id="spa-page-title">
+              Air Conditioner Control
+            </h1>
+            <p class="page-subtitle" id="spa-page-subtitle">
+              Smart Energy Management System
+            </p>
+          </div>
+          <div class="header-right">
+            <div class="user-profile">
+              <div class="user-avatar">
+                <i class="fas fa-user"></i>
+              </div>
+              <span class="user-name">Admin</span>
+            </div>
+          </div>
+        </header>
+
+        <!-- Page: Control (Main Control Panel) -->
+        <div id="control-page" class="page active">
+          <div class="dashboard-content">
+            <!-- Row 1: Main Control & Weather -->
+            <div class="row g-4 mb-4">
+              <!-- Air Conditioner Control Panel -->
+              <div class="col-lg-7">
+                <div class="control-panel glass-effect">
+                  <div class="panel-header">
+                    <h3 class="panel-title">Air Conditioner Control</h3>
+                    <div class="ac-status" id="spa-ac-status">
+                      <span
+                        class="status-indicator"
+                        id="spa-status-indicator"
+                      ></span>
+                      <span class="status-text" id="spa-status-text"
+                        >Offline</span
+                      >
+                    </div>
+                  </div>
+
+                  <div class="control-content">
+                    <!-- Power Control & Air Conditioner Image Row -->
+                    <div class="power-image-row">
+                      <div class="power-section">
+                        <button class="power-btn glass-btn" id="spa-power-btn">
+                          <i class="fas fa-power-off"></i>
+                          <span>Power</span>
+                        </button>
+                      </div>
+                      <div class="airConditioner-container">
+                        <div class="airConditioner-images">
+                          <div class="ac-image-wrapper">
+                            <img
+                              src="Assets/Img_Design/AirConditioner_imgs/offAir.png"
+                              alt="Air Conditioner"
+                              class="ac-main-image"
+                              id="spa-ac-image"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Temperature Control -->
+                    <div class="temperature-section">
+                      <div class="temp-display">
+                        <div class="current-temp">
+                          <span class="temp-value" id="spa-current-temp"
+                            >24</span
+                          >
+                          <span class="temp-unit">°C</span>
+                          <div class="temp-label">Current</div>
+                        </div>
+                      </div>
+
+                      <div class="temp-controls">
+                        <button class="temp-btn glass-btn" id="spa-temp-down">
+                          <i class="fas fa-minus"></i>
+                        </button>
+                        <div class="target-temp">
+                          <span class="temp-value" id="spa-target-temp"
+                            >22</span
+                          >
+                          <span class="temp-unit">°C</span>
+                          <div class="temp-label">Target</div>
+                        </div>
+                        <button class="temp-btn glass-btn" id="spa-temp-up">
+                          <i class="fas fa-plus"></i>
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- Mode Control -->
+                    <div class="mode-section">
+                      <h4 class="section-title">Mode Selection</h4>
+                      <div class="mode-buttons">
+                        <button
+                          class="mode-btn glass-btn active"
+                          data-mode="auto"
+                          id="spa-mode-auto"
+                        >
+                          <i class="fas fa-magic"></i>
+                          <span>Auto</span>
+                        </button>
+                        <button
+                          class="mode-btn glass-btn"
+                          data-mode="cool"
+                          id="spa-mode-cool"
+                        >
+                          <i class="fas fa-snowflake"></i>
+                          <span>Cool</span>
+                        </button>
+                        <button
+                          class="mode-btn glass-btn"
+                          data-mode="dry"
+                          id="spa-mode-dry"
+                        >
+                          <i class="fas fa-sun"></i>
+                          <span>Dry</span>
+                        </button>
+                        <button
+                          class="mode-btn glass-btn"
+                          data-mode="fan"
+                          id="spa-mode-fan"
+                        >
+                          <i class="fas fa-fan"></i>
+                          <span>Fan</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- AI Control Toggle -->
+                    <div class="ai-control-section">
+                      <div class="ai-toggle">
+                        <label class="toggle-label">
+                          <span>AI Smart Control</span>
+                          <div
+                            class="toggle-switch active"
+                            id="spa-ai-toggle-switch"
+                          >
+                            <input
+                              type="checkbox"
+                              id="spa-ai-control-toggle"
+                              checked
+                            />
+                          </div>
+                        </label>
+                      </div>
+                      <p class="ai-description">
+                        AI automatically adjusts temperature and mode for
+                        optimal comfort and energy efficiency
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Weather & Environment -->
+              <div class="col-lg-5">
+                <div class="weather-panel glass-effect">
+                  <div class="panel-header">
+                    <h3 class="panel-title">Environment</h3>
+                  </div>
+
+                  <div class="weather-content">
+                    <div class="weather-icon">
+                      <div class="weather-3d-icon" id="spa-weather-icon">
+                        <i class="fas fa-sun"></i>
+                      </div>
+                    </div>
+
+                    <div class="weather-info">
+                      <div class="outdoor-temp">
+                        <span class="temp-value" id="spa-outdoor-temp">30</span>
+                        <span class="temp-unit">°C</span>
+                        <div class="temp-label">Outdoor</div>
+                      </div>
+
+                      <div class="humidity-info">
+                        <div class="humidity-circle" id="spa-humidity-progress">
+                          <div class="humidity-progress">
+                            <span class="humidity-value" id="spa-humidity-value"
+                              >65</span
+                            >
+                            <span class="humidity-unit">%</span>
+                          </div>
+                        </div>
+                        <div class="humidity-label">Humidity</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Row 2: Chart & Carbon Impact -->
+            <div class="row g-4 mb-4">
+              <!-- Temperature Chart -->
+              <div class="col-lg-7">
+                <div class="chart-panel glass-effect">
+                  <div class="panel-header">
+                    <h3 class="panel-title">Temperature History</h3>
+                    <div class="chart-controls">
+                      <button class="chart-btn active" data-period="hour">
+                        Hour
+                      </button>
+                      <button class="chart-btn" data-period="day">Day</button>
+                      <button class="chart-btn" data-period="week">Week</button>
+                      <button class="chart-btn" data-period="month">
+                        Month
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="chart-content">
+                    <canvas id="spa-temperature-chart"></canvas>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Carbon Impact & Energy Savings -->
+              <div class="col-lg-5">
+                <div class="carbon-panel glass-effect">
+                  <div class="panel-header">
+                    <h3 class="panel-title">Carbon Impact</h3>
+                  </div>
+
+                  <div class="carbon-content">
+                    <!-- Main Header -->
+                    <div class="carbon-header">
+                      <div class="carbon-icon-wrapper">
+                        <i class="fas fa-leaf"></i>
+                      </div>
+                      <div class="carbon-title-text">
+                        <h4>Environmental Impact</h4>
+                      </div>
+                    </div>
+
+                    <!-- Main Metrics Grid -->
+                    <div class="carbon-metrics-grid">
+                      <div class="metric-card-large trees">
+                        <div class="metric-icon-section">
+                          <i class="fas fa-tree"></i>
+                        </div>
+                        <div class="metric-content">
+                          <span class="metric-number" id="spa-trees-equivalent"
+                            >4.2</span
+                          >
+                          <span class="metric-label">Trees Saved</span>
+                        </div>
+                      </div>
+
+                      <div class="metric-card-large carbon">
+                        <div class="metric-icon-section">
+                          <i class="fas fa-cloud"></i>
+                        </div>
+                        <div class="metric-content">
+                          <span class="metric-number" id="spa-carbon-reduced"
+                            >12.5</span
+                          >
+                          <span class="metric-label">kg CO₂ Reduced</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Energy Savings Summary -->
+                    <div class="energy-summary-section">
+                      <div class="summary-header">
+                        <h5>Energy Savings</h5>
+                      </div>
+                      <div class="savings-stats">
+                        <div class="savings-item">
+                          <span class="savings-period">Today</span>
+                          <div class="savings-value-wrapper">
+                            <span class="savings-percentage">18%</span>
+                            <i class="savings-trend fas fa-arrow-up"></i>
+                          </div>
+                        </div>
+                        <div class="savings-item">
+                          <span class="savings-period">Week</span>
+                          <div class="savings-value-wrapper">
+                            <span class="savings-percentage">22%</span>
+                            <i class="savings-trend fas fa-arrow-up"></i>
+                          </div>
+                        </div>
+                        <div class="savings-item">
+                          <span class="savings-period">Month</span>
+                          <div class="savings-value-wrapper">
+                            <span class="savings-percentage">26%</span>
+                            <i class="savings-trend fas fa-arrow-up"></i>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- AI Impact Message -->
+                    <div class="ai-impact-banner">
+                      <div class="banner-icon">
+                        <i class="fas fa-brain"></i>
+                      </div>
+                      <div class="banner-content">
+                        <div class="banner-title">AI Optimization Active</div>
+                        <div class="banner-description">
+                          Smart algorithms are continuously optimizing your
+                          energy usage for maximum efficiency
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Row 3: Device List & Statistics -->
+            <div class="row g-4">
+              <!-- Connected Devices -->
+              <div class="col-lg-6">
+                <div class="devices-panel glass-effect">
+                  <div class="panel-header">
+                    <h3 class="panel-title">Connected Devices</h3>
+                    <span class="device-count" id="spa-device-count"
+                      >3 Online</span
+                    >
+                  </div>
+
+                  <div class="devices-list">
+                    <div class="device-item">
+                      <div class="device-icon">
+                        <i class="fas fa-snowflake"></i>
+                      </div>
+                      <div class="device-info">
+                        <h5 class="device-name">Main AC Unit</h5>
+                        <p class="device-status">Active - 22°C</p>
+                      </div>
+                      <div class="device-controls">
+                        <label class="device-toggle">
+                          <input
+                            type="checkbox"
+                            id="spa-device-1-toggle"
+                            checked
+                          />
+                          <span class="toggle-slider-small"></span>
+                        </label>
+                      </div>
+                    </div>
+
+                    <div class="device-item">
+                      <div class="device-icon">
+                        <i class="fas fa-fan"></i>
+                      </div>
+                      <div class="device-info">
+                        <h5 class="device-name">Ceiling Fan</h5>
+                        <p class="device-status">Active - Level 2</p>
+                      </div>
+                      <div class="device-controls">
+                        <label class="device-toggle">
+                          <input
+                            type="checkbox"
+                            id="spa-device-2-toggle"
+                            checked
+                          />
+                          <span class="toggle-slider-small"></span>
+                        </label>
+                      </div>
+                    </div>
+
+                    <div class="device-item">
+                      <div class="device-icon">
+                        <i class="fas fa-thermometer-half"></i>
+                      </div>
+                      <div class="device-info">
+                        <h5 class="device-name">Temperature Sensor</h5>
+                        <p class="device-status">Monitoring - 24°C</p>
+                      </div>
+                      <div class="device-controls">
+                        <label class="device-toggle">
+                          <input
+                            type="checkbox"
+                            id="spa-device-3-toggle"
+                            checked
+                          />
+                          <span class="toggle-slider-small"></span>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Energy Statistics -->
+              <div class="col-lg-6">
+                <div class="stats-panel glass-effect">
+                  <div class="panel-header">
+                    <h3 class="panel-title">Energy Statistics</h3>
+                    <select class="stats-period" id="spa-stats-period">
+                      <option value="week">This Week</option>
+                      <option value="month">This Month</option>
+                      <option value="year">This Year</option>
+                    </select>
+                  </div>
+
+                  <div class="stats-content">
+                    <div class="stat-card">
+                      <div class="stat-icon energy">
+                        <i class="fas fa-bolt"></i>
+                      </div>
+                      <div class="stat-info">
+                        <div class="stat-value" id="spa-total-consumption">
+                          245.8
+                        </div>
+                        <span class="stat-unit">kWh</span>
+                        <div class="stat-label">Total Consumption</div>
+                      </div>
+                      <div class="stat-change positive">
+                        <i class="fas fa-arrow-down"></i>
+                        <span>12%</span>
+                      </div>
+                    </div>
+
+                    <div class="stat-card">
+                      <div class="stat-icon cost">
+                        <i class="fas fa-dollar-sign"></i>
+                      </div>
+                      <div class="stat-info">
+                        <div class="stat-value" id="spa-total-cost">885</div>
+                        <span class="stat-unit">VND</span>
+                        <div class="stat-label">Total Cost</div>
+                      </div>
+                      <div class="stat-change positive">
+                        <i class="fas fa-arrow-down"></i>
+                        <span>15%</span>
+                      </div>
+                    </div>
+
+                    <div class="stat-card">
+                      <div class="stat-icon efficiency">
+                        <i class="fas fa-leaf"></i>
+                      </div>
+                      <div class="stat-info">
+                        <div class="stat-value" id="spa-efficiency-score">
+                          87
+                        </div>
+                        <span class="stat-unit">%</span>
+                        <div class="stat-label">Efficiency Score</div>
+                      </div>
+                      <div class="stat-change positive">
+                        <i class="fas fa-arrow-up"></i>
+                        <span>8%</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Page: Dashboard (AC Management) -->
+        <div id="dashboard-page" class="page">
+          <div class="dashboard-header-actions">
+            <button
+              class="dashboard-glass-btn export"
+              onclick="window.spaApp.exportExcel()"
+            >
+              <i class="fas fa-file-excel"></i>
+              Export Excel
+            </button>
+            <button
+              class="dashboard-glass-btn filter"
+              onclick="window.spaApp.updateFilter()"
+            >
+              <i class="fas fa-filter"></i>
+              Filter
+            </button>
+            <button
+              class="dashboard-glass-btn setting"
+              onclick="window.spaApp.openSettings()"
+            >
+              <i class="fas fa-cog"></i>
+              Settings
+            </button>
+            <button
+              class="dashboard-glass-btn add primary"
+              onclick="window.spaApp.openAddModal()"
+            >
+              <i class="fas fa-plus"></i>
+              Add AC Unit
+            </button>
+          </div>
+
+          <!-- Statistics Cards -->
+          <div class="dashboard-stats-cards">
+            <div class="dashboard-stat-card online">
+              <div class="dashboard-stat-number" id="spa-dashboard-online">
+                5
+              </div>
+              <div class="dashboard-stat-label">Online Units</div>
+            </div>
+            <div class="dashboard-stat-card offline">
+              <div class="dashboard-stat-number" id="spa-dashboard-offline">
+                2
+              </div>
+              <div class="dashboard-stat-label">Offline Units</div>
+            </div>
+            <div class="dashboard-stat-card total">
+              <div class="dashboard-stat-number" id="spa-dashboard-total">
+                7
+              </div>
+              <div class="dashboard-stat-label">Total Units</div>
+            </div>
+          </div>
+
+          <!-- AC Units Table -->
+          <div class="ac-list-table-container">
+            <div class="ac-list-header">
+              <h3>Air Conditioner Units</h3>
+            </div>
+            <table class="ac-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Location</th>
+                  <th>Status</th>
+                  <th>Temperature</th>
+                  <th>Mode</th>
+                  <th>Energy Usage</th>
+                  <th>Last Updated</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="spa-ac-table-body">
+                <tr>
+                  <td>AC-001</td>
+                  <td>Living Room</td>
+                  <td><span class="status-badge online">Online</span></td>
+                  <td>22°C / 24°C</td>
+                  <td><span class="mode-badge auto">Auto</span></td>
+                  <td>1.2 kW</td>
+                  <td>2 minutes ago</td>
+                  <td>
+                    <button
+                      class="dashboard-glass-btn"
+                      onclick="window.spaApp.editAC('AC-001')"
+                    >
+                      <i class="fas fa-edit"></i>
+                    </button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>AC-002</td>
+                  <td>Bedroom 1</td>
+                  <td><span class="status-badge online">Online</span></td>
+                  <td>23°C / 25°C</td>
+                  <td><span class="mode-badge cold">Cold</span></td>
+                  <td>1.5 kW</td>
+                  <td>1 minute ago</td>
+                  <td>
+                    <button
+                      class="dashboard-glass-btn"
+                      onclick="window.spaApp.editAC('AC-002')"
+                    >
+                      <i class="fas fa-edit"></i>
+                    </button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>AC-003</td>
+                  <td>Kitchen</td>
+                  <td><span class="status-badge offline">Offline</span></td>
+                  <td>--°C / --°C</td>
+                  <td><span class="mode-badge">--</span></td>
+                  <td>0.0 kW</td>
+                  <td>1 hour ago</td>
+                  <td>
+                    <button
+                      class="dashboard-glass-btn"
+                      onclick="window.spaApp.editAC('AC-003')"
+                    >
+                      <i class="fas fa-edit"></i>
+                    </button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>AC-004</td>
+                  <td>Bedroom 2</td>
+                  <td><span class="status-badge online">Online</span></td>
+                  <td>21°C / 23°C</td>
+                  <td><span class="mode-badge dry">Dry</span></td>
+                  <td>0.8 kW</td>
+                  <td>30 seconds ago</td>
+                  <td>
+                    <button
+                      class="dashboard-glass-btn"
+                      onclick="window.spaApp.editAC('AC-004')"
+                    >
+                      <i class="fas fa-edit"></i>
+                    </button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>AC-005</td>
+                  <td>Office</td>
+                  <td><span class="status-badge online">Online</span></td>
+                  <td>24°C / 26°C</td>
+                  <td><span class="mode-badge fan">Fan</span></td>
+                  <td>0.5 kW</td>
+                  <td>5 minutes ago</td>
+                  <td>
+                    <button
+                      class="dashboard-glass-btn"
+                      onclick="window.spaApp.editAC('AC-005')"
+                    >
+                      <i class="fas fa-edit"></i>
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Page: Energy -->
+        <div id="energy-page" class="page">
+          <div class="row g-4">
+            <div class="col-12">
+              <div class="glass-effect p-4">
+                <h2>Energy Management</h2>
+                <p>Detailed energy consumption and savings analysis</p>
+                <div class="alert alert-info mt-3">
+                  <i class="fas fa-info-circle"></i>
+                  Energy management features will be implemented here
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Page: Devices -->
+        <div id="devices-page" class="page">
+          <div class="row g-4">
+            <div class="col-12">
+              <div class="glass-effect p-4">
+                <h2>Device Management</h2>
+                <p>Manage all connected IoT devices</p>
+                <div class="alert alert-info mt-3">
+                  <i class="fas fa-info-circle"></i>
+                  Device management features will be implemented here
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Page: Analytics -->
+        <div id="analytics-page" class="page">
+          <div class="row g-4">
+            <div class="col-12">
+              <div class="glass-effect p-4">
+                <h2>Analytics</h2>
+                <p>Advanced analytics and reporting</p>
+                <div class="alert alert-info mt-3">
+                  <i class="fas fa-info-circle"></i>
+                  Analytics features will be implemented here
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Page: Settings -->
+        <div id="settings-page" class="page">
+          <div class="row g-4">
+            <div class="col-12">
+              <div class="glass-effect p-4">
+                <h2>Settings</h2>
+                <p>System configuration and preferences</p>
+                <div class="alert alert-info mt-3">
+                  <i class="fas fa-info-circle"></i>
+                  Settings features will be implemented here
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Add AC Modal -->
+    <div class="modal" id="spa-add-modal">
+      <div class="modal-content glass-effect">
+        <div class="modal-header">
+          <h3>Add New Air Conditioner</h3>
+          <button class="close-btn" onclick="window.spaApp.closeAddModal()">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label>AC Unit ID</label>
+            <input
+              type="text"
+              class="form-control glass-input"
+              placeholder="e.g. AC-006"
+            />
+          </div>
+          <div class="form-group">
+            <label>Location</label>
+            <input
+              type="text"
+              class="form-control glass-input"
+              placeholder="e.g. Guest Room"
+            />
+          </div>
+          <div class="form-group">
+            <label>Initial Mode</label>
+            <select class="form-control glass-select">
+              <option value="auto">Auto</option>
+              <option value="cool">Cool</option>
+              <option value="dry">Dry</option>
+              <option value="fan">Fan</option>
+            </select>
+          </div>
+          <div class="form-actions">
+            <button
+              class="dashboard-glass-btn"
+              onclick="window.spaApp.closeAddModal()"
+            >
+              Cancel
+            </button>
+            <button
+              class="dashboard-glass-btn add primary"
+              onclick="window.spaApp.saveAC()"
+            >
+              Add AC Unit
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Original JS Files (loaded but not executed for SPA) -->
+    <!-- <script src="Assets/js/main.js"></script> -->
+    <!-- <script src="Assets/js/chart.js"></script> -->
+
+    <!-- SPA Application Script -->
+    <script>
+      class SmartACSPA {
+        constructor() {
+          this.currentPage = "control";
+          this.isPoweredOn = false;
+          this.currentTemp = 24;
+          this.targetTemp = 22;
+          this.currentMode = "auto";
+          this.isAIEnabled = true;
+          this.chart = null;
+
+          this.init();
+        }
+
+        init() {
+          this.setupNavigation();
+          this.setupControlsHandlers();
+          this.setupChart();
+          this.updateUI();
+          this.startDataRefresh();
+          this.setupModalHandlers();
+
+          console.log("Smart AC SPA initialized successfully");
+        }
+
+        setupModalHandlers() {
+          // Close modal when clicking outside
+          document.addEventListener("click", (e) => {
+            const modal = document.getElementById("spa-add-modal");
+            if (e.target === modal) {
+              this.closeAddModal();
+            }
+          });
+        }
+
+        setupNavigation() {
+          const navLinks = document.querySelectorAll(".spa-nav-link");
+          navLinks.forEach((link) => {
+            link.addEventListener("click", (e) => {
+              e.preventDefault();
+              const page = link.getAttribute("data-page");
+              this.navigateToPage(page);
+            });
+          });
+        }
+
+        navigateToPage(page) {
+          if (this.currentPage === page) return;
+
+          // Hide current page
+          const currentPageEl = document.getElementById(
+            `${this.currentPage}-page`
+          );
+          if (currentPageEl) {
+            currentPageEl.classList.remove("active");
+          }
+
+          // Show new page
+          const newPageEl = document.getElementById(`${page}-page`);
+          if (newPageEl) {
+            newPageEl.classList.add("active");
+          }
+
+          // Update navigation
+          document.querySelectorAll(".nav-item").forEach((item) => {
+            item.classList.remove("active");
+          });
+
+          const activeNavItem = document
+            .querySelector(`[data-page="${page}"]`)
+            .closest(".nav-item");
+          if (activeNavItem) {
+            activeNavItem.classList.add("active");
+          }
+
+          // Update page title
+          this.updatePageTitle(page);
+
+          this.currentPage = page;
+
+          // Handle page-specific logic
+          this.handlePageChange(page);
+        }
+
+        updatePageTitle(page) {
+          const titles = {
+            control: {
+              title: "Air Conditioner Control",
+              subtitle: "Smart Energy Management System",
+            },
+            dashboard: {
+              title: "AC Dashboard",
+              subtitle: "Manage all air conditioning units",
+            },
+            energy: {
+              title: "Energy Management",
+              subtitle: "Monitor and optimize energy consumption",
+            },
+            devices: {
+              title: "Device Management",
+              subtitle: "Control connected IoT devices",
+            },
+            analytics: {
+              title: "Analytics",
+              subtitle: "Advanced reporting and insights",
+            },
+            settings: {
+              title: "Settings",
+              subtitle: "System configuration and preferences",
+            },
+          };
+
+          const pageInfo = titles[page] || titles.control;
+          document.getElementById("spa-page-title").textContent =
+            pageInfo.title;
+          document.getElementById("spa-page-subtitle").textContent =
+            pageInfo.subtitle;
+        }
+
+        handlePageChange(page) {
+          switch (page) {
+            case "control":
+              this.setupChart();
+              break;
+            case "dashboard":
+              this.updateDashboardStats();
+              break;
+            default:
+              break;
+          }
+        }
+
+        setupControlsHandlers() {
+          // Power button
+          const powerBtn = document.getElementById("spa-power-btn");
+          if (powerBtn) {
+            powerBtn.addEventListener("click", () => this.togglePower());
+          }
+
+          // Temperature controls
+          const tempUpBtn = document.getElementById("spa-temp-up");
+          const tempDownBtn = document.getElementById("spa-temp-down");
+
+          if (tempUpBtn) {
+            tempUpBtn.addEventListener("click", () => this.adjustTemp(1));
+          }
+
+          if (tempDownBtn) {
+            tempDownBtn.addEventListener("click", () => this.adjustTemp(-1));
+          }
+
+          // Mode buttons
+          const modeButtons = document.querySelectorAll(".mode-btn");
+          modeButtons.forEach((btn) => {
+            btn.addEventListener("click", (e) => {
+              const mode = e.currentTarget.getAttribute("data-mode");
+              this.setMode(mode);
+            });
+          });
+
+          // AI toggle
+          const aiToggle = document.getElementById("spa-ai-control-toggle");
+          if (aiToggle) {
+            aiToggle.addEventListener("change", (e) => {
+              this.isAIEnabled = e.target.checked;
+              this.updateAIToggle();
+            });
+          }
+
+          // Chart controls
+          const chartBtns = document.querySelectorAll(".chart-btn");
+          chartBtns.forEach((btn) => {
+            btn.addEventListener("click", (e) => {
+              const period = e.currentTarget.getAttribute("data-period");
+              this.updateChartPeriod(period);
+            });
+          });
+
+          // Device toggles
+          const deviceToggles = document.querySelectorAll(
+            '[id^="spa-device-"][id$="-toggle"]'
+          );
+          deviceToggles.forEach((toggle) => {
+            toggle.addEventListener("change", () => this.updateDeviceCount());
+          });
+        }
+
+        togglePower() {
+          this.isPoweredOn = !this.isPoweredOn;
+          this.updatePowerStatus();
+        }
+
+        adjustTemp(delta) {
+          const newTemp = this.targetTemp + delta;
+          if (newTemp >= 16 && newTemp <= 30) {
+            this.targetTemp = newTemp;
+            this.updateTemperatureDisplay();
+          }
+        }
+
+        setMode(mode) {
+          if (this.currentMode === mode) return;
+
+          this.currentMode = mode;
+
+          // Update mode buttons
+          document.querySelectorAll(".mode-btn").forEach((btn) => {
+            btn.classList.remove("active");
+          });
+
+          const activeBtn = document.querySelector(`[data-mode="${mode}"]`);
+          if (activeBtn) {
+            activeBtn.classList.add("active");
+          }
+        }
+
+        updateUI() {
+          this.updatePowerStatus();
+          this.updateTemperatureDisplay();
+          this.updateAIToggle();
+          this.updateEnvironmentData();
+          this.updateDeviceCount();
+          this.updateDashboardStats();
+        }
+
+        updatePowerStatus() {
+          const powerBtn = document.getElementById("spa-power-btn");
+          const statusIndicator = document.getElementById(
+            "spa-status-indicator"
+          );
+          const statusText = document.getElementById("spa-status-text");
+
+          if (powerBtn) {
+            powerBtn.classList.toggle("active", this.isPoweredOn);
+          }
+
+          if (statusIndicator) {
+            statusIndicator.classList.toggle("on", this.isPoweredOn);
+            statusIndicator.classList.toggle("off", !this.isPoweredOn);
+          }
+
+          if (statusText) {
+            statusText.textContent = this.isPoweredOn ? "Online" : "Offline";
+          }
+        }
+
+        updateTemperatureDisplay() {
+          const currentTempEl = document.getElementById("spa-current-temp");
+          const targetTempEl = document.getElementById("spa-target-temp");
+
+          if (currentTempEl) {
+            currentTempEl.textContent = this.currentTemp;
+          }
+
+          if (targetTempEl) {
+            targetTempEl.textContent = this.targetTemp;
+          }
+        }
+
+        updateAIToggle() {
+          const aiToggle = document.getElementById("spa-ai-control-toggle");
+          const toggleSwitch = document.getElementById("spa-ai-toggle-switch");
+
+          if (aiToggle) {
+            aiToggle.checked = this.isAIEnabled;
+          }
+
+          if (toggleSwitch) {
+            toggleSwitch.classList.toggle("active", this.isAIEnabled);
+          }
+        }
+
+        updateEnvironmentData() {
+          // Simulate environment data
+          const outdoorTemp = 28 + Math.random() * 6;
+          const humidity = 60 + Math.random() * 20;
+
+          const outdoorTempEl = document.getElementById("spa-outdoor-temp");
+          const humidityEl = document.getElementById("spa-humidity-value");
+          const humidityProgress = document.getElementById(
+            "spa-humidity-progress"
+          );
+
+          if (outdoorTempEl) {
+            outdoorTempEl.textContent = Math.round(outdoorTemp);
+          }
+
+          if (humidityEl) {
+            humidityEl.textContent = Math.round(humidity);
+          }
+
+          if (humidityProgress) {
+            const degrees = (humidity / 100) * 360;
+            humidityProgress.style.background = `conic-gradient(var(--accent-blue) 0deg, var(--accent-blue) ${degrees}deg, rgba(255, 255, 255, 0.1) ${degrees}deg)`;
+          }
+        }
+
+        updateDeviceCount() {
+          const onlineDevices = document.querySelectorAll(
+            '[id^="spa-device-"][id$="-toggle"]:checked'
+          ).length;
+          const totalDevices = document.querySelectorAll(
+            '[id^="spa-device-"][id$="-toggle"]'
+          ).length;
+
+          const deviceCountEl = document.getElementById("spa-device-count");
+          if (deviceCountEl) {
+            deviceCountEl.textContent = `${onlineDevices}/${totalDevices} Online`;
+          }
+        }
+
+        updateDashboardStats() {
+          // Simulate dashboard statistics
+          const onlineUnits = 5;
+          const offlineUnits = 2;
+          const totalUnits = onlineUnits + offlineUnits;
+
+          const onlineEl = document.getElementById("spa-dashboard-online");
+          const offlineEl = document.getElementById("spa-dashboard-offline");
+          const totalEl = document.getElementById("spa-dashboard-total");
+
+          if (onlineEl) onlineEl.textContent = onlineUnits;
+          if (offlineEl) offlineEl.textContent = offlineUnits;
+          if (totalEl) totalEl.textContent = totalUnits;
+        }
+
+        setupChart() {
+          if (this.chart) return; // Chart already exists
+
+          const canvas = document.getElementById("spa-temperature-chart");
+          if (!canvas || typeof Chart === "undefined") return;
+
+          const ctx = canvas.getContext("2d");
+
+          // Configure Chart.js defaults for dark theme
+          Chart.defaults.color = "rgba(255, 255, 255, 0.7)";
+          Chart.defaults.borderColor = "rgba(255, 255, 255, 0.1)";
+          Chart.defaults.backgroundColor = "rgba(255, 255, 255, 0.05)";
+
+          const data = this.generateChartData("hour");
+
+          this.chart = new Chart(ctx, {
+            type: "line",
+            data: {
+              labels: data.labels,
+              datasets: [
+                {
+                  label: "Target Temperature",
+                  data: data.targetTemp,
+                  borderColor: "#fd7e14",
+                  backgroundColor: "rgba(253, 126, 20, 0.1)",
+                  borderWidth: 3,
+                  fill: false,
+                  tension: 0.4,
+                  pointBackgroundColor: "#fd7e14",
+                  pointBorderColor: "#ffffff",
+                  pointBorderWidth: 2,
+                  pointRadius: 6,
+                  pointHoverRadius: 8,
+                },
+                {
+                  label: "Actual Temperature",
+                  data: data.actualTemp,
+                  borderColor: "#007bff",
+                  backgroundColor: "rgba(0, 123, 255, 0.1)",
+                  borderWidth: 3,
+                  fill: true,
+                  tension: 0.4,
+                  pointBackgroundColor: "#007bff",
+                  pointBorderColor: "#ffffff",
+                  pointBorderWidth: 2,
+                  pointRadius: 6,
+                  pointHoverRadius: 8,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              interaction: {
+                intersect: false,
+                mode: "index",
+              },
+              plugins: {
+                legend: {
+                  display: true,
+                  position: "top",
+                  labels: {
+                    color: "rgba(255, 255, 255, 0.8)",
+                    font: {
+                      size: 12,
+                      family: "Inter, sans-serif",
+                    },
+                    usePointStyle: true,
+                    padding: 20,
+                  },
+                },
+                tooltip: {
+                  enabled: true,
+                  backgroundColor: "rgba(0, 0, 0, 0.8)",
+                  titleColor: "#ffffff",
+                  bodyColor: "#ffffff",
+                  borderColor: "rgba(255, 255, 255, 0.2)",
+                  borderWidth: 1,
+                  cornerRadius: 8,
+                  padding: 12,
+                  displayColors: true,
+                },
+              },
+              scales: {
+                x: {
+                  display: true,
+                  grid: {
+                    color: "rgba(255, 255, 255, 0.1)",
+                    borderColor: "rgba(255, 255, 255, 0.2)",
+                  },
+                  ticks: {
+                    color: "rgba(255, 255, 255, 0.7)",
+                    font: {
+                      size: 11,
+                      family: "Inter, sans-serif",
+                    },
+                  },
+                  title: {
+                    display: true,
+                    text: "Time",
+                    color: "rgba(255, 255, 255, 0.8)",
+                    font: {
+                      size: 12,
+                      family: "Inter, sans-serif",
+                    },
+                  },
+                },
+                y: {
+                  display: true,
+                  min: 16,
+                  max: 35,
+                  grid: {
+                    color: "rgba(255, 255, 255, 0.1)",
+                    borderColor: "rgba(255, 255, 255, 0.2)",
+                  },
+                  ticks: {
+                    color: "rgba(255, 255, 255, 0.7)",
+                    font: {
+                      size: 11,
+                      family: "Inter, sans-serif",
+                    },
+                    callback: (value) => `${value}°C`,
+                  },
+                  title: {
+                    display: true,
+                    text: "Temperature (°C)",
+                    color: "rgba(255, 255, 255, 0.8)",
+                    font: {
+                      size: 12,
+                      family: "Inter, sans-serif",
+                    },
+                  },
+                },
+              },
+              animation: {
+                duration: 1000,
+                easing: "easeInOutQuart",
+              },
+            },
+          });
+        }
+
+        generateChartData(period) {
+          const labels = [];
+          const targetTemp = [];
+          const actualTemp = [];
+
+          // Generate hourly labels for last 24 hours
+          const now = new Date();
+          for (let i = 23; i >= 0; i--) {
+            const time = new Date(now.getTime() - i * 60 * 60 * 1000);
+            labels.push(
+              time.toLocaleTimeString("en-US", {
+                hour: "2-digit",
+                minute: "2-digit",
+                hour12: false,
+              })
+            );
+
+            // Generate temperature data
+            const baseTarget = 22;
+            const baseActual = 24;
+
+            const target = baseTarget + (Math.random() - 0.5) * 4;
+            const actual = baseActual + (Math.random() - 0.5) * 3;
+
+            targetTemp.push(Math.round(target * 10) / 10);
+            actualTemp.push(Math.round(actual * 10) / 10);
+          }
+
+          return { labels, targetTemp, actualTemp };
+        }
+
+        updateChartPeriod(period) {
+          if (!this.chart) return;
+
+          // Update chart buttons
+          document.querySelectorAll(".chart-btn").forEach((btn) => {
+            btn.classList.remove("active");
+          });
+
+          const activeBtn = document.querySelector(`[data-period="${period}"]`);
+          if (activeBtn) {
+            activeBtn.classList.add("active");
+          }
+
+          // Update chart data
+          const newData = this.generateChartData(period);
+          this.chart.data.labels = newData.labels;
+          this.chart.data.datasets[0].data = newData.targetTemp;
+          this.chart.data.datasets[1].data = newData.actualTemp;
+          this.chart.update("active");
+        }
+
+        startDataRefresh() {
+          setInterval(() => {
+            this.updateEnvironmentData();
+
+            // Simulate temperature changes
+            this.currentTemp += (Math.random() - 0.5) * 0.5;
+            this.currentTemp = Math.round(this.currentTemp * 10) / 10;
+            this.updateTemperatureDisplay();
+          }, 5000);
+        }
+
+        toggleMobileMenu() {
+          const sidebar = document.querySelector(".nav-sidebar");
+          if (sidebar) {
+            sidebar.classList.toggle("mobile-open");
+          }
+        }
+
+        // Dashboard-specific methods
+        exportExcel() {
+          console.log("Exporting to Excel...");
+          this.showNotification(
+            "Excel export feature will be implemented",
+            "info"
+          );
+        }
+
+        updateFilter() {
+          console.log("Updating filters...");
+          this.showNotification("Filter feature will be implemented", "info");
+        }
+
+        openSettings() {
+          this.navigateToPage("settings");
+        }
+
+        openAddModal() {
+          const modal = document.getElementById("spa-add-modal");
+          if (modal) {
+            modal.classList.add("show");
+          }
+        }
+
+        closeAddModal() {
+          const modal = document.getElementById("spa-add-modal");
+          if (modal) {
+            modal.classList.remove("show");
+          }
+        }
+
+        saveAC() {
+          console.log("Saving new AC unit...");
+          this.showNotification("AC unit added successfully", "success");
+          this.closeAddModal();
+        }
+
+        editAC(acId) {
+          console.log(`Editing AC: ${acId}`);
+          this.showNotification(
+            `Editing ${acId} - Feature will be implemented`,
+            "info"
+          );
+        }
+
+        showNotification(message, type = "info") {
+          const notification = document.createElement("div");
+          notification.className = `alert alert-${type} position-fixed`;
+          notification.style.cssText =
+            "top: 20px; right: 20px; z-index: 9999; max-width: 300px;";
+          notification.innerHTML = `
+                    <i class="fas fa-${this.getIconForType(type)}"></i>
+                    ${message}
+                `;
+
+          document.body.appendChild(notification);
+
+          setTimeout(() => {
+            if (notification.parentNode) {
+              notification.parentNode.removeChild(notification);
+            }
+          }, 5000);
+        }
+
+        getIconForType(type) {
+          const icons = {
+            success: "check-circle",
+            warning: "exclamation-triangle",
+            error: "times-circle",
+            info: "info-circle",
+          };
+          return icons[type] || "info-circle";
+        }
+      }
+
+      // Initialize SPA
+      window.spaApp = new SmartACSPA();
+    </script>
+  </body>
+</html>

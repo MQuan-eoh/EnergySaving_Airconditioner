@@ -2,6 +2,32 @@
 
 /* Mobile Landscape and up */
 @media (max-width: 991.98px) {
+  /* Power-Image Row cho mobile */
+  .power-image-row {
+    flex-direction: column;
+    gap: var(--spacing-md);
+    text-align: center;
+  }
+
+  .airConditioner-container {
+    margin: 0 auto;
+  }
+
+  .ac-image-wrapper {
+    width: 140px;
+    height: 100px;
+  }
+
+  .airConditioner-images {
+    padding: var(--spacing-sm);
+  }
+
+  .airConditioner-images {
+    width: 120px;
+    height: 90px;
+    margin: 0 auto;
+  }
+
   /* Navigation adjustments */
   .nav-sidebar {
     width: 100%;
@@ -166,6 +192,20 @@
 
 /* Mobile Portrait */
 @media (max-width: 767.98px) {
+  /* Air Conditioner cho mobile portrait */
+  .ac-image-wrapper {
+    width: 120px;
+    height: 90px;
+  }
+
+  .ac-model-name {
+    font-size: 0.65rem;
+  }
+
+  .ac-status-text {
+    font-size: 0.6rem;
+  }
+
   /* Typography adjustments */
   .page-title {
     font-size: var(--font-size-xl);
@@ -356,6 +396,20 @@
 
 /* Small Mobile */
 @media (max-width: 575.98px) {
+  /* Air Conditioner cho màn hình rất nhỏ */
+  .ac-image-wrapper {
+    width: 100px;
+    height: 75px;
+  }
+
+  .ac-model-name {
+    font-size: 0.6rem;
+  }
+
+  .ac-status-text {
+    font-size: 0.55rem;
+  }
+
   /* Container adjustments */
   .main-content {
     padding: var(--spacing-sm);
@@ -508,6 +562,12 @@
 
 /* Tablet Portrait */
 @media (min-width: 768px) and (max-width: 991.98px) {
+  /* Air Conditioner cho tablet */
+  .ac-image-wrapper {
+    width: 150px;
+    height: 115px;
+  }
+
   .nav-sidebar {
     width: 240px;
   }
@@ -547,6 +607,12 @@
 
 /* Large Tablets and Small Desktops */
 @media (min-width: 992px) and (max-width: 1199.98px) {
+  /* Air Conditioner cho desktop nhỏ */
+  .ac-image-wrapper {
+    width: 170px;
+    height: 130px;
+  }
+
   .nav-sidebar {
     width: 260px;
   }
@@ -578,11 +644,29 @@
   }
 }
 
+/* Standard Desktop */
+@media (min-width: 1200px) and (max-width: 1399.98px) {
+  .airConditioner-images {
+    width: 145px;
+    height: 110px;
+  }
+}
+
 /* Ultra-wide screens */
 @media (min-width: 1400px) {
   .main-container {
     max-width: 1600px;
     margin: 0 auto;
+  }
+
+  /* Tối ưu kích thước cho Air Conditioner cho ultra-wide */
+  .ac-image-wrapper {
+    width: 190px;
+    height: 145px;
+  }
+
+  .ac-model-name {
+    font-size: var(--font-size-sm);
   }
 
   .main-content {
