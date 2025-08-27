@@ -660,10 +660,10 @@
   }
 
   /* Tối ưu kích thước cho Air Conditioner cho ultra-wide */
-  .ac-image-wrapper {
+  /* .ac-image-wrapper {
     width: 190px;
     height: 145px;
-  }
+  } */
 
   .ac-model-name {
     font-size: var(--font-size-sm);

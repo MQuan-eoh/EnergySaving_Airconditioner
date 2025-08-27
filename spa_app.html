@@ -600,7 +600,7 @@
                           <span class="temp-value" id="spa-current-temp"
                             >24</span
                           >
-                          <span class="temp-unit">°C</span>
+                          <span class="temp-unit"></span>
                           <div class="temp-label">Current</div>
                         </div>
                       </div>
@@ -733,12 +733,12 @@
                   <div class="panel-header">
                     <h3 class="panel-title">Temperature History</h3>
                     <div class="chart-controls">
-                      <button class="chart-btn active" data-period="hour">
+                      <button class="chart-btn glass-btn active" data-period="hour">
                         Hour
                       </button>
-                      <button class="chart-btn" data-period="day">Day</button>
-                      <button class="chart-btn" data-period="week">Week</button>
-                      <button class="chart-btn" data-period="month">
+                      <button class="chart-btn glass-btn data-period="day">Day</button>
+                      <button class="chart-btn glass-btn data-period="week">Week</button>
+                      <button class="chart-btn glass-btn" data-period="month">
                         Month
                       </button>
                     </div>
@@ -1272,34 +1272,21 @@
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-    <!-- Original JS Files (loaded but not executed for SPA) -->
-    <!-- <script src="Assets/js/main.js"></script> -->
-    <!-- <script src="Assets/js/chart.js"></script> -->
-
+    <script src="https://www.unpkg.com/@eohjsc/era-widget@1.1.3/src/index.js"></script>
+    
+    <!-- Smart AC Temperature Control System -->
+    <script src="js/eRaServices-controls.js"></script>
     <!-- SPA Application Script -->
     <script>
       class SmartACSPA {
         constructor() {
           this.currentPage = "control";
-          this.isPoweredOn = false;
-          this.currentTemp = 24;
-          this.targetTemp = 22;
-          this.currentMode = "auto";
-          this.isAIEnabled = true;
-          this.chart = null;
-
           this.init();
         }
 
         init() {
           this.setupNavigation();
-          this.setupControlsHandlers();
-          this.setupChart();
-          this.updateUI();
-          this.startDataRefresh();
           this.setupModalHandlers();
-
           console.log("Smart AC SPA initialized successfully");
         }
 
@@ -1355,11 +1342,7 @@
 
           // Update page title
           this.updatePageTitle(page);
-
           this.currentPage = page;
-
-          // Handle page-specific logic
-          this.handlePageChange(page);
         }
 
         updatePageTitle(page) {
@@ -1397,418 +1380,6 @@
             pageInfo.subtitle;
         }
 
-        handlePageChange(page) {
-          switch (page) {
-            case "control":
-              this.setupChart();
-              break;
-            case "dashboard":
-              this.updateDashboardStats();
-              break;
-            default:
-              break;
-          }
-        }
-
-        setupControlsHandlers() {
-          // Power button
-          const powerBtn = document.getElementById("spa-power-btn");
-          if (powerBtn) {
-            powerBtn.addEventListener("click", () => this.togglePower());
-          }
-
-          // Temperature controls
-          const tempUpBtn = document.getElementById("spa-temp-up");
-          const tempDownBtn = document.getElementById("spa-temp-down");
-
-          if (tempUpBtn) {
-            tempUpBtn.addEventListener("click", () => this.adjustTemp(1));
-          }
-
-          if (tempDownBtn) {
-            tempDownBtn.addEventListener("click", () => this.adjustTemp(-1));
-          }
-
-          // Mode buttons
-          const modeButtons = document.querySelectorAll(".mode-btn");
-          modeButtons.forEach((btn) => {
-            btn.addEventListener("click", (e) => {
-              const mode = e.currentTarget.getAttribute("data-mode");
-              this.setMode(mode);
-            });
-          });
-
-          // AI toggle
-          const aiToggle = document.getElementById("spa-ai-control-toggle");
-          if (aiToggle) {
-            aiToggle.addEventListener("change", (e) => {
-              this.isAIEnabled = e.target.checked;
-              this.updateAIToggle();
-            });
-          }
-
-          // Chart controls
-          const chartBtns = document.querySelectorAll(".chart-btn");
-          chartBtns.forEach((btn) => {
-            btn.addEventListener("click", (e) => {
-              const period = e.currentTarget.getAttribute("data-period");
-              this.updateChartPeriod(period);
-            });
-          });
-
-          // Device toggles
-          const deviceToggles = document.querySelectorAll(
-            '[id^="spa-device-"][id$="-toggle"]'
-          );
-          deviceToggles.forEach((toggle) => {
-            toggle.addEventListener("change", () => this.updateDeviceCount());
-          });
-        }
-
-        togglePower() {
-          this.isPoweredOn = !this.isPoweredOn;
-          this.updatePowerStatus();
-        }
-
-        adjustTemp(delta) {
-          const newTemp = this.targetTemp + delta;
-          if (newTemp >= 16 && newTemp <= 30) {
-            this.targetTemp = newTemp;
-            this.updateTemperatureDisplay();
-          }
-        }
-
-        setMode(mode) {
-          if (this.currentMode === mode) return;
-
-          this.currentMode = mode;
-
-          // Update mode buttons
-          document.querySelectorAll(".mode-btn").forEach((btn) => {
-            btn.classList.remove("active");
-          });
-
-          const activeBtn = document.querySelector(`[data-mode="${mode}"]`);
-          if (activeBtn) {
-            activeBtn.classList.add("active");
-          }
-        }
-
-        updateUI() {
-          this.updatePowerStatus();
-          this.updateTemperatureDisplay();
-          this.updateAIToggle();
-          this.updateEnvironmentData();
-          this.updateDeviceCount();
-          this.updateDashboardStats();
-        }
-
-        updatePowerStatus() {
-          const powerBtn = document.getElementById("spa-power-btn");
-          const statusIndicator = document.getElementById(
-            "spa-status-indicator"
-          );
-          const statusText = document.getElementById("spa-status-text");
-
-          if (powerBtn) {
-            powerBtn.classList.toggle("active", this.isPoweredOn);
-          }
-
-          if (statusIndicator) {
-            statusIndicator.classList.toggle("on", this.isPoweredOn);
-            statusIndicator.classList.toggle("off", !this.isPoweredOn);
-          }
-
-          if (statusText) {
-            statusText.textContent = this.isPoweredOn ? "Online" : "Offline";
-          }
-        }
-
-        updateTemperatureDisplay() {
-          const currentTempEl = document.getElementById("spa-current-temp");
-          const targetTempEl = document.getElementById("spa-target-temp");
-
-          if (currentTempEl) {
-            currentTempEl.textContent = this.currentTemp;
-          }
-
-          if (targetTempEl) {
-            targetTempEl.textContent = this.targetTemp;
-          }
-        }
-
-        updateAIToggle() {
-          const aiToggle = document.getElementById("spa-ai-control-toggle");
-          const toggleSwitch = document.getElementById("spa-ai-toggle-switch");
-
-          if (aiToggle) {
-            aiToggle.checked = this.isAIEnabled;
-          }
-
-          if (toggleSwitch) {
-            toggleSwitch.classList.toggle("active", this.isAIEnabled);
-          }
-        }
-
-        updateEnvironmentData() {
-          // Simulate environment data
-          const outdoorTemp = 28 + Math.random() * 6;
-          const humidity = 60 + Math.random() * 20;
-
-          const outdoorTempEl = document.getElementById("spa-outdoor-temp");
-          const humidityEl = document.getElementById("spa-humidity-value");
-          const humidityProgress = document.getElementById(
-            "spa-humidity-progress"
-          );
-
-          if (outdoorTempEl) {
-            outdoorTempEl.textContent = Math.round(outdoorTemp);
-          }
-
-          if (humidityEl) {
-            humidityEl.textContent = Math.round(humidity);
-          }
-
-          if (humidityProgress) {
-            const degrees = (humidity / 100) * 360;
-            humidityProgress.style.background = `conic-gradient(var(--accent-blue) 0deg, var(--accent-blue) ${degrees}deg, rgba(255, 255, 255, 0.1) ${degrees}deg)`;
-          }
-        }
-
-        updateDeviceCount() {
-          const onlineDevices = document.querySelectorAll(
-            '[id^="spa-device-"][id$="-toggle"]:checked'
-          ).length;
-          const totalDevices = document.querySelectorAll(
-            '[id^="spa-device-"][id$="-toggle"]'
-          ).length;
-
-          const deviceCountEl = document.getElementById("spa-device-count");
-          if (deviceCountEl) {
-            deviceCountEl.textContent = `${onlineDevices}/${totalDevices} Online`;
-          }
-        }
-
-        updateDashboardStats() {
-          // Simulate dashboard statistics
-          const onlineUnits = 5;
-          const offlineUnits = 2;
-          const totalUnits = onlineUnits + offlineUnits;
-
-          const onlineEl = document.getElementById("spa-dashboard-online");
-          const offlineEl = document.getElementById("spa-dashboard-offline");
-          const totalEl = document.getElementById("spa-dashboard-total");
-
-          if (onlineEl) onlineEl.textContent = onlineUnits;
-          if (offlineEl) offlineEl.textContent = offlineUnits;
-          if (totalEl) totalEl.textContent = totalUnits;
-        }
-
-        setupChart() {
-          if (this.chart) return; // Chart already exists
-
-          const canvas = document.getElementById("spa-temperature-chart");
-          if (!canvas || typeof Chart === "undefined") return;
-
-          const ctx = canvas.getContext("2d");
-
-          // Configure Chart.js defaults for dark theme
-          Chart.defaults.color = "rgba(255, 255, 255, 0.7)";
-          Chart.defaults.borderColor = "rgba(255, 255, 255, 0.1)";
-          Chart.defaults.backgroundColor = "rgba(255, 255, 255, 0.05)";
-
-          const data = this.generateChartData("hour");
-
-          this.chart = new Chart(ctx, {
-            type: "line",
-            data: {
-              labels: data.labels,
-              datasets: [
-                {
-                  label: "Target Temperature",
-                  data: data.targetTemp,
-                  borderColor: "#fd7e14",
-                  backgroundColor: "rgba(253, 126, 20, 0.1)",
-                  borderWidth: 3,
-                  fill: false,
-                  tension: 0.4,
-                  pointBackgroundColor: "#fd7e14",
-                  pointBorderColor: "#ffffff",
-                  pointBorderWidth: 2,
-                  pointRadius: 6,
-                  pointHoverRadius: 8,
-                },
-                {
-                  label: "Actual Temperature",
-                  data: data.actualTemp,
-                  borderColor: "#007bff",
-                  backgroundColor: "rgba(0, 123, 255, 0.1)",
-                  borderWidth: 3,
-                  fill: true,
-                  tension: 0.4,
-                  pointBackgroundColor: "#007bff",
-                  pointBorderColor: "#ffffff",
-                  pointBorderWidth: 2,
-                  pointRadius: 6,
-                  pointHoverRadius: 8,
-                },
-              ],
-            },
-            options: {
-              responsive: true,
-              maintainAspectRatio: false,
-              interaction: {
-                intersect: false,
-                mode: "index",
-              },
-              plugins: {
-                legend: {
-                  display: true,
-                  position: "top",
-                  labels: {
-                    color: "rgba(255, 255, 255, 0.8)",
-                    font: {
-                      size: 12,
-                      family: "Inter, sans-serif",
-                    },
-                    usePointStyle: true,
-                    padding: 20,
-                  },
-                },
-                tooltip: {
-                  enabled: true,
-                  backgroundColor: "rgba(0, 0, 0, 0.8)",
-                  titleColor: "#ffffff",
-                  bodyColor: "#ffffff",
-                  borderColor: "rgba(255, 255, 255, 0.2)",
-                  borderWidth: 1,
-                  cornerRadius: 8,
-                  padding: 12,
-                  displayColors: true,
-                },
-              },
-              scales: {
-                x: {
-                  display: true,
-                  grid: {
-                    color: "rgba(255, 255, 255, 0.1)",
-                    borderColor: "rgba(255, 255, 255, 0.2)",
-                  },
-                  ticks: {
-                    color: "rgba(255, 255, 255, 0.7)",
-                    font: {
-                      size: 11,
-                      family: "Inter, sans-serif",
-                    },
-                  },
-                  title: {
-                    display: true,
-                    text: "Time",
-                    color: "rgba(255, 255, 255, 0.8)",
-                    font: {
-                      size: 12,
-                      family: "Inter, sans-serif",
-                    },
-                  },
-                },
-                y: {
-                  display: true,
-                  min: 16,
-                  max: 35,
-                  grid: {
-                    color: "rgba(255, 255, 255, 0.1)",
-                    borderColor: "rgba(255, 255, 255, 0.2)",
-                  },
-                  ticks: {
-                    color: "rgba(255, 255, 255, 0.7)",
-                    font: {
-                      size: 11,
-                      family: "Inter, sans-serif",
-                    },
-                    callback: (value) => `${value}°C`,
-                  },
-                  title: {
-                    display: true,
-                    text: "Temperature (°C)",
-                    color: "rgba(255, 255, 255, 0.8)",
-                    font: {
-                      size: 12,
-                      family: "Inter, sans-serif",
-                    },
-                  },
-                },
-              },
-              animation: {
-                duration: 1000,
-                easing: "easeInOutQuart",
-              },
-            },
-          });
-        }
-
-        generateChartData(period) {
-          const labels = [];
-          const targetTemp = [];
-          const actualTemp = [];
-
-          // Generate hourly labels for last 24 hours
-          const now = new Date();
-          for (let i = 23; i >= 0; i--) {
-            const time = new Date(now.getTime() - i * 60 * 60 * 1000);
-            labels.push(
-              time.toLocaleTimeString("en-US", {
-                hour: "2-digit",
-                minute: "2-digit",
-                hour12: false,
-              })
-            );
-
-            // Generate temperature data
-            const baseTarget = 22;
-            const baseActual = 24;
-
-            const target = baseTarget + (Math.random() - 0.5) * 4;
-            const actual = baseActual + (Math.random() - 0.5) * 3;
-
-            targetTemp.push(Math.round(target * 10) / 10);
-            actualTemp.push(Math.round(actual * 10) / 10);
-          }
-
-          return { labels, targetTemp, actualTemp };
-        }
-
-        updateChartPeriod(period) {
-          if (!this.chart) return;
-
-          // Update chart buttons
-          document.querySelectorAll(".chart-btn").forEach((btn) => {
-            btn.classList.remove("active");
-          });
-
-          const activeBtn = document.querySelector(`[data-period="${period}"]`);
-          if (activeBtn) {
-            activeBtn.classList.add("active");
-          }
-
-          // Update chart data
-          const newData = this.generateChartData(period);
-          this.chart.data.labels = newData.labels;
-          this.chart.data.datasets[0].data = newData.targetTemp;
-          this.chart.data.datasets[1].data = newData.actualTemp;
-          this.chart.update("active");
-        }
-
-        startDataRefresh() {
-          setInterval(() => {
-            this.updateEnvironmentData();
-
-            // Simulate temperature changes
-            this.currentTemp += (Math.random() - 0.5) * 0.5;
-            this.currentTemp = Math.round(this.currentTemp * 10) / 10;
-            this.updateTemperatureDisplay();
-          }, 5000);
-        }
-
         toggleMobileMenu() {
           const sidebar = document.querySelector(".nav-sidebar");
           if (sidebar) {
@@ -1816,24 +1387,7 @@
           }
         }
 
-        // Dashboard-specific methods
-        exportExcel() {
-          console.log("Exporting to Excel...");
-          this.showNotification(
-            "Excel export feature will be implemented",
-            "info"
-          );
-        }
-
-        updateFilter() {
-          console.log("Updating filters...");
-          this.showNotification("Filter feature will be implemented", "info");
-        }
-
-        openSettings() {
-          this.navigateToPage("settings");
-        }
-
+        // Basic modal methods
         openAddModal() {
           const modal = document.getElementById("spa-add-modal");
           if (modal) {
@@ -1848,47 +1402,26 @@
           }
         }
 
+        // Placeholder methods for button clicks
+        exportExcel() {
+          console.log("Export Excel clicked - implement in external JS");
+        }
+
+        updateFilter() {
+          console.log("Update Filter clicked - implement in external JS");
+        }
+
+        openSettings() {
+          this.navigateToPage("settings");
+        }
+
         saveAC() {
-          console.log("Saving new AC unit...");
-          this.showNotification("AC unit added successfully", "success");
+          console.log("Save AC clicked - implement in external JS");
           this.closeAddModal();
         }
 
         editAC(acId) {
-          console.log(`Editing AC: ${acId}`);
-          this.showNotification(
-            `Editing ${acId} - Feature will be implemented`,
-            "info"
-          );
-        }
-
-        showNotification(message, type = "info") {
-          const notification = document.createElement("div");
-          notification.className = `alert alert-${type} position-fixed`;
-          notification.style.cssText =
-            "top: 20px; right: 20px; z-index: 9999; max-width: 300px;";
-          notification.innerHTML = `
-                    <i class="fas fa-${this.getIconForType(type)}"></i>
-                    ${message}
-                `;
-
-          document.body.appendChild(notification);
-
-          setTimeout(() => {
-            if (notification.parentNode) {
-              notification.parentNode.removeChild(notification);
-            }
-          }, 5000);
-        }
-
-        getIconForType(type) {
-          const icons = {
-            success: "check-circle",
-            warning: "exclamation-triangle",
-            error: "times-circle",
-            info: "info-circle",
-          };
-          return icons[type] || "info-circle";
+          console.log(`Edit AC clicked: ${acId} - implement in external JS`);
         }
       }
 
