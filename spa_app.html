@@ -406,6 +406,119 @@
         margin-top: 30px;
       }
 
+      /* iPhone-style Toggle Switch with Glass Effect */
+      .iphone-toggle {
+        position: relative;
+        display: inline-block;
+        width: 52px;
+        height: 30px;
+        margin: 0;
+      }
+
+      .iphone-toggle input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+        position: absolute;
+      }
+
+      .toggle-slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(120, 120, 128, 0.16);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        -webkit-backdrop-filter: blur(10px);
+        backdrop-filter: blur(10px);
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        border-radius: 15px;
+        box-shadow: 
+          inset 0 1px 2px rgba(0, 0, 0, 0.1),
+          0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      .toggle-slider:before {
+        position: absolute;
+        content: "";
+        height: 22px;
+        width: 22px;
+        left: 3px;
+        bottom: 3px;
+        background: rgba(255, 255, 255, 0.95);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        -webkit-backdrop-filter: blur(20px);
+        backdrop-filter: blur(20px);
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        border-radius: 50%;
+        box-shadow: 
+          0 2px 4px rgba(0, 0, 0, 0.15),
+          0 1px 2px rgba(0, 0, 0, 0.1),
+          inset 0 1px 1px rgba(255, 255, 255, 0.8);
+      }
+
+      .iphone-toggle input:checked + .toggle-slider {
+        background: linear-gradient(45deg, #34c759, #30d158);
+        border-color: rgba(52, 199, 89, 0.3);
+        box-shadow: 
+          inset 0 1px 2px rgba(0, 0, 0, 0.1),
+          0 2px 6px rgba(52, 199, 89, 0.3),
+          0 0 0 2px rgba(52, 199, 89, 0.1);
+      }
+
+      .iphone-toggle input:checked + .toggle-slider:before {
+        transform: translateX(22px);
+        background: rgba(255, 255, 255, 1);
+        box-shadow: 
+          0 2px 6px rgba(0, 0, 0, 0.2),
+          0 1px 3px rgba(0, 0, 0, 0.15),
+          inset 0 1px 1px rgba(255, 255, 255, 0.9);
+      }
+
+      .iphone-toggle:hover .toggle-slider {
+        transform: scale(1.05);
+      }
+
+      .iphone-toggle input:checked + .toggle-slider:hover {
+        background: linear-gradient(45deg, #30d158, #34c759);
+      }
+
+      /* Power Status Indicator */
+      .power-status {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+        font-weight: 500;
+        color: rgba(255, 255, 255, 0.7);
+      }
+
+      .power-status.on {
+        color: #34c759;
+      }
+
+      .power-status.off {
+        color: rgba(255, 255, 255, 0.5);
+      }
+
+      .power-indicator-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: currentColor;
+        box-shadow: 0 0 4px currentColor;
+      }
+
+      /* Toggle Container for Table Cell */
+      .toggle-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+      }
+
       /* Alert styling for placeholder pages */
       .alert {
         padding: 1rem;
@@ -1089,18 +1202,22 @@
                   <td>1.2 kW</td>
                   <td>2 minutes ago</td>
                   <td>
-                    <button
-                      class="dashboard-glass-btn"
-                      onclick="window.spaApp.editAC('AC-001')"
-                    >
-                      <i class="fas fa-edit"></i>
-                    </button>
+                    <div class="toggle-container">
+                      <label class="iphone-toggle">
+                        <input type="checkbox" data-ac-id="AC-001" onchange="handleACPowerToggle(this)">
+                        <span class="toggle-slider"></span>
+                      </label>
+                      <div class="power-status off">
+                        <span class="power-indicator-dot"></span>
+                        <span>OFF</span>
+                      </div>
+                    </div>
                   </td>
                 </tr>
                 <tr>
                   <td>AC-002</td>
                   <td>Bedroom 1</td>
-                  <td><span class="status-badge online">Online</span></td>
+                  <td><span class="status-badge offline">Offline</span></td>
                   <td>23°C / 25°C</td>
                   <td><span class="mode-badge cold">Cold</span></td>
                   <td>1.5 kW</td>
@@ -1114,57 +1231,7 @@
                     </button>
                   </td>
                 </tr>
-                <tr>
-                  <td>AC-003</td>
-                  <td>Kitchen</td>
-                  <td><span class="status-badge offline">Offline</span></td>
-                  <td>--°C / --°C</td>
-                  <td><span class="mode-badge">--</span></td>
-                  <td>0.0 kW</td>
-                  <td>1 hour ago</td>
-                  <td>
-                    <button
-                      class="dashboard-glass-btn"
-                      onclick="window.spaApp.editAC('AC-003')"
-                    >
-                      <i class="fas fa-edit"></i>
-                    </button>
-                  </td>
-                </tr>
-                <tr>
-                  <td>AC-004</td>
-                  <td>Bedroom 2</td>
-                  <td><span class="status-badge online">Online</span></td>
-                  <td>21°C / 23°C</td>
-                  <td><span class="mode-badge dry">Dry</span></td>
-                  <td>0.8 kW</td>
-                  <td>30 seconds ago</td>
-                  <td>
-                    <button
-                      class="dashboard-glass-btn"
-                      onclick="window.spaApp.editAC('AC-004')"
-                    >
-                      <i class="fas fa-edit"></i>
-                    </button>
-                  </td>
-                </tr>
-                <tr>
-                  <td>AC-005</td>
-                  <td>Office</td>
-                  <td><span class="status-badge online">Online</span></td>
-                  <td>24°C / 26°C</td>
-                  <td><span class="mode-badge fan">Fan</span></td>
-                  <td>0.5 kW</td>
-                  <td>5 minutes ago</td>
-                  <td>
-                    <button
-                      class="dashboard-glass-btn"
-                      onclick="window.spaApp.editAC('AC-005')"
-                    >
-                      <i class="fas fa-edit"></i>
-                    </button>
-                  </td>
-                </tr>
+               
               </tbody>
             </table>
           </div>
@@ -1297,234 +1364,7 @@
     <script src="js/eRaServices-controls.js"></script>
     <!-- AC SPA Management System -->
     <script src="js/spa-management.js"></script>
-    <!-- SPA Application Script -->
-    <script>
-      class SmartACSPA {
-        constructor() {
-          this.currentPage = "dashboard";
-          this.init();
-        }
-
-        init() {
-          this.setupNavigation();
-          this.setupModalHandlers();
-          this.showDefaultPage();
-          console.log("Smart AC SPA initialized successfully");
-        }
-
-        showDefaultPage() {
-          // Hide all pages first to ensure clean state
-          document.querySelectorAll(".page").forEach((page) => {
-            page.classList.remove("active");
-          });
-
-          // Remove active class from all nav items
-          document.querySelectorAll(".nav-item").forEach((item) => {
-            item.classList.remove("active");
-          });
-
-          // Show dashboard page by default
-          const dashboardPage = document.getElementById("dashboard-page");
-          if (dashboardPage) {
-            dashboardPage.classList.add("active");
-            console.log("Dashboard page activated as default");
-          }
-
-          // Set dashboard nav item as active
-          const dashboardNavItem = document.querySelector('[data-page="dashboard"]');
-          if (dashboardNavItem) {
-            const navItem = dashboardNavItem.closest(".nav-item");
-            if (navItem) {
-              navItem.classList.add("active");
-              console.log("Dashboard nav item activated");
-            }
-          }
-
-          // Update page title
-          this.updatePageTitle("dashboard");
-        }
-
-        setupModalHandlers() {
-          // Close modal when clicking outside
-          document.addEventListener("click", (e) => {
-            const modal = document.getElementById("spa-add-modal");
-            if (e.target === modal) {
-              this.closeAddModal();
-            }
-          });
-
-          // AC table handlers are now managed by ACSpaManager
-        }
-
-        setupNavigation() {
-          const navLinks = document.querySelectorAll(".spa-nav-link");
-          navLinks.forEach((link) => {
-            link.addEventListener("click", (e) => {
-              e.preventDefault();
-              const page = link.getAttribute("data-page");
-              this.navigateToPage(page);
-            });
-          });
-        }
-
-        navigateToPage(page) {
-          if (this.currentPage === page) return;
-
-          // Hide current page
-          const currentPageEl = document.getElementById(
-            `${this.currentPage}-page`
-          );
-          if (currentPageEl) {
-            currentPageEl.classList.remove("active");
-          }
-
-          // Show new page
-          const newPageEl = document.getElementById(`${page}-page`);
-          if (newPageEl) {
-            newPageEl.classList.add("active");
-          }
-
-          // Update navigation
-          document.querySelectorAll(".nav-item").forEach((item) => {
-            item.classList.remove("active");
-          });
-
-          const activeNavItem = document
-            .querySelector(`[data-page="${page}"]`)
-            .closest(".nav-item");
-          if (activeNavItem) {
-            activeNavItem.classList.add("active");
-          }
-
-          // Update page title
-          this.updatePageTitle(page);
-          this.currentPage = page;
-        }
-
-        updatePageTitle(page) {
-          const titles = {
-            control: {
-              title: "Air Conditioner Control",
-              subtitle: "Smart Energy Management System",
-            },
-            dashboard: {
-              title: "AC Dashboard",
-              subtitle: "Manage all air conditioning units",
-            },
-            energy: {
-              title: "Energy Management",
-              subtitle: "Monitor and optimize energy consumption",
-            },
-            devices: {
-              title: "Device Management",
-              subtitle: "Control connected IoT devices",
-            },
-            analytics: {
-              title: "Analytics",
-              subtitle: "Advanced reporting and insights",
-            },
-            settings: {
-              title: "Settings",
-              subtitle: "System configuration and preferences",
-            },
-          };
-
-          const pageInfo = titles[page] || titles.control;
-          document.getElementById("spa-page-title").textContent =
-            pageInfo.title;
-          document.getElementById("spa-page-subtitle").textContent =
-            pageInfo.subtitle;
-        }
-
-        toggleMobileMenu() {
-          const sidebar = document.querySelector(".nav-sidebar");
-          if (sidebar) {
-            sidebar.classList.toggle("mobile-open");
-          }
-        }
-
-        // Basic modal methods
-        openAddModal() {
-          const modal = document.getElementById("spa-add-modal");
-          if (modal) {
-            modal.classList.add("show");
-          }
-        }
-
-        closeAddModal() {
-          const modal = document.getElementById("spa-add-modal");
-          if (modal) {
-            modal.classList.remove("show");
-          }
-        }
-
-        // Placeholder methods for button clicks
-        exportExcel() {
-          console.log("Export Excel clicked - implement in external JS");
-        }
-
-        updateFilter() {
-          console.log("Update Filter clicked - implement in external JS");
-        }
-
-        openSettings() {
-          this.navigateToPage("settings");
-        }
-
-        saveAC() {
-          console.log("Save AC clicked - implement in external JS");
-          this.closeAddModal();
-        }
-
-        editAC(acId) {
-          console.log(`Edit AC clicked: ${acId} - implement in external JS`);
-          // Navigate to control page for this AC
-          this.navigateToControlPage(acId);
-        }
-
-        navigateToControlPage(acId) {
-          console.log(`Navigating to control page for AC: ${acId}`);
-          
-          // Hide current page
-          const currentPageEl = document.getElementById(`${this.currentPage}-page`);
-          if (currentPageEl) {
-            currentPageEl.classList.remove("active");
-          }
-
-          // Show control page
-          const controlPageEl = document.getElementById("control-page");
-          if (controlPageEl) {
-            controlPageEl.classList.add("active");
-          }
-
-          // Update navigation active state
-          document.querySelectorAll(".nav-item").forEach((item) => {
-            item.classList.remove("active");
-          });
-
-          // Find and activate control nav item
-          const controlNavItem = document.querySelector('[data-page="control"]').closest(".nav-item");
-          if (controlNavItem) {
-            controlNavItem.classList.add("active");
-          }
-
-          // Update page title for specific AC
-          this.updatePageTitleForAC(acId);
-        }
-
-        updatePageTitleForAC(acId) {
-          const titles = {
-            title: `Air Conditioner Control - ${acId}`,
-            subtitle: `Managing ${acId} - Smart Energy System`,
-          };
-
-          document.getElementById("spa-page-title").textContent = titles.title;
-          document.getElementById("spa-page-subtitle").textContent = titles.subtitle;
-        }
-      }
-
-      // Initialize SPA
-      window.spaApp = new SmartACSPA();
-    </script>
+    <!-- SPA Navigation System -->
+    <script src="js/spa-navigation.js"></script>
   </body>
 </html>
