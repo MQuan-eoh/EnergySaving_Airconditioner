@@ -1,0 +1,103 @@
+<html><head>
+  <title>Test iFrame widget</title>
+</head>
+<body>
+<div id="container"></div>
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script src="https://code.highcharts.com/modules/exporting.js"></script>
+<script src="https://code.highcharts.com/modules/export-data.js"></script>
+<script src="https://code.highcharts.com/modules/accessibility.js"></script>
+<script src="https://www.unpkg.com/@eohjsc/era-widget@1.0.14/src/index.js"></script>
+<script>
+  function drawChart(categories, series) {
+    Highcharts.chart('container', {
+      chart: {
+        type: 'column'
+      },
+      credits: {
+        enabled: false,
+      },
+      title: null,
+      subtitle: null,
+      xAxis: {
+        categories: categories,
+        crosshair: true,
+        accessibility: {
+          description: 'Countries'
+        }
+      },
+      yAxis: {
+        min: 0,
+        title: {
+            text: 'Thời gian (giờ và phút)' // Hiển thị giờ và phút
+        },
+        labels: {
+          formatter: function() {
+            const hours = Math.floor(this.value / 60); // Giờ
+            const minutes = this.value % 60; // Phút
+            return `${hours} giờ ${minutes} phút`;
+          }
+        }
+      },
+      tooltip: {
+        formatter: function() {
+          const hours = Math.floor(this.y / 60);
+          const minutes = this.y % 60;
+          return `<b>${this.series.name}</b><br/>${this.point.category}: ${hours} giờ ${minutes} phút`;
+        }
+      },
+      plotOptions: {
+        column: {
+          pointPadding: 0.2,
+          borderWidth: 0
+        }
+      },
+      series: series,
+    });
+  }
+
+</script>
+<script>
+  let now = new Date();
+  let startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
+  const eraWidget = new EraWidget();
+  eraWidget.onConfiguration((config) => {
+    console.log(config)
+    eraWidget.requestHistories(
+      startOfDay.getTime(), now.getTime()
+    )
+  })
+  eraWidget.onHistories((histories) => {
+    const categories = histories.map((item) => item.name);
+    const temperatures = []
+    const summarySeries = histories.map((item) => {
+      const timeByTemp = {};
+      item.data?.map((dataItem) => {
+        const [temp, time] = JSON.parse(dataItem.y);
+        if (!temperatures.includes(temp)) {
+          temperatures.push(temp);
+        }
+        if (!timeByTemp[temp]) {
+          timeByTemp[temp] = 0;
+        }
+        timeByTemp[temp] += time;
+      });
+      return timeByTemp;
+    });
+    const series = temperatures.sort().map((temp) => {
+      if (temp < 16 || temp > 30) {
+        return null;
+      }
+      return {
+        name: temp,
+        data: summarySeries.map((item) => item[temp] || 0),
+      };
+    }).filter(Boolean);
+    drawChart(
+      categories,
+      series,
+    );
+  })
+  eraWidget.ready();
+  eraWidget.requestAdjustMobileHeight(250);
+</script>

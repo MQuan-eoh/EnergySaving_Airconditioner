@@ -47,24 +47,22 @@ eraWidget.init({
 });
 
 class TemperatureController {
-  constructor() {
-    this.currentTemp = currentTempAir1 || 22; // Current temperature from device
-    this.targetTemp = targetTempAir1 || 22; // Target temperature
+  constructor(acId = "AC-001") {
+    this.acId = acId; // AC ID for this controller instance
+    this.currentTemp = 22; // Default current temperature
+    this.targetTemp = 22; // Default target temperature
     this.tempRange = { min: 16, max: 30 }; // Temperature limit
     this.debounceTimer = null; // Timer for debounce
     this.isPowerOn = false;
     this.availableMode = ["auto", "cool", "dry", "fan"];
-    // Initialize current mode from device or default to "auto"
-    this.currentMode =
-      currentModeAir1 !== null
-        ? this.mapDeviceValueToMode(currentModeAir1)
-        : "auto";
+    this.currentMode = "auto"; // Default mode
     this.currentModeIndex = this.availableMode.indexOf(this.currentMode);
     this.init();
   }
 
   init() {
-    console.log("Temperature Controller initialized");
+    console.log("Temperature Controller initialized for AC:", this.acId);
+    this.loadACData();
     this.setupTemperatureControls();
     this.setupModeControls();
 
@@ -72,6 +70,21 @@ class TemperatureController {
     this.updateModeDisplay();
     this.updateCurrentTempDisplay();
     this.updateTemperatureDisplay();
+  }
+
+  loadACData() {
+    // Load AC data from AC SPA Manager if available
+    if (window.acSpaManager) {
+      const acData = window.acSpaManager.getACData(this.acId);
+      if (acData) {
+        this.currentTemp = acData.currentTemp || 22;
+        this.targetTemp = acData.targetTemp || 22;
+        this.currentMode = acData.mode || "auto";
+        this.isPowerOn = acData.power || false;
+        this.currentModeIndex = this.availableMode.indexOf(this.currentMode);
+        console.log("Loaded AC data:", acData);
+      }
+    }
   }
 
   /**
@@ -132,6 +145,9 @@ class TemperatureController {
       console.log("Mode switched from", oldMode, "to", newMode);
     }
     this.currentModeIndex = this.availableMode.indexOf(newMode);
+
+    // Update AC data in manager
+    this.updateACDataInManager();
 
     // Check if mode control actions are available
     if (!modeAuto || !modeCool || !modeDry || !modeFan) {
@@ -266,6 +282,9 @@ class TemperatureController {
         this.updateModeDisplay();
       }
     }
+
+    // Update AC data in SPA manager
+    this.updateACDataInManager();
   }
 
   handlePowerToggle() {
@@ -276,6 +295,9 @@ class TemperatureController {
     // Update UI immediately for responsive feel
     this.updatePowerDisplay();
     this.addButtonAnimation("spa-power-btn", "success");
+
+    // Update AC data in manager
+    this.updateACDataInManager();
 
     // Check if actions are available
     if (!onAirConditioner1 || !offAirConditioner1) {
@@ -389,7 +411,10 @@ class TemperatureController {
     // 5. Add visual feedback
     this.addButtonAnimation("spa-temp-up", "success");
 
-    // 6. Debounced API call
+    // 6. Update AC data in manager
+    this.updateACDataInManager();
+
+    // 7. Debounced API call
     this.debounceAPICall();
   }
 
@@ -407,6 +432,10 @@ class TemperatureController {
     console.log(`Target temperature updated: ${this.targetTemp}°C`);
     this.updateTemperatureDisplay();
     this.addButtonAnimation("spa-temp-down", "success");
+
+    // Update AC data in manager
+    this.updateACDataInManager();
+
     this.debounceAPICall();
   }
   handleModeAir() {
@@ -619,10 +648,27 @@ class TemperatureController {
     }
     return false;
   }
+
+  /**
+   * UPDATE AC DATA IN SPA MANAGER
+   * Update AC data in the SPA manager when values change
+   */
+  updateACDataInManager() {
+    if (window.acSpaManager) {
+      window.acSpaManager.updateACData(this.acId, {
+        currentTemp: this.currentTemp,
+        targetTemp: this.targetTemp,
+        mode: this.currentMode,
+        power: this.isPowerOn,
+        status: this.isPowerOn ? "online" : "offline",
+      });
+    }
+  }
 }
 
 // INITIALIZE SYSTEM
 document.addEventListener("DOMContentLoaded", () => {
-  window.tempController = new TemperatureController();
-  console.log("Temperature Control System Ready!");
+  // Initialize temperature controller will be done when AC is selected
+  // window.tempController = new TemperatureController();
+  console.log("Temperature Control System Ready - waiting for AC selection!");
 });

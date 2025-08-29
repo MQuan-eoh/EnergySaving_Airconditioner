@@ -727,6 +727,7 @@
     background: white !important;
     border: 1px solid #ddd !important;
     box-shadow: none !important;
+    -webkit-backdrop-filter: blur(4px);
     backdrop-filter: none !important;
   }
 
