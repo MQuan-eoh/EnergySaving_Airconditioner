@@ -2,6 +2,7 @@ const eraWidget = new EraWidget();
 let configTargetTempAir1 = null,
   configCurrentTempAir1 = null,
   configModeAir1 = null,
+  configFanSpeed = null,
   actions = null,
   onAirConditioner1 = null,
   offAirConditioner1 = null,
@@ -12,7 +13,9 @@ let configTargetTempAir1 = null,
   targetTempAir1 = null,
   currentTempAir1 = null,
   currentModeAir1 = null,
-  tempControlAir1 = null;
+  tempControlAir1 = null,
+  fanSpeed = null,
+  fanSpeedControl = null;
 eraWidget.init({
   needRealtimeConfigs: true,
   needActions: true,
@@ -21,6 +24,7 @@ eraWidget.init({
     configTargetTempAir1 = configuration.realtime_configs[0];
     configCurrentTempAir1 = configuration.realtime_configs[1];
     configModeAir1 = configuration.realtime_configs[2];
+    configFanSpeed = configuration.realtime_configs[3];
     onAirConditioner1 = configuration.actions[0];
     offAirConditioner1 = configuration.actions[1];
     tempControlAir1 = configuration.actions[2];
@@ -28,6 +32,7 @@ eraWidget.init({
     modeCool = configuration.actions[4];
     modeDry = configuration.actions[5];
     modeFan = configuration.actions[6];
+    fanSpeedControl = configuration.actions[7];
     console.log("Received configuration:", configuration);
 
     // Get initial device data after configuration is loaded
@@ -38,7 +43,7 @@ eraWidget.init({
     targetTempAir1 = values[configTargetTempAir1.id].value;
     currentTempAir1 = values[configCurrentTempAir1.id].value;
     currentModeAir1 = values[configModeAir1.id].value;
-
+    fanSpeed = values[configFanSpeed.id].value;
     console.log("Received values from E-RA:", values);
     console.log("Target temp from device:", targetTempAir1);
     console.log("Current temp from device:", currentTempAir1);
@@ -157,6 +162,7 @@ class GlobalDeviceDataManager {
       mode: mode || 0,
       timestamp: new Date().toISOString(), // ISO string format for timestamps
       isPowerOn: mode > 0, // Boolean conversion: mode > 0 returns true/false
+      fanSpeed : fanSpeedControl,
     };
 
     console.log("Global device data updated:", this.deviceData);
@@ -169,7 +175,7 @@ class GlobalDeviceDataManager {
   }
 
   /**
-   * UPDATE AC SPA MANAGER WITH DEVICE DATA
+   * UPDATE AC SPA MANAGER WITH DEVICE DATA --- dashboardPage
    * Concept: Inter-component Communication - giao tiếp giữa các component
    */
   updateACSpaManagerData() {
