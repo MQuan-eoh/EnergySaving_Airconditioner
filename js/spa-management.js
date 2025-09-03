@@ -25,33 +25,102 @@ class ACSpaManager {
     console.log("AC SPA Manager initialized");
     this.setupACTableHandlers();
     this.updateDashboardStats();
-    this.setupDashboardAutoRefresh(); // Add event-driven auto refresh
+    this.setupDashboardAutoRefresh();
+    this.subscribeToGlobalDeviceData();
+    this.initializeDashboardWithDefaultData();
   }
 
   /**
-   * Setup dashboard auto-refresh using Event-Driven Architecture
+   * Subscribe to global device data updates
+   */
+  subscribeToGlobalDeviceData() {
+    if (window.globalDeviceDataManager) {
+      window.globalDeviceDataManager.subscribe((deviceData) => {
+        console.log("ACSpaManager received global device data:", deviceData);
+
+        const acDataUpdate = {
+          currentTemp: deviceData.currentTemp,
+          targetTemp: deviceData.targetTemp,
+          mode: this.mapDeviceValueToMode(deviceData.mode),
+          power: deviceData.isPowerOn,
+          status: "online",
+          lastUpdated: deviceData.timestamp,
+        };
+
+        this.updateACDataRealtime("AC-001", acDataUpdate);
+        console.log("Dashboard updated with real-time device data");
+      });
+
+      console.log("ACSpaManager subscribed to global device data updates");
+    } else {
+      console.warn("Global Device Data Manager not available for subscription");
+    }
+  }
+
+  /**
+   * Initialize dashboard with default data
+   */
+  initializeDashboardWithDefaultData() {
+    console.log("Initializing dashboard with default AC data...");
+    this.updateDashboardTable();
+    this.updateDashboardStats();
+    console.log(
+      "Dashboard initialized with default data - ready for real-time updates"
+    );
+  }
+
+  /**
+   * Map device value to mode string
+   */
+  mapDeviceValueToMode(value) {
+    const modeMap = {
+      0: "auto",
+      1: "cool",
+      2: "dry",
+      3: "fan",
+    };
+    return modeMap[value] || "auto";
+  }
+
+  /**
+   * Setup dashboard auto-refresh using event system
    */
   setupDashboardAutoRefresh() {
     if (window.acEventSystem) {
-      // Subscribe to AC data change events
       window.acEventSystem.on("ac-data-updated", (eventData) => {
         const { acId, data, changes } = eventData;
 
         console.log("Dashboard received AC update:", acId, changes);
 
-        // Update specific table row if on dashboard
         if (window.spaApp?.getCurrentPage() === "dashboard") {
           this.updateDashboardTableRow(acId, data);
           this.updateDashboardStats();
         }
 
-        // Show visual feedback
         this.addUpdateIndicator(acId);
       });
 
       console.log("Dashboard auto-refresh event listeners setup complete");
     } else {
       console.error("Event system not available for dashboard auto-refresh");
+    }
+  }
+
+  /**
+   * Trigger real-time dashboard update
+   */
+  triggerDashboardUpdate(acId, acData) {
+    const isOnDashboard = window.spaApp?.getCurrentPage() === "dashboard";
+
+    if (isOnDashboard) {
+      this.updateDashboardTableRow(acId, acData);
+      this.updateDashboardStats();
+      this.addUpdateIndicator(acId);
+      console.log(`Dashboard updated for ${acId} with real-time data`);
+    } else {
+      console.log(
+        `Dashboard update deferred - not currently viewing dashboard`
+      );
     }
   }
 
@@ -106,23 +175,19 @@ class ACSpaManager {
 
   /**
    * Update AC data with real-time event broadcasting
-   * Enhanced version with Event-Driven Architecture
    */
   updateACDataRealtime(acId, newData) {
     if (this.acData[acId]) {
-      // Store old data for comparison
       const oldData = { ...this.acData[acId] };
 
-      // Merge new data with existing data using spread operator
       this.acData[acId] = {
         ...this.acData[acId],
         ...newData,
-        lastUpdated: new Date().toISOString(), // Add timestamp
+        lastUpdated: new Date().toISOString(),
       };
 
       console.log("AC data updated:", acId, this.acData[acId]);
 
-      // Emit event for real-time updates using Event System
       if (window.acEventSystem) {
         window.acEventSystem.emit("ac-data-updated", {
           acId: acId,
@@ -132,13 +197,11 @@ class ACSpaManager {
         });
       }
 
-      // Update dashboard if currently on dashboard page
       if (window.spaApp?.getCurrentPage() === "dashboard") {
         this.updateDashboardTable();
         this.updateDashboardStats();
       }
 
-      // Add visual indicator for real-time feedback
       this.addUpdateIndicator(acId);
     } else {
       console.warn(`AC ${acId} not found in data store`);
@@ -276,8 +339,7 @@ class ACSpaManager {
   }
 
   /**
-   * Update dashboard table with real-time data
-   * Regenerates the entire table with current data
+   * Update dashboard table with current data
    */
   updateDashboardTable() {
     const tableBody = document.getElementById("spa-ac-table-body");
@@ -286,10 +348,8 @@ class ACSpaManager {
       return;
     }
 
-    // Clear existing rows
     tableBody.innerHTML = "";
 
-    // Generate new rows with current data
     const allACs = this.getAllACData();
     allACs.forEach((acData) => {
       const row = this.createTableRow(acData);
@@ -301,13 +361,11 @@ class ACSpaManager {
 
   /**
    * Update specific dashboard table row
-   * More efficient than updating entire table
    */
   updateDashboardTableRow(acId, acData) {
     const row = document.querySelector(`tr[data-ac-id="${acId}"]`);
 
     if (row) {
-      // Update temperature values
       const currentTempCell = row.querySelector(".current-temp-cell");
       const targetTempCell = row.querySelector(".target-temp-cell");
 
@@ -319,7 +377,6 @@ class ACSpaManager {
         targetTempCell.textContent = `${acData.targetTemp}°C`;
       }
 
-      // Update status badge
       const statusBadge = row.querySelector(".status-badge");
       if (statusBadge) {
         statusBadge.classList.remove("online", "offline");
@@ -327,14 +384,12 @@ class ACSpaManager {
         statusBadge.textContent = acData.status.toUpperCase();
       }
 
-      // Update mode badge
       const modeBadge = row.querySelector(".mode-badge");
       if (modeBadge) {
         modeBadge.className = `mode-badge ${acData.mode}`;
         modeBadge.textContent = acData.mode.toUpperCase();
       }
 
-      // Update power toggle
       const powerToggle = row.querySelector(".iphone-toggle input");
       if (powerToggle) {
         powerToggle.checked = acData.power;
@@ -343,14 +398,12 @@ class ACSpaManager {
       console.log(`Updated table row for ${acId}`);
     } else {
       console.warn(`Table row not found for AC: ${acId}`);
-      // If row doesn't exist, rebuild entire table
       this.updateDashboardTable();
     }
   }
 
   /**
    * Create table row element for AC data
-   * Helper method for table generation
    */
   createTableRow(acData) {
     const row = document.createElement("tr");
@@ -391,17 +444,14 @@ class ACSpaManager {
   }
 
   /**
-   * Add visual indicator when AC data updates
-   * Provides user feedback for real-time changes
+   * Add visual update indicator
    */
   addUpdateIndicator(acId) {
     const row = document.querySelector(`tr[data-ac-id="${acId}"]`);
 
     if (row) {
-      // Add highlight effect
       row.classList.add("data-updated");
 
-      // Remove highlight after 2 seconds
       setTimeout(() => {
         row.classList.remove("data-updated");
       }, 2000);

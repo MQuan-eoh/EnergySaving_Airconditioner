@@ -29,22 +29,270 @@ eraWidget.init({
     modeDry = configuration.actions[5];
     modeFan = configuration.actions[6];
     console.log("Received configuration:", configuration);
+
+    // Get initial device data after configuration is loaded
+    fetchInitialDeviceData();
   },
   onValues: (values) => {
-    // Handle incoming values
+    // Handle incoming values using the correct E-RA syntax
     targetTempAir1 = values[configTargetTempAir1.id].value;
     currentTempAir1 = values[configCurrentTempAir1.id].value;
     currentModeAir1 = values[configModeAir1.id].value;
 
-    // Update controller if it exists
-    if (window.tempController) {
-      window.tempController.updateFromDevice(currentTempAir1, currentModeAir1);
+    console.log("Received values from E-RA:", values);
+    console.log("Target temp from device:", targetTempAir1);
+    console.log("Current temp from device:", currentTempAir1);
+    console.log("Current mode from device:", currentModeAir1);
+
+    // Update global device data manager first
+    if (window.globalDeviceDataManager) {
+      const deviceData = {
+        targetTemp: targetTempAir1,
+        currentTemp: currentTempAir1,
+        mode: currentModeAir1,
+      };
+
+      window.globalDeviceDataManager.updateDeviceData(deviceData);
+      console.log(
+        "Global Device Data Manager updated - data broadcasted to all systems"
+      );
+    } else {
+      console.warn("Global Device Data Manager not available");
     }
 
-    console.log("Received values:", values);
-    console.log("Current mode from device:", currentModeAir1);
+    // Update temperature controller if exists
+    if (window.tempController) {
+      window.tempController.currentTemp = currentTempAir1;
+      window.tempController.targetTemp = targetTempAir1;
+      window.tempController.updateFromDevice(currentTempAir1, currentModeAir1);
+
+      const isPowerOn = currentModeAir1 > 0;
+      window.tempController.isPowerOn = isPowerOn;
+
+      window.tempController.updateCurrentTempDisplay();
+      window.tempController.updateTemperatureDisplay();
+      window.tempController.updateModeDisplay();
+      window.tempController.updatePowerDisplay();
+      window.tempController.updateACDataInManager();
+
+      console.log("Temperature controller updated with device data");
+    }
+
+    // Store received values globally for legacy support
+    window.deviceDataReceived = true;
+    window.latestDeviceValues = {
+      targetTemp: targetTempAir1,
+      currentTemp: currentTempAir1,
+      mode: currentModeAir1,
+      timestamp: new Date().toISOString(),
+    };
   },
 });
+
+/**
+ * Global Device Data Manager - Singleton Pattern
+ * Manages centralized data distribution from E-RA to all components
+ */
+class GlobalDeviceDataManager {
+  constructor() {
+    if (GlobalDeviceDataManager.instance) {
+      return GlobalDeviceDataManager.instance;
+    }
+
+    this.initialized = false;
+    this.deviceData = null;
+    this.subscribers = [];
+
+    GlobalDeviceDataManager.instance = this;
+  }
+
+  /**
+   * Subscribe to data changes - Observer Pattern
+   */
+  subscribe(callback) {
+    if (typeof callback === "function") {
+      this.subscribers.push(callback);
+      console.log(
+        "New subscriber added. Total subscribers:",
+        this.subscribers.length
+      );
+    } else {
+      console.error("Callback must be a function");
+    }
+  }
+
+  /**
+   * BROADCAST DATA TO ALL SUBSCRIBERS
+   * Concept: Broadcast Pattern - phát dữ liệu đến tất cả subscriber
+   * Syntax: forEach() method để lặp qua array
+   * Example: subscribers.forEach(callback => callback(data));
+   */
+  notifySubscribers(data) {
+    console.log("Broadcasting data to", this.subscribers.length, "subscribers");
+
+    // forEach syntax: array.forEach((element, index) => { ... });
+    this.subscribers.forEach((callback, index) => {
+      try {
+        // Call each callback function with data
+        callback(data);
+      } catch (error) {
+        console.error(`Error in subscriber ${index}:`, error);
+      }
+    });
+  }
+
+  /**
+   * UPDATE DEVICE DATA AND NOTIFY ALL SYSTEMS
+   * Concept: Data Flow Management - quản lý luồng dữ liệu từ device đến UI
+   * Syntax: Object destructuring và spread operator
+   */
+  updateDeviceData(newData) {
+    // Object destructuring syntax: const { prop1, prop2 } = object;
+    const { targetTemp, currentTemp, mode } = newData;
+
+    // Create new data object using object literal syntax
+    this.deviceData = {
+      targetTemp: targetTemp || 22,
+      currentTemp: currentTemp || 22,
+      mode: mode || 0,
+      timestamp: new Date().toISOString(), // ISO string format for timestamps
+      isPowerOn: mode > 0, // Boolean conversion: mode > 0 returns true/false
+    };
+
+    console.log("Global device data updated:", this.deviceData);
+
+    // Notify all subscribers about data change
+    this.notifySubscribers(this.deviceData);
+
+    // Update ACSpaManager với dữ liệu mới
+    this.updateACSpaManagerData();
+  }
+
+  /**
+   * UPDATE AC SPA MANAGER WITH DEVICE DATA
+   * Concept: Inter-component Communication - giao tiếp giữa các component
+   */
+  updateACSpaManagerData() {
+    if (window.acSpaManager && this.deviceData) {
+      // Convert device mode value to string mode
+      const modeString = this.mapDeviceValueToMode(this.deviceData.mode);
+
+      // Object creation with computed properties
+      const acUpdateData = {
+        currentTemp: this.deviceData.currentTemp,
+        targetTemp: this.deviceData.targetTemp,
+        mode: modeString,
+        power: this.deviceData.isPowerOn,
+        status: "online", // Device is online if sending data
+        lastUpdated: this.deviceData.timestamp,
+      };
+
+      // Call ACSpaManager update method
+      window.acSpaManager.updateACDataRealtime("AC-001", acUpdateData);
+    }
+  }
+
+  /**
+   * MAP DEVICE VALUE TO MODE STRING
+   * Concept: Data Transformation - chuyển đổi dữ liệu từ format này sang format khác
+   * Syntax: Object literal as lookup table
+   */
+  mapDeviceValueToMode(value) {
+    // Object literal syntax for lookup table
+    const modeMap = {
+      0: "auto",
+      1: "cool",
+      2: "dry",
+      3: "fan",
+    };
+
+    // Nullish coalescing operator (??) - returns right side if left is null/undefined
+    return modeMap[value] ?? "auto";
+  }
+
+  /**
+   * GET CURRENT DEVICE DATA
+   * Concept: Getter method - cung cấp access an toàn đến internal data
+   */
+  getDeviceData() {
+    return this.deviceData ? { ...this.deviceData } : null; // Spread operator để tạo copy
+  }
+
+  /**
+   * CHECK IF MANAGER IS INITIALIZED
+   * Concept: State checking - kiểm tra trạng thái của object
+   */
+  isInitialized() {
+    return this.initialized && this.deviceData !== null;
+  }
+}
+
+// Create global instance using Singleton pattern
+window.globalDeviceDataManager = new GlobalDeviceDataManager();
+
+/**
+ * Initialize device data when system starts
+ * This function waits for onValues to receive data from E-RA platform
+ */
+function fetchInitialDeviceData() {
+  console.log("Waiting for initial device data from E-RA platform...");
+
+  // Check if configurations are available
+  if (!configTargetTempAir1 || !configCurrentTempAir1 || !configModeAir1) {
+    console.error("Device configurations not available yet");
+    return;
+  }
+
+  // Set flag to indicate we're waiting for initial data
+  window.waitingForInitialData = true;
+
+  // Subscribe global manager to receive data updates
+  console.log("Global Device Data Manager ready to receive E-RA data");
+  console.log("System ready to receive device data via onValues callback");
+}
+
+/**
+ * Check if we have received device data and initialize controller
+ * This replaces the old getValue approach with onValues data
+ */
+function initializeWithDeviceData() {
+  // Wait for device data to be received via onValues
+  if (!window.deviceDataReceived || !window.latestDeviceValues) {
+    console.log("Still waiting for device data...");
+    return false;
+  }
+
+  const deviceData = window.latestDeviceValues;
+  console.log("Initializing system with device data:", deviceData);
+
+  // Update temperature controller if it exists
+  if (window.tempController) {
+    // Set values from device
+    window.tempController.currentTemp = deviceData.currentTemp || 22;
+    window.tempController.targetTemp = deviceData.targetTemp || 22;
+
+    // Determine mode and power from device mode value
+    const deviceMode = window.tempController.mapDeviceValueToMode(
+      deviceData.mode || 0
+    );
+    window.tempController.currentMode = deviceMode;
+    window.tempController.currentModeIndex =
+      window.tempController.availableMode.indexOf(deviceMode);
+    window.tempController.isPowerOn = deviceData.mode > 0;
+
+    // Update all displays
+    window.tempController.updateCurrentTempDisplay();
+    window.tempController.updateTemperatureDisplay();
+    window.tempController.updateModeDisplay();
+    window.tempController.updatePowerDisplay();
+    window.tempController.updateACDataInManager();
+
+    console.log("Temperature controller initialized with device data");
+    return true;
+  }
+
+  return false;
+}
 
 class TemperatureController {
   constructor(acId = "AC-001") {
@@ -73,17 +321,89 @@ class TemperatureController {
   }
 
   loadACData() {
-    // Load AC data from AC SPA Manager if available
+    console.log("Loading AC data for:", this.acId);
+
+    // First try to load from AC SPA Manager (local data)
     if (window.acSpaManager) {
       const acData = window.acSpaManager.getACData(this.acId);
       if (acData) {
-        this.currentTemp = acData.currentTemp || 22;
-        this.targetTemp = acData.targetTemp || 22;
-        this.currentMode = acData.mode || "auto";
-        this.isPowerOn = acData.power || false;
+        this.currentTemp = acData.currentTemp || this.currentTemp;
+        this.targetTemp = acData.targetTemp || this.targetTemp;
+        this.currentMode = acData.mode || this.currentMode;
+        this.isPowerOn = acData.power || this.isPowerOn;
         this.currentModeIndex = this.availableMode.indexOf(this.currentMode);
-        console.log("Loaded AC data:", acData);
+        console.log("Loaded local AC data:", acData);
       }
+    }
+
+    // Then fetch fresh data from E-RA device to ensure accuracy
+    this.loadDataFromDevice();
+  }
+
+  /**
+   * Load fresh data from device using onValues callback data
+   * This method uses data received via onValues instead of direct API calls
+   */
+  loadDataFromDevice() {
+    console.log("Loading fresh data from E-RA device...");
+
+    // Check if E-RA configurations are ready
+    if (!configTargetTempAir1 || !configCurrentTempAir1 || !configModeAir1) {
+      console.warn("E-RA configurations not ready, using cached data");
+      return;
+    }
+
+    // Check if we have received device data via onValues
+    if (window.deviceDataReceived && window.latestDeviceValues) {
+      const deviceData = window.latestDeviceValues;
+
+      // Load current temperature from device data
+      if (
+        deviceData.currentTemp !== null &&
+        deviceData.currentTemp !== undefined
+      ) {
+        this.currentTemp = deviceData.currentTemp;
+        this.updateCurrentTempDisplay();
+        console.log("Current temp loaded from device:", this.currentTemp);
+      }
+
+      // Load target temperature from device data
+      if (
+        deviceData.targetTemp !== null &&
+        deviceData.targetTemp !== undefined
+      ) {
+        this.targetTemp = deviceData.targetTemp;
+        this.updateTemperatureDisplay();
+        console.log("Target temp loaded from device:", this.targetTemp);
+      }
+
+      // Load current mode from device data
+      if (deviceData.mode !== null && deviceData.mode !== undefined) {
+        const deviceMode = this.mapDeviceValueToMode(deviceData.mode);
+        this.currentMode = deviceMode;
+        this.currentModeIndex = this.availableMode.indexOf(deviceMode);
+        this.updateModeDisplay();
+        console.log("Mode loaded from device:", deviceMode);
+
+        // Determine power status based on mode
+        this.isPowerOn = deviceData.mode > 0;
+        this.updatePowerDisplay();
+      }
+
+      // Update AC data in manager with fresh device data
+      this.updateACDataInManager();
+      console.log("Device data successfully loaded from onValues");
+    } else {
+      console.log(
+        "No device data available yet, will use onValues when data arrives"
+      );
+
+      // Set up a timer to retry loading device data
+      setTimeout(() => {
+        if (window.deviceDataReceived) {
+          this.loadDataFromDevice();
+        }
+      }, 2000); // Retry after 2 seconds
     }
   }
 

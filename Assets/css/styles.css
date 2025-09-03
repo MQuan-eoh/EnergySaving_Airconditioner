@@ -11,29 +11,54 @@
   --glass-bg-active: rgba(255, 255, 255, 0.12);
 
   /* Real-time Update Indicators for Event-Driven Architecture */
-  .data-updated {
-    background: rgba(52, 199, 89, 0.1) !important;
-    border-left: 3px solid #34c759 !important;
-    animation: updatePulse 2s ease-in-out;
-    width: 100%;
+  --update-success-color: #34c759;
+  --update-warning-color: #ff9500;
+  --update-error-color: #ff3b30;
+}
+
+/**
+ * REAL-TIME UPDATE ANIMATIONS
+ * Concept: CSS Animations for User Feedback
+ * Giải thích: Các animation này cung cấp visual feedback khi data được update real-time
+ */
+
+/* Data Updated Row Animation */
+.data-updated {
+  background: rgba(52, 199, 89, 0.1) !important;
+  border-left: 3px solid var(--update-success-color) !important;
+  animation: updatePulse 2s ease-in-out;
+  transition: all 0.3s ease;
+}
+
+/* Real-time Data Indicator */
+.real-time-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  background: rgba(52, 199, 89, 0.1);
+  border: 1px solid rgba(52, 199, 89, 0.3);
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--update-success-color);
+  animation: pulseGlow 2s infinite;
+}
+
+@keyframes pulseGlow {
+  0%,
+  100% {
+    opacity: 0.8;
+    transform: scale(1);
   }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+}
 
-  /* @keyframes updatePulse {
-    0% {
-      background: rgba(52, 199, 89, 0.2);
-      transform: scale(1);
-    }
-    50% {
-      background: rgba(52, 199, 89, 0.1);
-      transform: scale(1.002);
-    }
-    100% {
-      background: rgba(52, 199, 89, 0.05);
-      transform: scale(1);
-    }
-  } */
-
-  /* Enhanced Glass Borders - Login Style */
+/* Enhanced Glass Borders - Login Style */
+:root {
   --glass-border: rgba(255, 255, 255, 0.15);
   --glass-border-light: rgba(255, 255, 255, 0.2);
   --glass-border-hover: rgba(255, 255, 255, 0.3);

@@ -221,7 +221,14 @@ class SmartACSPA {
   saveAC() {
     console.log("Save AC clicked - implement in external JS");
     this.closeAddModal();
-    // TODO: Implement save AC functionality
+  }
+
+  /**
+   * Navigate back to dashboard from control page
+   */
+  backToDashboard() {
+    console.log("Back to dashboard clicked");
+    this.navigateToPage("dashboard");
   }
 
   /**
@@ -345,6 +352,18 @@ function handleACPowerToggle(toggleElement) {
       power: isOn,
       status: isOn ? "online" : "offline",
     });
+  }
+}
+
+/**
+ * Handle back to dashboard button click
+ * Global function to be called from HTML onclick
+ */
+function handleBackToDashboard() {
+  if (window.spaApp) {
+    window.spaApp.backToDashboard();
+  } else {
+    console.error("SPA App not available");
   }
 }
 
