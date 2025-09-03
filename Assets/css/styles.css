@@ -10,6 +10,29 @@
   --glass-bg-hover: rgba(255, 255, 255, 0.08);
   --glass-bg-active: rgba(255, 255, 255, 0.12);
 
+  /* Real-time Update Indicators for Event-Driven Architecture */
+  .data-updated {
+    background: rgba(52, 199, 89, 0.1) !important;
+    border-left: 3px solid #34c759 !important;
+    animation: updatePulse 2s ease-in-out;
+    width: 100%;
+  }
+
+  /* @keyframes updatePulse {
+    0% {
+      background: rgba(52, 199, 89, 0.2);
+      transform: scale(1);
+    }
+    50% {
+      background: rgba(52, 199, 89, 0.1);
+      transform: scale(1.002);
+    }
+    100% {
+      background: rgba(52, 199, 89, 0.05);
+      transform: scale(1);
+    }
+  } */
+
   /* Enhanced Glass Borders - Login Style */
   --glass-border: rgba(255, 255, 255, 0.15);
   --glass-border-light: rgba(255, 255, 255, 0.2);

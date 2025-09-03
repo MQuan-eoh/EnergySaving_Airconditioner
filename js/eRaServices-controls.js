@@ -313,8 +313,6 @@ class TemperatureController {
     const powerAction = this.isPowerOn ? onAirConditioner1 : offAirConditioner1;
 
     console.log(`Selected power action:`, powerAction);
-
-    // Send command to device using the action object
     try {
       eraWidget.triggerAction(powerAction.action, null);
       console.log(
@@ -652,15 +650,18 @@ class TemperatureController {
   /**
    * UPDATE AC DATA IN SPA MANAGER
    * Update AC data in the SPA manager when values change
+   * Now uses real-time event-driven updates
    */
   updateACDataInManager() {
     if (window.acSpaManager) {
-      window.acSpaManager.updateACData(this.acId, {
+      // Use the new real-time update method
+      window.acSpaManager.updateACDataRealtime(this.acId, {
         currentTemp: this.currentTemp,
         targetTemp: this.targetTemp,
         mode: this.currentMode,
         power: this.isPowerOn,
         status: this.isPowerOn ? "online" : "offline",
+        lastUpdated: new Date().toISOString(),
       });
     }
   }

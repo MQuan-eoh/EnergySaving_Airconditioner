@@ -339,9 +339,6 @@ function handleACPowerToggle(toggleElement) {
     statusText.textContent = isOn ? "ON" : "OFF";
   }
 
-  // TODO: Integrate with device control system
-  // This is where you would connect to your AC control system
-
   // Update AC data in SPA manager if available
   if (window.acSpaManager) {
     window.acSpaManager.updateACData(acId, {
