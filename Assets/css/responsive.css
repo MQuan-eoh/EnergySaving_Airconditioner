@@ -313,8 +313,9 @@
   }
 
   .fan-level-controls {
-    max-width: 180px;
-    gap: 8px;
+    max-width: 240px;
+    gap: 6px;
+    grid-template-columns: repeat(3, 1fr);
   }
 
   .fan-level-btn {

@@ -1004,10 +1004,10 @@ body::after {
 
 .fan-level-controls {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: var(--spacing-sm);
   width: 100%;
-  max-width: 200px;
+  max-width: 280px;
 }
 
 .fan-level-btn {
@@ -1103,6 +1103,14 @@ body::after {
 
 .fan-level-btn[data-level="3"] .fan-level-icon {
   color: #ef4444;
+}
+
+.fan-level-btn[data-level="4"] .fan-level-icon {
+  color: #dc2626;
+}
+
+.fan-level-btn[data-level="5"] .fan-level-icon {
+  color: #991b1b;
 }
 
 /* Chart Panel */

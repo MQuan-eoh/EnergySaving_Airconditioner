@@ -25,7 +25,6 @@ class ACSpaManager {
   init() {
     console.log("AC SPA Manager initialized");
     this.setupACTableHandlers();
-    this.setupFanControlHandlers();
     this.updateDashboardStats();
     this.setupDashboardAutoRefresh();
     this.subscribeToGlobalDeviceData();
@@ -476,93 +475,6 @@ class ACSpaManager {
 
       console.log(`Update indicator added for ${acId}`);
     }
-  }
-
-  /**
-   * Setup fan control handlers
-   */
-  setupFanControlHandlers() {
-    const fanLevelButtons = document.querySelectorAll(".fan-level-btn");
-
-    fanLevelButtons.forEach((button) => {
-      button.addEventListener("click", (e) => {
-        const level = parseInt(e.currentTarget.dataset.level);
-        this.handleFanSpeedChange(level);
-      });
-    });
-
-    console.log("Fan control handlers setup complete");
-  }
-
-  /**
-   * Handle fan speed change
-   */
-  handleFanSpeedChange(level) {
-    if (this.selectedAC) {
-      // Update AC data
-      this.updateACDataRealtime(this.selectedAC, { fanSpeed: level });
-
-      // Update UI
-      this.updateFanSpeedDisplay(level);
-
-      // Update active button
-      this.updateFanLevelButtons(level);
-
-      console.log(
-        `Fan speed changed to level ${level} for AC ${this.selectedAC}`
-      );
-
-      // TODO: Send to eRa service when connected
-      // this.sendFanSpeedToEra(level);
-    } else {
-      console.warn("No AC selected for fan speed change");
-    }
-  }
-
-  /**
-   * Update fan speed display
-   */
-  updateFanSpeedDisplay(level) {
-    const speedValueEl = document.getElementById("spa-fan-speed-value");
-    const speedIconEl = document.getElementById("spa-fan-speed-icon");
-
-    if (speedValueEl) {
-      speedValueEl.textContent = level;
-    }
-
-    if (speedIconEl) {
-      // Stop animation for level 0, start for others
-      if (level === 0) {
-        speedIconEl.classList.add("stopped");
-      } else {
-        speedIconEl.classList.remove("stopped");
-      }
-    }
-  }
-
-  /**
-   * Update fan level button states
-   */
-  updateFanLevelButtons(activeLevel) {
-    const fanLevelButtons = document.querySelectorAll(".fan-level-btn");
-
-    fanLevelButtons.forEach((button) => {
-      const level = parseInt(button.dataset.level);
-
-      if (level === activeLevel) {
-        button.classList.add("active");
-      } else {
-        button.classList.remove("active");
-      }
-    });
-  }
-
-  /**
-   * Load fan speed to interface
-   */
-  loadFanSpeedToInterface(fanSpeed) {
-    this.updateFanSpeedDisplay(fanSpeed);
-    this.updateFanLevelButtons(fanSpeed);
   }
 }
 

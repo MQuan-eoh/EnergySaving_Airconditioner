@@ -48,6 +48,7 @@ eraWidget.init({
     console.log("Target temp from device:", targetTempAir1);
     console.log("Current temp from device:", currentTempAir1);
     console.log("Current mode from device:", currentModeAir1);
+    console.log("Fan speed from device:", fanSpeed);
 
     // Update global device data manager first
     if (window.globalDeviceDataManager) {
@@ -55,6 +56,7 @@ eraWidget.init({
         targetTemp: targetTempAir1,
         currentTemp: currentTempAir1,
         mode: currentModeAir1,
+        fanSpeed: fanSpeed,
       };
 
       window.globalDeviceDataManager.updateDeviceData(deviceData);
@@ -78,6 +80,7 @@ eraWidget.init({
       window.tempController.updateTemperatureDisplay();
       window.tempController.updateModeDisplay();
       window.tempController.updatePowerDisplay();
+      window.tempController.updateFanSpeedFromDevice(fanSpeed);
       window.tempController.updateACDataInManager();
 
       console.log("Temperature controller updated with device data");
@@ -153,16 +156,16 @@ class GlobalDeviceDataManager {
    */
   updateDeviceData(newData) {
     // Object destructuring syntax: const { prop1, prop2 } = object;
-    const { targetTemp, currentTemp, mode } = newData;
+    const { targetTemp, currentTemp, mode, fanSpeed } = newData;
 
     // Create new data object using object literal syntax
     this.deviceData = {
       targetTemp: targetTemp || 22,
       currentTemp: currentTemp || 22,
       mode: mode || 0,
-      timestamp: new Date().toISOString(), // ISO string format for timestamps
-      isPowerOn: mode > 0, // Boolean conversion: mode > 0 returns true/false
-      fanSpeed : fanSpeedControl,
+      fanSpeed: fanSpeed || 0,
+      timestamp: new Date().toISOString(),
+      isPowerOn: mode > 0,
     };
 
     console.log("Global device data updated:", this.deviceData);
@@ -173,7 +176,7 @@ class GlobalDeviceDataManager {
     // Update ACSpaManager with new data
     this.updateACSpaManagerData(); //updateACSpaManagerData it's mean update AC data in SPA manager (dashboard Page)
   }
-
+  updateFanSpeedDisplay;
   /**
    * UPDATE AC SPA MANAGER WITH DEVICE DATA --- dashboardPage
    * Concept: Inter-component Communication - giao tiếp giữa các component
@@ -212,7 +215,6 @@ class GlobalDeviceDataManager {
       3: "fan",
     };
 
-    // Nullish coalescing operator (??) - returns right side if left is null/undefined
     return modeMap[value] ?? "auto";
   }
 
@@ -302,15 +304,16 @@ function initializeWithDeviceData() {
 
 class TemperatureController {
   constructor(acId = "AC-001") {
-    this.acId = acId; // AC ID for this controller instance
-    this.currentTemp = 22; // Default current temperature
-    this.targetTemp = 22; // Default target temperature
-    this.tempRange = { min: 16, max: 30 }; // Temperature limit
-    this.debounceTimer = null; // Timer for debounce
+    this.acId = acId;
+    this.currentTemp = 22;
+    this.targetTemp = 22;
+    this.tempRange = { min: 16, max: 30 };
+    this.debounceTimer = null;
     this.isPowerOn = false;
     this.availableMode = ["auto", "cool", "dry", "fan"];
-    this.currentMode = "auto"; // Default mode
+    this.currentMode = "auto";
     this.currentModeIndex = this.availableMode.indexOf(this.currentMode);
+    this.fanSpeed = 0;
     this.init();
   }
 
@@ -319,11 +322,13 @@ class TemperatureController {
     this.loadACData();
     this.setupTemperatureControls();
     this.setupModeControls();
+    this.setupFanControls();
 
     // Initialize displays
     this.updateModeDisplay();
     this.updateCurrentTempDisplay();
     this.updateTemperatureDisplay();
+    this.updateFanSpeedDisplay();
   }
 
   loadACData() {
@@ -986,10 +991,125 @@ class TemperatureController {
         targetTemp: this.targetTemp,
         mode: this.currentMode,
         power: this.isPowerOn,
+        fanSpeed: this.fanSpeed,
         status: this.isPowerOn ? "online" : "offline",
         lastUpdated: new Date().toISOString(),
       });
     }
+  }
+
+  /**
+   * SETUP FAN CONTROL HANDLERS
+   * Setup event listeners for fan speed control buttons
+   */
+  setupFanControls() {
+    const fanLevelButtons = document.querySelectorAll(".fan-level-btn");
+
+    fanLevelButtons.forEach((button) => {
+      button.addEventListener("click", (e) => {
+        const level = parseInt(e.currentTarget.dataset.level);
+        this.handleFanSpeedChange(level);
+      });
+    });
+
+    console.log("Fan control handlers setup complete");
+  }
+
+  /**
+   * HANDLE FAN SPEED CHANGE
+   * Handle when user clicks fan speed buttons
+   */
+  handleFanSpeedChange(level) {
+    console.log(`Fan speed change requested: ${level}`);
+
+    // Update internal fan speed
+    this.fanSpeed = level;
+
+    // Update UI display
+    this.updateFanSpeedDisplay(level);
+    this.updateFanLevelButtons(level);
+
+    // Send to E-Ra platform
+    this.sendFanSpeedToEra(level);
+
+    // Update AC data in SPA manager
+    this.updateACDataInManager();
+
+    console.log(`Fan speed changed to level ${level} for AC ${this.acId}`);
+  }
+
+  /**
+   * SEND FAN SPEED TO E-RA
+   * Send fan speed command to E-Ra platform
+   */
+  async sendFanSpeedToEra(level) {
+    if (fanSpeedControl) {
+      try {
+        console.log(`Sending fan speed ${level} to E-Ra...`);
+
+        // Send fan speed to E-Ra using triggerAction
+        eraWidget.triggerAction(fanSpeedControl.action, null, { value: level });
+
+        console.log(`Fan speed level ${level} sent to E-Ra successfully`);
+      } catch (error) {
+        console.error("Failed to send fan speed to E-Ra:", error);
+      }
+    } else {
+      console.warn("Fan speed control action not available");
+    }
+  }
+
+  /**
+   * UPDATE FAN SPEED DISPLAY
+   * Update the fan speed value and icon in UI
+   */
+  updateFanSpeedDisplay(level) {
+    const speedValueEl = document.getElementById("spa-fan-speed-value");
+    const speedIconEl = document.getElementById("spa-fan-speed-icon");
+
+    if (speedValueEl) {
+      speedValueEl.textContent = level;
+    }
+
+    if (speedIconEl) {
+      // Stop animation for level 0 (Auto), start for others
+      if (level === 0) {
+        speedIconEl.classList.add("stopped");
+      } else {
+        speedIconEl.classList.remove("stopped");
+      }
+    }
+  }
+
+  /**
+   * UPDATE FAN LEVEL BUTTONS
+   * Update active state of fan level buttons
+   */
+  updateFanLevelButtons(activeLevel) {
+    const fanLevelButtons = document.querySelectorAll(".fan-level-btn");
+
+    fanLevelButtons.forEach((button) => {
+      const level = parseInt(button.dataset.level);
+
+      if (level === activeLevel) {
+        button.classList.add("active");
+      } else {
+        button.classList.remove("active");
+      }
+    });
+  }
+
+  /**
+   * UPDATE FROM DEVICE - Enhanced to handle fan speed
+   */
+  updateFanSpeedFromDevice(newFanSpeed) {
+    console.log("Updating fan speed from device:", newFanSpeed);
+
+    this.fanSpeed = newFanSpeed;
+    this.updateFanSpeedDisplay(newFanSpeed);
+    this.updateFanLevelButtons(newFanSpeed);
+
+    console.log("Fan speed updated from device data");
   }
 }
 
