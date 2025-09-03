@@ -234,7 +234,7 @@
       }
 
       .mode-badge.cold {
-        background: rgba(19, 194, 194, 0.2);
+        background: rgba(0, 255, 255, 0.2);
         color: #13c2c2;
       }
 
@@ -544,6 +544,28 @@
 
       .back-btn {
         margin-left: auto;
+        flex-shrink: 0;
+        white-space: nowrap;
+        z-index: 10;
+        position: relative;
+      }
+
+      /* AC Status container styling */
+      .ac-status {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: nowrap;
+        min-height: 40px;
+      }
+
+      .ac-status .status-indicator {
+        flex-shrink: 0;
+      }
+
+      .ac-status .status-text {
+        flex-shrink: 0;
+        white-space: nowrap;
       }
 
       /* Responsive navigation improvements - only override what's necessary */
@@ -686,16 +708,20 @@
               <div class="col-lg-7">
                 <div class="control-panel glass-effect">
                   <div class="panel-header">
-                    <h3 class="panel-title">Air Conditioner Control</h3>
-                    <div class="ac-status" id="spa-ac-status">
-                      <span
-                        class="status-indicator"
-                        id="spa-status-indicator"
-                      ></span>
-                      <span class="status-text" id="spa-status-text"
-                        >Offline</span
-                      >
-                      <button class="dashboard-glass-btn back-btn" onclick="window.spaApp.navigateToPage('dashboard')">
+                    <div class="header-left">
+                      <h3 class="panel-title">Air Conditioner Control</h3>
+                      <div class="ac-status" id="spa-ac-status">
+                        <span
+                          class="status-indicator"
+                          id="spa-status-indicator"
+                        ></span>
+                        <span class="status-text" id="spa-status-text"
+                          >Offline</span
+                        >
+                      </div>
+                    </div>
+                    <div class="header-right">
+                      <button class="dashboard-glass-btn back-btn" onclick="handleBackToDashboard()">
                         <i class="fas fa-arrow-left"></i>
                         Back to Dashboard
                       </button>
@@ -1185,7 +1211,8 @@
                   <th>ID</th>
                   <th>Location</th>
                   <th>Status</th>
-                  <th>Temperature</th>
+                  <th>Current Temp</th>
+                  <th>Target Temp</th>
                   <th>Mode</th>
                   <th>Energy Usage</th>
                   <th>Last Updated</th>
@@ -1197,7 +1224,8 @@
                   <td>AC-001</td>
                   <td>Living Room</td>
                   <td><span class="status-badge online">Online</span></td>
-                  <td>22°C / 24°C</td>
+                  <td>22°C</td>
+                  <td>24°C</td>
                   <td><span class="mode-badge auto">Auto</span></td>
                   <td>1.2 kW</td>
                   <td>2 minutes ago</td>
@@ -1218,7 +1246,8 @@
                   <td>AC-002</td>
                   <td>Bedroom 1</td>
                   <td><span class="status-badge offline">Offline</span></td>
-                  <td>23°C / 25°C</td>
+                  <td>23°C</td>
+                  <td>25°C</td>
                   <td><span class="mode-badge cold">Cold</span></td>
                   <td>1.5 kW</td>
                   <td>1 minute ago</td>

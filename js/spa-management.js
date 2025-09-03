@@ -366,17 +366,7 @@ class ACSpaManager {
     const row = document.querySelector(`tr[data-ac-id="${acId}"]`);
 
     if (row) {
-      const currentTempCell = row.querySelector(".current-temp-cell");
-      const targetTempCell = row.querySelector(".target-temp-cell");
-
-      if (currentTempCell) {
-        currentTempCell.textContent = `${acData.currentTemp}°C`;
-      }
-
-      if (targetTempCell) {
-        targetTempCell.textContent = `${acData.targetTemp}°C`;
-      }
-
+      // Update status badge (3rd column)
       const statusBadge = row.querySelector(".status-badge");
       if (statusBadge) {
         statusBadge.classList.remove("online", "offline");
@@ -384,15 +374,39 @@ class ACSpaManager {
         statusBadge.textContent = acData.status.toUpperCase();
       }
 
+      // Update current temperature (4th column)
+      const currentTempCell = row.querySelector(".current-temp-cell");
+      if (currentTempCell) {
+        currentTempCell.textContent = `${acData.currentTemp}°C`;
+      }
+
+      // Update target temperature (5th column)
+      const targetTempCell = row.querySelector(".target-temp-cell");
+      if (targetTempCell) {
+        targetTempCell.textContent = `${acData.targetTemp}°C`;
+      }
+
+      // Update mode badge (6th column)
       const modeBadge = row.querySelector(".mode-badge");
       if (modeBadge) {
         modeBadge.className = `mode-badge ${acData.mode}`;
         modeBadge.textContent = acData.mode.toUpperCase();
       }
 
+      // Update power toggle (9th column - Actions)
       const powerToggle = row.querySelector(".iphone-toggle input");
       if (powerToggle) {
         powerToggle.checked = acData.power;
+      }
+
+      // Update power status text
+      const powerStatus = row.querySelector(".power-status");
+      if (powerStatus) {
+        powerStatus.className = `power-status ${acData.power ? "on" : "off"}`;
+        const powerText = powerStatus.querySelector("span:last-child");
+        if (powerText) {
+          powerText.textContent = acData.power ? "ON" : "OFF";
+        }
       }
 
       console.log(`Updated table row for ${acId}`);
@@ -412,18 +426,20 @@ class ACSpaManager {
     row.innerHTML = `
       <td>${acData.id}</td>
       <td>${acData.location}</td>
-      <td class="current-temp-cell">${acData.currentTemp}°C</td>
-      <td class="target-temp-cell">${acData.targetTemp}°C</td>
       <td>
         <span class="status-badge ${
           acData.status
         }">${acData.status.toUpperCase()}</span>
       </td>
+      <td class="current-temp-cell">${acData.currentTemp}°C</td>
+      <td class="target-temp-cell">${acData.targetTemp}°C</td>
       <td>
         <span class="mode-badge ${
           acData.mode
         }">${acData.mode.toUpperCase()}</span>
       </td>
+      <td>1.2 kW</td>
+      <td>Just now</td>
       <td>
         <div class="toggle-container">
           <label class="iphone-toggle">

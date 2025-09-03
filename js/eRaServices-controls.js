@@ -125,11 +125,11 @@ class GlobalDeviceDataManager {
    * BROADCAST DATA TO ALL SUBSCRIBERS
    * Concept: Broadcast Pattern - phát dữ liệu đến tất cả subscriber
    * Syntax: forEach() method để lặp qua array
-   * Example: subscribers.forEach(callback => callback(data));
    */
   notifySubscribers(data) {
     console.log("Broadcasting data to", this.subscribers.length, "subscribers");
 
+    //Loop each subscribers and callback
     // forEach syntax: array.forEach((element, index) => { ... });
     this.subscribers.forEach((callback, index) => {
       try {
@@ -161,11 +161,11 @@ class GlobalDeviceDataManager {
 
     console.log("Global device data updated:", this.deviceData);
 
-    // Notify all subscribers about data change
+    //After add timeStamp and power status => Notify all subscribers about data change
     this.notifySubscribers(this.deviceData);
 
-    // Update ACSpaManager với dữ liệu mới
-    this.updateACSpaManagerData();
+    // Update ACSpaManager with new data
+    this.updateACSpaManagerData(); //updateACSpaManagerData it's mean update AC data in SPA manager (dashboard Page)
   }
 
   /**
@@ -176,10 +176,10 @@ class GlobalDeviceDataManager {
     if (window.acSpaManager && this.deviceData) {
       // Convert device mode value to string mode
       const modeString = this.mapDeviceValueToMode(this.deviceData.mode);
-
+      //At updateDeviceData(newData) -- newData stored with this.deviceData
       // Object creation with computed properties
       const acUpdateData = {
-        currentTemp: this.deviceData.currentTemp,
+        currentTemp: this.deviceData.currentTemp, //currentTemp at this.deviceData = {targetTemp,currentTemp,. . . .etc}
         targetTemp: this.deviceData.targetTemp,
         mode: modeString,
         power: this.deviceData.isPowerOn,
