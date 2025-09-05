@@ -15,7 +15,8 @@ class ACSpaManager {
         mode: "auto",
         power: true, // FIX: Set power to true to match status online
         fanSpeed: 0,
-        current
+        current: 5,
+        voltage: 220,
       },
     };
   }
@@ -52,6 +53,9 @@ class ACSpaManager {
           power: deviceData.power, // Use direct power property
           status: deviceData.power ? "online" : "offline", // Status based on power
           lastUpdated: deviceData.timestamp,
+          current: deviceData.current,
+          voltage: deviceData.voltage,
+          fanSpeed: deviceData.fanSpeed,
         };
         this.updateACDataRealtime("AC-001", acDataUpdate);
         console.log("Dashboard updated with real-time device data");

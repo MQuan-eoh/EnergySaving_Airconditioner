@@ -1369,8 +1369,8 @@ class TemperatureController {
         fanSpeed: this.fanSpeed,
         status: this.isPowerOn ? "online" : "offline",
         lastUpdated: new Date().toISOString(),
-        current: this.deviceData.current,
-        voltage: this.deviceData.voltage,
+        current: this.current,
+        voltage: this.voltage,
       });
     }
   }
@@ -1494,6 +1494,14 @@ class TemperatureController {
    * Update voltage, current and calculated power display
    */
   updateElectricalDisplay(current, voltage) {
+    // Update instance variables first
+    if (current !== null && current !== undefined) {
+      this.current = current;
+    }
+    if (voltage !== null && voltage !== undefined) {
+      this.voltage = voltage;
+    }
+
     const voltageElement = document.getElementById("spa-voltage-value");
     const currentElement = document.getElementById("spa-current-value");
     const powerElement = document.getElementById("spa-power-value");
