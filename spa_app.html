@@ -28,6 +28,7 @@
     <link rel="stylesheet" href="Assets/css/styles.css" />
     <link rel="stylesheet" href="Assets/css/components.css" />
     <link rel="stylesheet" href="Assets/css/responsive.css" />
+    <link rel="stylesheet" href="Assets/css/electrical-display.css" />
 
     <style>
       /* Page Header Styling */
@@ -849,6 +850,53 @@
                         <button class="temp-btn glass-btn" id="spa-temp-up">
                           <i class="fas fa-plus"></i>
                         </button>
+                      </div>
+                    </div>
+
+                    <!-- Electrical Measurements -->
+                    <div class="electrical-section">
+                      <h4 class="section-title">Electrical Parameters</h4>
+                      <div class="electrical-display">
+                        <div class="electrical-item">
+                          <div class="electrical-icon">
+                            <i class="fas fa-bolt"></i>
+                          </div>
+                          <div class="electrical-info">
+                            <span
+                              class="electrical-value"
+                              id="spa-voltage-value"
+                              >220</span
+                            >
+                            <span class="electrical-unit">V</span>
+                            <div class="electrical-label">Voltage</div>
+                          </div>
+                        </div>
+                        <div class="electrical-item">
+                          <div class="electrical-icon">
+                            <i class="fas fa-plug"></i>
+                          </div>
+                          <div class="electrical-info">
+                            <span
+                              class="electrical-value"
+                              id="spa-current-value"
+                              >1.2</span
+                            >
+                            <span class="electrical-unit">A</span>
+                            <div class="electrical-label">Current</div>
+                          </div>
+                        </div>
+                        <div class="electrical-item">
+                          <div class="electrical-icon">
+                            <i class="fas fa-tachometer-alt"></i>
+                          </div>
+                          <div class="electrical-info">
+                            <span class="electrical-value" id="spa-power-value"
+                              >264</span
+                            >
+                            <span class="electrical-unit">W</span>
+                            <div class="electrical-label">Power</div>
+                          </div>
+                        </div>
                       </div>
                     </div>
 

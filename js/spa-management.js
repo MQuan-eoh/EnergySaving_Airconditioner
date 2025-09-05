@@ -15,6 +15,7 @@ class ACSpaManager {
         mode: "auto",
         power: true, // FIX: Set power to true to match status online
         fanSpeed: 0,
+        current
       },
     };
   }

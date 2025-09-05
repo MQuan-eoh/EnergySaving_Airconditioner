@@ -4,6 +4,8 @@ let configTargetTempAir1 = null,
   configModeAir1 = null,
   configFanSpeed = null,
   configPowerAir1 = null,
+  configCurrentAir1 = null,
+  configVoltageAir1 = null,
   actions = null,
   onAirConditioner1 = null,
   offAirConditioner1 = null,
@@ -17,6 +19,10 @@ let configTargetTempAir1 = null,
   tempControlAir1 = null,
   powerAir1 = null,
   fanSpeed = null,
+  current = null,
+  voltage = null,
+  currentAir1_value = null,
+  voltageAir1_value = null,
   fanSpeedControl = null;
 eraWidget.init({
   needRealtimeConfigs: true,
@@ -28,6 +34,8 @@ eraWidget.init({
     configModeAir1 = configuration.realtime_configs[2];
     configFanSpeed = configuration.realtime_configs[3];
     configPowerAir1 = configuration.realtime_configs[4];
+    configCurrentAir1 = configuration.realtime_configs[5];
+    configVoltageAir1 = configuration.realtime_configs[6];
     onAirConditioner1 = configuration.actions[0];
     offAirConditioner1 = configuration.actions[1];
     tempControlAir1 = configuration.actions[2];
@@ -53,6 +61,8 @@ eraWidget.init({
     currentModeAir1 = values[configModeAir1.id].value;
     fanSpeed = values[configFanSpeed.id].value;
     powerAir1 = values[configPowerAir1.id].value;
+    currentAir1_value = values[configCurrentAir1.id].value;
+    voltageAir1_value = values[configVoltageAir1.id].value;
     console.log("Received values from E-RA:", values);
     console.log("Target temp from device:", targetTempAir1);
     console.log("Current temp from device:", currentTempAir1);
@@ -67,14 +77,11 @@ eraWidget.init({
         mode: currentModeAir1,
         fanSpeed: fanSpeed,
         power: powerAir1,
+        current: currentAir1_value,
+        voltage: voltageAir1_value,
       };
 
       window.globalDeviceDataManager.updateDeviceData(deviceData);
-      console.log(
-        "Global Device Data Manager updated - power status:",
-        powerAir1 ? "ON" : "OFF",
-        "- data broadcasted to all systems"
-      );
     } else {
       console.warn("Global Device Data Manager not available");
     }
@@ -84,6 +91,8 @@ eraWidget.init({
       window.tempController.currentTemp = currentTempAir1;
       window.tempController.targetTemp = targetTempAir1;
       window.tempController.updateFromDevice(currentTempAir1, currentModeAir1);
+      window.tempController.current = currentAir1_value;
+      window.tempController.voltage = voltageAir1_value;
 
       // Update power status from device power value
       window.tempController.isPowerOn = powerAir1;
@@ -93,6 +102,10 @@ eraWidget.init({
       window.tempController.updateModeDisplay();
       window.tempController.updatePowerDisplay();
       window.tempController.updateFanSpeedFromDevice(fanSpeed);
+      window.tempController.updateElectricalDisplay(
+        currentAir1_value,
+        voltageAir1_value
+      );
       window.tempController.updateACDataInManager();
 
       console.log(
@@ -109,6 +122,8 @@ eraWidget.init({
       mode: currentModeAir1,
       power: powerAir1,
       timestamp: new Date().toISOString(),
+      current: currentAir1_value,
+      voltage: voltageAir1_value,
     };
   },
   onHistories: (histories) => {
@@ -202,7 +217,8 @@ class GlobalDeviceDataManager {
    */
   updateDeviceData(newData) {
     // Object destructuring syntax: const { prop1, prop2 } = object;
-    const { targetTemp, currentTemp, mode, fanSpeed, power } = newData;
+    const { targetTemp, currentTemp, mode, fanSpeed, power, current, voltage } =
+      newData;
 
     // Create new data object using object literal syntax
     this.deviceData = {
@@ -213,14 +229,11 @@ class GlobalDeviceDataManager {
       power: power || false,
       timestamp: new Date().toISOString(),
       isPowerOn: power || false,
+      current: current || 0,
+      voltage: voltage || 0,
     };
 
     console.log("Global device data updated:", this.deviceData);
-    console.log(
-      "Power status synchronized:",
-      this.deviceData.power ? "ON" : "OFF"
-    );
-
     //After add timeStamp and power status => Notify all subscribers about data change
     this.notifySubscribers(this.deviceData);
 
@@ -245,6 +258,8 @@ class GlobalDeviceDataManager {
         power: this.deviceData.power, // Use direct power value from device
         status: this.deviceData.power ? "online" : "offline", // Status based on power state
         lastUpdated: this.deviceData.timestamp,
+        current: this.deviceData.current,
+        voltage: this.deviceData.voltage,
       };
       // Call ACSpaManager update method
       window.acSpaManager.updateACDataRealtime("AC-001", acUpdateData);
@@ -637,14 +652,15 @@ function initializeWithDeviceData() {
     window.tempController.currentModeIndex =
       window.tempController.availableMode.indexOf(deviceMode);
     window.tempController.isPowerOn = deviceData.power || false;
-
+    window.tempController.current;
     // Update all displays
     window.tempController.updateCurrentTempDisplay();
     window.tempController.updateTemperatureDisplay();
     window.tempController.updateModeDisplay();
     window.tempController.updatePowerDisplay();
     window.tempController.updateACDataInManager();
-
+    window.tempController.updateCurrentAirDisplay();
+    window.tempController.updateVoltageDisplay();
     console.log("Temperature controller initialized with device data");
     return true;
   }
@@ -664,6 +680,8 @@ class TemperatureController {
     this.currentMode = "auto";
     this.currentModeIndex = this.availableMode.indexOf(this.currentMode);
     this.fanSpeed = 0;
+    this.current = 0;
+    this.voltage = 0;
     this.init();
   }
 
@@ -679,6 +697,7 @@ class TemperatureController {
     this.updateCurrentTempDisplay();
     this.updateTemperatureDisplay();
     this.updateFanSpeedDisplay();
+    this.updateElectricalDisplay(this.current, this.voltage);
   }
 
   loadACData() {
@@ -1156,7 +1175,13 @@ class TemperatureController {
       console.log(`Temperature display updated: ${this.targetTemp}`);
     }
   }
-
+  updateCurrentAirDisplay() {
+    const currentAirElement = document.getElementById("spa-current-air");
+    if (currentAirElement) {
+      currentAirElement.textContent = `${this.current} A`;
+      console.log(`Current display updated: ${this.current} A`);
+    }
+  }
   /**
    * ANIMATE TEMPERATURE CHANGE
    * Create animation when the number changes
@@ -1344,6 +1369,8 @@ class TemperatureController {
         fanSpeed: this.fanSpeed,
         status: this.isPowerOn ? "online" : "offline",
         lastUpdated: new Date().toISOString(),
+        current: this.deviceData.current,
+        voltage: this.deviceData.voltage,
       });
     }
   }
@@ -1460,6 +1487,38 @@ class TemperatureController {
     this.updateFanLevelButtons(newFanSpeed);
 
     console.log("Fan speed updated from device data");
+  }
+
+  /**
+   * UPDATE ELECTRICAL DISPLAY
+   * Update voltage, current and calculated power display
+   */
+  updateElectricalDisplay(current, voltage) {
+    const voltageElement = document.getElementById("spa-voltage-value");
+    const currentElement = document.getElementById("spa-current-value");
+    const powerElement = document.getElementById("spa-power-value");
+
+    if (voltageElement && voltage !== null && voltage !== undefined) {
+      voltageElement.textContent = voltage.toFixed(1);
+      console.log(`Voltage display updated: ${voltage.toFixed(1)}V`);
+    }
+
+    if (currentElement && current !== null && current !== undefined) {
+      currentElement.textContent = current.toFixed(2);
+      console.log(`Current display updated: ${current.toFixed(2)}A`);
+    }
+
+    if (
+      powerElement &&
+      voltage !== null &&
+      current !== null &&
+      voltage !== undefined &&
+      current !== undefined
+    ) {
+      const power = (voltage * current).toFixed(0);
+      powerElement.textContent = power;
+      console.log(`Power display updated: ${power}W`);
+    }
   }
 }
 
