@@ -11,6 +11,10 @@
       rel="stylesheet"
     />
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+    <script src="https://code.highcharts.com/modules/export-data.js"></script>
+    <script src="https://code.highcharts.com/modules/accessibility.js"></script>
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
@@ -435,8 +439,7 @@
         backdrop-filter: blur(10px);
         transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         border-radius: 15px;
-        box-shadow: 
-          inset 0 1px 2px rgba(0, 0, 0, 0.1),
+        box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1),
           0 2px 4px rgba(0, 0, 0, 0.1);
       }
 
@@ -453,27 +456,21 @@
         backdrop-filter: blur(20px);
         transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         border-radius: 50%;
-        box-shadow: 
-          0 2px 4px rgba(0, 0, 0, 0.15),
-          0 1px 2px rgba(0, 0, 0, 0.1),
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15), 0 1px 2px rgba(0, 0, 0, 0.1),
           inset 0 1px 1px rgba(255, 255, 255, 0.8);
       }
 
       .iphone-toggle input:checked + .toggle-slider {
         background: linear-gradient(45deg, #34c759, #30d158);
         border-color: rgba(52, 199, 89, 0.3);
-        box-shadow: 
-          inset 0 1px 2px rgba(0, 0, 0, 0.1),
-          0 2px 6px rgba(52, 199, 89, 0.3),
-          0 0 0 2px rgba(52, 199, 89, 0.1);
+        box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1),
+          0 2px 6px rgba(52, 199, 89, 0.3), 0 0 0 2px rgba(52, 199, 89, 0.1);
       }
 
       .iphone-toggle input:checked + .toggle-slider:before {
         transform: translateX(22px);
         background: rgba(255, 255, 255, 1);
-        box-shadow: 
-          0 2px 6px rgba(0, 0, 0, 0.2),
-          0 1px 3px rgba(0, 0, 0, 0.15),
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2), 0 1px 3px rgba(0, 0, 0, 0.15),
           inset 0 1px 1px rgba(255, 255, 255, 0.9);
       }
 
@@ -606,6 +603,73 @@
           margin-bottom: 80px;
         }
       }
+
+      /* Highcharts glass effect styling */
+      #spa-temperature-chart {
+        width: 100%;
+        height: 350px;
+        background: transparent;
+      }
+
+      .highcharts-container {
+        background: transparent !important;
+      }
+
+      .highcharts-background {
+        fill: transparent !important;
+      }
+
+      .highcharts-title {
+        fill: rgba(255, 255, 255, 0.9) !important;
+      }
+
+      .highcharts-axis-labels text {
+        fill: rgba(255, 255, 255, 0.8) !important;
+      }
+
+      .highcharts-axis-title {
+        fill: rgba(255, 255, 255, 0.8) !important;
+      }
+
+      .highcharts-grid-line {
+        stroke: rgba(255, 255, 255, 0.1) !important;
+      }
+
+      .highcharts-tooltip-box {
+        fill: rgba(0, 0, 0, 0.8) !important;
+        stroke: rgba(255, 255, 255, 0.2) !important;
+      }
+
+      .highcharts-tooltip text {
+        fill: white !important;
+      }
+
+      .highcharts-legend-item text {
+        fill: rgba(255, 255, 255, 0.8) !important;
+      }
+
+      /* Chart column hover effects */
+      .highcharts-column-series .highcharts-point {
+        transition: all 0.3s ease;
+      }
+
+      .highcharts-column-series .highcharts-point:hover {
+        filter: brightness(1.2) saturate(1.3);
+        transform: scale(1.05);
+      }
+
+      /* Temperature gradient effects */
+      .highcharts-series-0 .highcharts-point {
+        filter: drop-shadow(0 2px 4px rgba(224, 242, 254, 0.3));
+      }
+
+      .highcharts-series-1 .highcharts-point {
+        filter: drop-shadow(0 2px 4px rgba(125, 211, 252, 0.3));
+      }
+
+      .highcharts-series-2 .highcharts-point {
+        filter: drop-shadow(0 2px 4px rgba(56, 189, 248, 0.3));
+      }
     </style>
   </head>
   <body>
@@ -640,7 +704,12 @@
           </li>
 
           <li class="nav-item">
-            <a href="#energy" class="nav-link spa-nav-link" data-page="energy" title="Energy Management">
+            <a
+              href="#energy"
+              class="nav-link spa-nav-link"
+              data-page="energy"
+              title="Energy Management"
+            >
               <i class="fas fa-leaf"></i>
             </a>
           </li>
@@ -721,7 +790,10 @@
                       </div>
                     </div>
                     <div class="header-right">
-                      <button class="dashboard-glass-btn back-btn" onclick="handleBackToDashboard()">
+                      <button
+                        class="dashboard-glass-btn back-btn"
+                        onclick="handleBackToDashboard()"
+                      >
                         <i class="fas fa-arrow-left"></i>
                         Back to Dashboard
                       </button>
@@ -892,32 +964,58 @@
                       <div class="fan-speed-icon" id="spa-fan-speed-icon">
                         <i class="fas fa-fan"></i>
                       </div>
-                      <div class="fan-speed-value" id="spa-fan-speed-value">0</div>
+                      <div class="fan-speed-value" id="spa-fan-speed-value">
+                        0
+                      </div>
                       <div class="fan-speed-label">Speed Level</div>
                     </div>
 
                     <div class="fan-level-controls">
-                      <button class="fan-level-btn active" data-level="0" id="spa-fan-level-0">
+                      <button
+                        class="fan-level-btn active"
+                        data-level="0"
+                        id="spa-fan-level-0"
+                      >
                         <i class="fas fa-magic fan-level-icon"></i>
                         <span class="fan-level-text">Auto</span>
                       </button>
-                      <button class="fan-level-btn" data-level="1" id="spa-fan-level-1">
+                      <button
+                        class="fan-level-btn"
+                        data-level="1"
+                        id="spa-fan-level-1"
+                      >
                         <i class="fas fa-fan fan-level-icon"></i>
                         <span class="fan-level-text">V.Low</span>
                       </button>
-                      <button class="fan-level-btn" data-level="2" id="spa-fan-level-2">
+                      <button
+                        class="fan-level-btn"
+                        data-level="2"
+                        id="spa-fan-level-2"
+                      >
                         <i class="fas fa-fan fan-level-icon"></i>
                         <span class="fan-level-text">Low</span>
                       </button>
-                      <button class="fan-level-btn" data-level="3" id="spa-fan-level-3">
+                      <button
+                        class="fan-level-btn"
+                        data-level="3"
+                        id="spa-fan-level-3"
+                      >
                         <i class="fas fa-fan fan-level-icon"></i>
                         <span class="fan-level-text">Med</span>
                       </button>
-                      <button class="fan-level-btn" data-level="4" id="spa-fan-level-4">
+                      <button
+                        class="fan-level-btn"
+                        data-level="4"
+                        id="spa-fan-level-4"
+                      >
                         <i class="fas fa-fan fan-level-icon"></i>
                         <span class="fan-level-text">High</span>
                       </button>
-                      <button class="fan-level-btn" data-level="5" id="spa-fan-level-5">
+                      <button
+                        class="fan-level-btn"
+                        data-level="5"
+                        id="spa-fan-level-5"
+                      >
                         <i class="fas fa-fan fan-level-icon"></i>
                         <span class="fan-level-text">Max</span>
                       </button>
@@ -935,11 +1033,18 @@
                   <div class="panel-header">
                     <h3 class="panel-title">Temperature History</h3>
                     <div class="chart-controls">
-                      <button class="chart-btn glass-btn active" data-period="hour">
+                      <button
+                        class="chart-btn glass-btn active"
+                        data-period="hour"
+                      >
                         Hour
                       </button>
-                      <button class="chart-btn glass-btn data-period="day">Day</button>
-                      <button class="chart-btn glass-btn data-period="week">Week</button>
+                      <button class="chart-btn glass-btn" data-period="day">
+                        Day
+                      </button>
+                      <button class="chart-btn glass-btn" data-period="week">
+                        Week
+                      </button>
                       <button class="chart-btn glass-btn" data-period="month">
                         Month
                       </button>
@@ -947,7 +1052,7 @@
                   </div>
 
                   <div class="chart-content">
-                    <canvas id="spa-temperature-chart"></canvas>
+                    <div id="spa-temperature-chart"></div>
                   </div>
                 </div>
               </div>
@@ -1276,7 +1381,11 @@
                   <td>
                     <div class="toggle-container">
                       <label class="iphone-toggle">
-                        <input type="checkbox" data-ac-id="AC-001" onchange="handleACPowerToggle(this)">
+                        <input
+                          type="checkbox"
+                          data-ac-id="AC-001"
+                          onchange="handleACPowerToggle(this)"
+                        />
                         <span class="toggle-slider"></span>
                       </label>
                       <div class="power-status off">
@@ -1304,7 +1413,6 @@
                     </button>
                   </td>
                 </tr>
-               
               </tbody>
             </table>
           </div>
@@ -1432,7 +1540,7 @@
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://www.unpkg.com/@eohjsc/era-widget@1.1.3/src/index.js"></script>
-    
+
     <!-- Event-Driven Architecture System -->
     <script src="js/event-system.js"></script>
     <!-- Smart AC Temperature Control System -->

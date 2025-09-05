@@ -40,6 +40,11 @@ eraWidget.init({
 
     // Get initial device data after configuration is loaded
     fetchInitialDeviceData();
+
+    // Initialize temperature usage chart
+    if (window.temperatureUsageChart) {
+      window.temperatureUsageChart.initializeChart();
+    }
   },
   onValues: (values) => {
     // Handle incoming values using the correct E-RA syntax
@@ -105,6 +110,18 @@ eraWidget.init({
       power: powerAir1,
       timestamp: new Date().toISOString(),
     };
+  },
+  onHistories: (histories) => {
+    console.log("Received histories data for chart:", histories);
+
+    // Process histories data for temperature usage chart
+    if (window.temperatureUsageChart && histories && histories.length > 0) {
+      window.temperatureUsageChart.processHistoriesData(histories);
+    } else {
+      console.warn(
+        "Temperature usage chart not available or no histories data"
+      );
+    }
   },
 });
 
@@ -270,6 +287,306 @@ class GlobalDeviceDataManager {
 
 // Create global instance using Singleton pattern
 window.globalDeviceDataManager = new GlobalDeviceDataManager();
+
+/**
+ * Temperature Usage Chart Class
+ * Manages Highcharts display for AC temperature usage data
+ */
+class TemperatureUsageChart {
+  constructor() {
+    this.chartInstance = null;
+    this.isInitialized = false;
+  }
+
+  /**
+   * Draw chart using data from E-Ra histories
+   */
+  drawChart(categories, series) {
+    const chartContainer = document.getElementById("spa-temperature-chart");
+    if (!chartContainer) {
+      console.warn("Chart container not found");
+      return;
+    }
+
+    this.chartInstance = Highcharts.chart("spa-temperature-chart", {
+      chart: {
+        type: "column",
+        backgroundColor: "transparent",
+        style: {
+          fontFamily: "Inter, sans-serif",
+        },
+      },
+      credits: {
+        enabled: false,
+      },
+      title: null,
+      subtitle: null,
+      xAxis: {
+        categories: categories,
+        crosshair: true,
+        accessibility: {
+          description: "Air Conditioners",
+        },
+        labels: {
+          style: {
+            color: "rgba(255, 255, 255, 0.8)",
+          },
+        },
+        lineColor: "rgba(255, 255, 255, 0.2)",
+        tickColor: "rgba(255, 255, 255, 0.2)",
+      },
+      yAxis: {
+        min: 0,
+        title: {
+          text: "Thời gian (giờ và phút)",
+          style: {
+            color: "rgba(255, 255, 255, 0.8)",
+          },
+        },
+        labels: {
+          style: {
+            color: "rgba(255, 255, 255, 0.8)",
+          },
+          formatter: function () {
+            const hours = Math.floor(this.value / 60);
+            const minutes = this.value % 60;
+            return `${hours} giờ ${minutes} phút`;
+          },
+        },
+        gridLineColor: "rgba(255, 255, 255, 0.1)",
+      },
+      tooltip: {
+        backgroundColor: "rgba(0, 0, 0, 0.8)",
+        borderColor: "rgba(255, 255, 255, 0.2)",
+        style: {
+          color: "white",
+        },
+        formatter: function () {
+          const hours = Math.floor(this.y / 60);
+          const minutes = this.y % 60;
+          return `<b>${this.series.name}°C</b><br/>${this.point.category}: ${hours} giờ ${minutes} phút`;
+        },
+      },
+      plotOptions: {
+        column: {
+          pointPadding: 0.2,
+          borderWidth: 1,
+          borderRadius: 6,
+          borderColor: "rgba(255, 255, 255, 0.15)",
+          shadow: {
+            color: "rgba(0, 0, 0, 0.3)",
+            offsetX: 2,
+            offsetY: 2,
+            opacity: 0.3,
+            width: 5,
+          },
+        },
+      },
+      legend: {
+        itemStyle: {
+          color: "rgba(255, 255, 255, 0.8)",
+        },
+      },
+      series: series,
+    });
+
+    console.log(
+      "Temperature usage chart created with",
+      series.length,
+      "temperature series"
+    );
+  }
+
+  /**
+   * Initialize chart with E-Ra data
+   */
+  initializeChart() {
+    if (this.isInitialized) {
+      console.log("Chart already initialized");
+      return;
+    }
+
+    console.log("Initializing temperature usage chart...");
+
+    // Setup chart control buttons
+    this.setupChartControls();
+
+    // Load default timeframe (hour)
+    this.loadChartData("hour");
+
+    this.isInitialized = true;
+  }
+
+  /**
+   * Setup chart control buttons
+   */
+  setupChartControls() {
+    const chartButtons = document.querySelectorAll(".chart-btn");
+
+    chartButtons.forEach((button) => {
+      button.addEventListener("click", (e) => {
+        // Remove active class from all buttons
+        chartButtons.forEach((btn) => btn.classList.remove("active"));
+
+        // Add active class to clicked button
+        e.target.classList.add("active");
+
+        // Get period and reload chart data
+        const period = e.target.getAttribute("data-period");
+        this.loadChartData(period);
+      });
+    });
+
+    console.log("Chart control buttons setup complete");
+  }
+
+  /**
+   * Load chart data for specific time period
+   */
+  loadChartData(period) {
+    console.log(`Loading chart data for period: ${period}`);
+
+    let now = new Date();
+    let startTime;
+
+    switch (period) {
+      case "hour":
+        startTime = new Date(now.getTime() - 60 * 60 * 1000); // Last hour
+        break;
+      case "day":
+        startTime = new Date(
+          now.getFullYear(),
+          now.getMonth(),
+          now.getDate(),
+          0,
+          0,
+          0,
+          0
+        ); // Start of today
+        break;
+      case "week":
+        startTime = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000); // Last 7 days
+        break;
+      case "month":
+        startTime = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000); // Last 30 days
+        break;
+      default:
+        startTime = new Date(
+          now.getFullYear(),
+          now.getMonth(),
+          now.getDate(),
+          0,
+          0,
+          0,
+          0
+        ); // Default to today
+    }
+
+    if (eraWidget) {
+      eraWidget.requestHistories(startTime.getTime(), now.getTime());
+      console.log(`Requested histories from ${startTime} to ${now}`);
+    }
+  }
+
+  /**
+   * Process histories data and create chart
+   */
+  processHistoriesData(histories) {
+    console.log("Processing histories data for chart:", histories);
+
+    const categories = histories.map((item) => item.name);
+    const temperatures = [];
+
+    const summarySeries = histories.map((item) => {
+      const timeByTemp = {};
+      item.data?.map((dataItem) => {
+        const [temp, time] = JSON.parse(dataItem.y);
+        if (!temperatures.includes(temp)) {
+          temperatures.push(temp);
+        }
+        if (!timeByTemp[temp]) {
+          timeByTemp[temp] = 0;
+        }
+        timeByTemp[temp] += time;
+      });
+      return timeByTemp;
+    });
+
+    const series = temperatures
+      .sort()
+      .map((temp) => {
+        if (temp < 16 || temp > 30) {
+          return null;
+        }
+        return {
+          name: temp,
+          data: summarySeries.map((item) => item[temp] || 0),
+          color: this.getTemperatureColor(temp),
+          borderColor: "rgba(255, 255, 255, 0.2)",
+          borderWidth: 1,
+        };
+      })
+      .filter(Boolean);
+
+    this.drawChart(categories, series);
+  }
+
+  /**
+   * Get color for temperature based on range
+   * Cold temperatures: Light cool colors
+   * Hot temperatures: Dark warm colors
+   */
+  getTemperatureColor(temp) {
+    // Very cold (16-17°C): Light ice blue
+    if (temp <= 17) return "#E0F2FE"; // Very light cyan
+
+    // Cold (18-19°C): Ice blue
+    if (temp <= 19) return "#7DD3FC"; // Light sky blue
+
+    // Cool (20-21°C): Cool blue
+    if (temp <= 21) return "#38BDF8"; // Sky blue
+
+    // Comfortable (22-23°C): Blue-green
+    if (temp <= 23) return "#06B6D4"; // Cyan
+
+    // Mild warm (24-25°C): Green-yellow
+    if (temp <= 25) return "#10B981"; // Emerald green
+
+    // Warm (26-27°C): Yellow-orange
+    if (temp <= 27) return "#F59E0B"; // Amber
+
+    // Hot (28-29°C): Orange-red
+    if (temp <= 29) return "#F97316"; // Orange
+
+    // Very hot (30°C+): Dark red
+    return "#DC2626"; // Dark red
+  }
+
+  /**
+   * Destroy existing chart
+   */
+  destroy() {
+    if (this.chartInstance) {
+      this.chartInstance.destroy();
+      this.chartInstance = null;
+      this.isInitialized = false;
+    }
+  }
+
+  /**
+   * Refresh chart with current timeframe
+   */
+  refreshChart() {
+    const activeButton = document.querySelector(".chart-btn.active");
+    const period = activeButton
+      ? activeButton.getAttribute("data-period")
+      : "hour";
+    this.loadChartData(period);
+  }
+}
+
+// Create global chart instance
+window.temperatureUsageChart = new TemperatureUsageChart();
 
 /**
  * Initialize device data when system starts

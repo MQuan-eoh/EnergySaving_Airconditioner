@@ -278,6 +278,16 @@ class SmartACSPA {
     // Update current page tracker
     this.currentPage = "control";
 
+    // Initialize temperature usage chart when entering control page
+    if (
+      window.temperatureUsageChart &&
+      !window.temperatureUsageChart.isInitialized
+    ) {
+      setTimeout(() => {
+        window.temperatureUsageChart.initializeChart();
+      }, 500); // Small delay to ensure DOM is ready
+    }
+
     // Update page title for specific AC
     this.updatePageTitleForAC(acId);
 
