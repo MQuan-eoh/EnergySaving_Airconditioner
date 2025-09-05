@@ -3,6 +3,7 @@ let configTargetTempAir1 = null,
   configCurrentTempAir1 = null,
   configModeAir1 = null,
   configFanSpeed = null,
+  configPowerAir1 = null,
   actions = null,
   onAirConditioner1 = null,
   offAirConditioner1 = null,
@@ -14,6 +15,7 @@ let configTargetTempAir1 = null,
   currentTempAir1 = null,
   currentModeAir1 = null,
   tempControlAir1 = null,
+  powerAir1 = null,
   fanSpeed = null,
   fanSpeedControl = null;
 eraWidget.init({
@@ -25,6 +27,7 @@ eraWidget.init({
     configCurrentTempAir1 = configuration.realtime_configs[1];
     configModeAir1 = configuration.realtime_configs[2];
     configFanSpeed = configuration.realtime_configs[3];
+    configPowerAir1 = configuration.realtime_configs[4];
     onAirConditioner1 = configuration.actions[0];
     offAirConditioner1 = configuration.actions[1];
     tempControlAir1 = configuration.actions[2];
@@ -44,6 +47,7 @@ eraWidget.init({
     currentTempAir1 = values[configCurrentTempAir1.id].value;
     currentModeAir1 = values[configModeAir1.id].value;
     fanSpeed = values[configFanSpeed.id].value;
+    powerAir1 = values[configPowerAir1.id].value;
     console.log("Received values from E-RA:", values);
     console.log("Target temp from device:", targetTempAir1);
     console.log("Current temp from device:", currentTempAir1);
@@ -57,11 +61,14 @@ eraWidget.init({
         currentTemp: currentTempAir1,
         mode: currentModeAir1,
         fanSpeed: fanSpeed,
+        power: powerAir1,
       };
 
       window.globalDeviceDataManager.updateDeviceData(deviceData);
       console.log(
-        "Global Device Data Manager updated - data broadcasted to all systems"
+        "Global Device Data Manager updated - power status:",
+        powerAir1 ? "ON" : "OFF",
+        "- data broadcasted to all systems"
       );
     } else {
       console.warn("Global Device Data Manager not available");
@@ -73,8 +80,8 @@ eraWidget.init({
       window.tempController.targetTemp = targetTempAir1;
       window.tempController.updateFromDevice(currentTempAir1, currentModeAir1);
 
-      const isPowerOn = currentModeAir1 > 0;
-      window.tempController.isPowerOn = isPowerOn;
+      // Update power status from device power value
+      window.tempController.isPowerOn = powerAir1;
 
       window.tempController.updateCurrentTempDisplay();
       window.tempController.updateTemperatureDisplay();
@@ -83,7 +90,10 @@ eraWidget.init({
       window.tempController.updateFanSpeedFromDevice(fanSpeed);
       window.tempController.updateACDataInManager();
 
-      console.log("Temperature controller updated with device data");
+      console.log(
+        "Temperature controller updated with device data - Power:",
+        powerAir1 ? "ON" : "OFF"
+      );
     }
 
     // Store received values globally for legacy support
@@ -92,6 +102,7 @@ eraWidget.init({
       targetTemp: targetTempAir1,
       currentTemp: currentTempAir1,
       mode: currentModeAir1,
+      power: powerAir1,
       timestamp: new Date().toISOString(),
     };
   },
@@ -100,6 +111,24 @@ eraWidget.init({
 /**
  * Global Device Data Manager - Singleton Pattern
  * Manages centralized data distribution from E-RA to all components
+ *
+ * POWER PROPERTY SYNCHRONIZATION FLOW:
+ * 1. E-RA Device sends power value via onValues callback
+ * 2. Power value stored in deviceData object: { power: powerAir1 }
+ * 3. GlobalDeviceDataManager broadcasts power to all subscribers
+ * 4. ACSpaManager receives power update and syncs dashboard table
+ * 5. Toggle-slider state updated automatically via updateDashboardTableRow
+ * 6. Status badges updated based on power state (online/offline)
+ * 7. Statistics counters updated based on power status
+ *
+ * ADDING NEW PROPERTIES - FOLLOW THIS PATTERN:
+ * 1. Add property to deviceData object in onValues callback
+ * 2. Add property to updateDeviceData() method destructuring
+ * 3. Include property in this.deviceData object creation
+ * 4. Update updateACSpaManagerData() to pass property to dashboard
+ * 5. Update ACSpaManager.updateDashboardTableRow() to handle UI updates
+ * 6. Update createTableRow() method for new row creation
+ * 7. Add any specific UI logic in dashboard update methods
  */
 class GlobalDeviceDataManager {
   constructor() {
@@ -156,7 +185,7 @@ class GlobalDeviceDataManager {
    */
   updateDeviceData(newData) {
     // Object destructuring syntax: const { prop1, prop2 } = object;
-    const { targetTemp, currentTemp, mode, fanSpeed } = newData;
+    const { targetTemp, currentTemp, mode, fanSpeed, power } = newData;
 
     // Create new data object using object literal syntax
     this.deviceData = {
@@ -164,11 +193,16 @@ class GlobalDeviceDataManager {
       currentTemp: currentTemp || 22,
       mode: mode || 0,
       fanSpeed: fanSpeed || 0,
+      power: power || false,
       timestamp: new Date().toISOString(),
-      isPowerOn: mode > 0,
+      isPowerOn: power || false,
     };
 
     console.log("Global device data updated:", this.deviceData);
+    console.log(
+      "Power status synchronized:",
+      this.deviceData.power ? "ON" : "OFF"
+    );
 
     //After add timeStamp and power status => Notify all subscribers about data change
     this.notifySubscribers(this.deviceData);
@@ -191,11 +225,10 @@ class GlobalDeviceDataManager {
         currentTemp: this.deviceData.currentTemp, //currentTemp at this.deviceData = {targetTemp,currentTemp,. . . .etc}
         targetTemp: this.deviceData.targetTemp,
         mode: modeString,
-        power: this.deviceData.isPowerOn,
-        status: "online", // Device is online if sending data
+        power: this.deviceData.power, // Use direct power value from device
+        status: this.deviceData.power ? "online" : "offline", // Status based on power state
         lastUpdated: this.deviceData.timestamp,
       };
-
       // Call ACSpaManager update method
       window.acSpaManager.updateACDataRealtime("AC-001", acUpdateData);
     }
@@ -286,7 +319,7 @@ function initializeWithDeviceData() {
     window.tempController.currentMode = deviceMode;
     window.tempController.currentModeIndex =
       window.tempController.availableMode.indexOf(deviceMode);
-    window.tempController.isPowerOn = deviceData.mode > 0;
+    window.tempController.isPowerOn = deviceData.power || false;
 
     // Update all displays
     window.tempController.updateCurrentTempDisplay();
@@ -396,8 +429,8 @@ class TemperatureController {
         this.updateModeDisplay();
         console.log("Mode loaded from device:", deviceMode);
 
-        // Determine power status based on mode
-        this.isPowerOn = deviceData.mode > 0;
+        // Determine power status based on power property
+        this.isPowerOn = deviceData.power || false;
         this.updatePowerDisplay();
       }
 

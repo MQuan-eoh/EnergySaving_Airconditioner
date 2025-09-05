@@ -327,7 +327,7 @@ class SmartACSPA {
 // ====== GLOBAL FUNCTIONS ======
 
 /**
- * Handle AC Power Toggle (placeholder for toggle switch functionality)
+ * Handle AC Power Toggle (syncs with device and updates all systems)
  * @param {HTMLElement} toggleElement - Toggle input element
  */
 function handleACPowerToggle(toggleElement) {
@@ -336,7 +336,7 @@ function handleACPowerToggle(toggleElement) {
 
   console.log(`AC ${acId} power toggle: ${isOn ? "ON" : "OFF"}`);
 
-  // Update status indicator
+  // Update visual indicators immediately for responsive UI
   const container = toggleElement.closest(".toggle-container");
   const statusElement = container.querySelector(".power-status");
   const statusText = container.querySelector(".power-status span:last-child");
@@ -346,12 +346,63 @@ function handleACPowerToggle(toggleElement) {
     statusText.textContent = isOn ? "ON" : "OFF";
   }
 
-  // Update AC data in SPA manager if available
+  // Update AC data in SPA manager with power synchronization
   if (window.acSpaManager) {
-    window.acSpaManager.updateACData(acId, {
+    const updateData = {
       power: isOn,
       status: isOn ? "online" : "offline",
-    });
+      lastUpdated: new Date().toISOString(),
+    };
+
+    console.log("Updating ACSpaManager with power change:", updateData);
+    window.acSpaManager.updateACDataRealtime(acId, updateData);
+  }
+
+  // Send power command to E-RA device if power control actions are available
+  if (
+    window.configPowerAir1 &&
+    window.onAirConditioner1 &&
+    window.offAirConditioner1
+  ) {
+    const powerAction = isOn
+      ? window.onAirConditioner1
+      : window.offAirConditioner1;
+
+    if (powerAction && typeof powerAction.execute === "function") {
+      console.log("Sending power command to device:", isOn ? "ON" : "OFF");
+      powerAction
+        .execute()
+        .then(() => {
+          console.log("Device power command sent successfully");
+        })
+        .catch((error) => {
+          console.error("Failed to send device power command:", error);
+          // Revert toggle on failure
+          toggleElement.checked = !isOn;
+          if (statusElement && statusText) {
+            statusElement.className = `power-status ${!isOn ? "on" : "off"}`;
+            statusText.textContent = !isOn ? "ON" : "OFF";
+          }
+        });
+    } else {
+      console.warn("Power action not properly configured");
+    }
+  } else {
+    console.warn("E-RA power control actions not available");
+  }
+
+  // Update global device data manager to sync across all components
+  if (window.globalDeviceDataManager) {
+    const currentData = window.globalDeviceDataManager.getDeviceData();
+    if (currentData) {
+      const updatedData = {
+        ...currentData,
+        power: isOn,
+        timestamp: new Date().toISOString(),
+      };
+      console.log("Synchronizing power change across all systems");
+      window.globalDeviceDataManager.updateDeviceData(updatedData);
+    }
   }
 }
 

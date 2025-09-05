@@ -13,7 +13,7 @@ class ACSpaManager {
         currentTemp: 24,
         targetTemp: 22,
         mode: "auto",
-        power: false,
+        power: true, // FIX: Set power to true to match status online
         fanSpeed: 0,
       },
     };
@@ -25,10 +25,15 @@ class ACSpaManager {
   init() {
     console.log("AC SPA Manager initialized");
     this.setupACTableHandlers();
-    this.updateDashboardStats();
     this.setupDashboardAutoRefresh();
     this.subscribeToGlobalDeviceData();
     this.initializeDashboardWithDefaultData();
+
+    // Delay stats update to ensure DOM is fully ready
+    setTimeout(() => {
+      this.updateDashboardStats();
+      console.log("Dashboard stats updated after DOM ready");
+    }, 100);
   }
 
   /**
@@ -43,11 +48,10 @@ class ACSpaManager {
           currentTemp: deviceData.currentTemp,
           targetTemp: deviceData.targetTemp,
           mode: this.mapDeviceValueToMode(deviceData.mode),
-          power: deviceData.isPowerOn,
-          status: "online",
+          power: deviceData.power, // Use direct power property
+          status: deviceData.power ? "online" : "offline", // Status based on power
           lastUpdated: deviceData.timestamp,
         };
-
         this.updateACDataRealtime("AC-001", acDataUpdate);
         console.log("Dashboard updated with real-time device data");
       });
@@ -325,18 +329,64 @@ class ACSpaManager {
    */
   updateDashboardStats() {
     const allACs = this.getAllACData();
-    const onlineCount = allACs.filter((ac) => ac.status === "online").length;
-    const offlineCount = allACs.filter((ac) => ac.status === "offline").length;
+
+    console.log("DEBUG: All AC Data:", allACs);
+
+    // Base statistics on power status for more accurate representation
+    const onlineCount = allACs.filter((ac) => Boolean(ac.power)).length;
+    const offlineCount = allACs.filter((ac) => !Boolean(ac.power)).length;
     const totalCount = allACs.length;
+
+    console.log(
+      "DEBUG: Calculated counts - Online:",
+      onlineCount,
+      "Offline:",
+      offlineCount,
+      "Total:",
+      totalCount
+    );
 
     // Update dashboard counters
     const onlineEl = document.getElementById("spa-dashboard-online");
     const offlineEl = document.getElementById("spa-dashboard-offline");
     const totalEl = document.getElementById("spa-dashboard-total");
 
-    if (onlineEl) onlineEl.textContent = onlineCount;
-    if (offlineEl) offlineEl.textContent = offlineCount;
-    if (totalEl) totalEl.textContent = totalCount;
+    console.log(
+      "DEBUG: Elements found - Online:",
+      !!onlineEl,
+      "Offline:",
+      !!offlineEl,
+      "Total:",
+      !!totalEl
+    );
+
+    if (onlineEl) {
+      onlineEl.textContent = onlineCount;
+      console.log("Updated online element with:", onlineCount);
+    } else {
+      console.error("Element spa-dashboard-online not found!");
+    }
+
+    if (offlineEl) {
+      offlineEl.textContent = offlineCount;
+      console.log("Updated offline element with:", offlineCount);
+    } else {
+      console.error("Element spa-dashboard-offline not found!");
+    }
+
+    if (totalEl) {
+      totalEl.textContent = totalCount;
+      console.log("Updated total element with:", totalCount);
+    } else {
+      console.error("Element spa-dashboard-total not found!");
+    }
+
+    console.log(
+      "Dashboard stats updated - Online:",
+      onlineCount,
+      "Offline:",
+      offlineCount
+    );
   }
 
   /**
@@ -367,12 +417,13 @@ class ACSpaManager {
     const row = document.querySelector(`tr[data-ac-id="${acId}"]`);
 
     if (row) {
-      // Update status badge (3rd column)
+      // Update status badge (3rd column) - based on power status
       const statusBadge = row.querySelector(".status-badge");
       if (statusBadge) {
         statusBadge.classList.remove("online", "offline");
-        statusBadge.classList.add(acData.status);
-        statusBadge.textContent = acData.status.toUpperCase();
+        const newStatus = acData.power ? "online" : "offline";
+        statusBadge.classList.add(newStatus);
+        statusBadge.textContent = newStatus.toUpperCase();
       }
 
       // Update current temperature (4th column)
@@ -394,7 +445,6 @@ class ACSpaManager {
         modeBadge.textContent = acData.mode.toUpperCase();
       }
 
-      // Update power toggle (9th column - Actions)
       const powerToggle = row.querySelector(".iphone-toggle input");
       if (powerToggle) {
         powerToggle.checked = acData.power;
@@ -409,8 +459,6 @@ class ACSpaManager {
           powerText.textContent = acData.power ? "ON" : "OFF";
         }
       }
-
-      console.log(`Updated table row for ${acId}`);
     } else {
       console.warn(`Table row not found for AC: ${acId}`);
       this.updateDashboardTable();
@@ -424,13 +472,14 @@ class ACSpaManager {
     const row = document.createElement("tr");
     row.setAttribute("data-ac-id", acData.id);
 
+    // Determine status display based on power state
+    const statusDisplay = acData.power ? "online" : "offline";
+
     row.innerHTML = `
       <td>${acData.id}</td>
       <td>${acData.location}</td>
       <td>
-        <span class="status-badge ${
-          acData.status
-        }">${acData.status.toUpperCase()}</span>
+        <span class="status-badge ${statusDisplay}">${statusDisplay.toUpperCase()}</span>
       </td>
       <td class="current-temp-cell">${acData.currentTemp}°C</td>
       <td class="target-temp-cell">${acData.targetTemp}°C</td>
@@ -456,6 +505,13 @@ class ACSpaManager {
         </div>
       </td>
     `;
+
+    console.log(
+      "Created table row for",
+      acData.id,
+      "with power status:",
+      acData.power ? "ON" : "OFF"
+    );
 
     return row;
   }
