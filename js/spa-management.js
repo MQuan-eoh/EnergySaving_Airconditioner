@@ -277,6 +277,19 @@ class ACSpaManager {
       statusIndicatorEl.className = "status-indicator";
       statusIndicatorEl.classList.add(acData.power ? "on" : "off");
     }
+
+    // Update temperature recommendation widget
+    if (window.energyEfficiencyManager) {
+      const recommendationWidget = document.getElementById(
+        "spa-temp-recommendation-widget"
+      );
+      if (recommendationWidget) {
+        recommendationWidget.innerHTML =
+          window.energyEfficiencyManager.createTemperatureRecommendationWidget(
+            acData
+          );
+      }
+    }
   }
 
   /**
@@ -450,6 +463,47 @@ class ACSpaManager {
         modeBadge.textContent = acData.mode.toUpperCase();
       }
 
+      // Update energy usage with efficiency indicator (7th column)
+      const energyUsageCell = row.querySelector(".energy-usage-cell");
+      if (energyUsageCell && acData.power && window.energyEfficiencyManager) {
+        const currentPower = (acData.voltage || 220) * (acData.current || 5);
+        const efficiencyData =
+          window.energyEfficiencyManager.calculateEfficiency(
+            acData.targetTemp,
+            currentPower,
+            30 // Default outdoor temp
+          );
+        const efficiencyArrow =
+          window.energyEfficiencyManager.createEfficiencyArrow(efficiencyData);
+        energyUsageCell.innerHTML = `${(currentPower / 1000).toFixed(
+          1
+        )} kW ${efficiencyArrow}`;
+      }
+
+      // Update efficiency badge in status column
+      const statusColumn = row.querySelector("td:nth-child(3)");
+      if (statusColumn && acData.power && window.energyEfficiencyManager) {
+        const currentPower = (acData.voltage || 220) * (acData.current || 5);
+        const efficiencyData =
+          window.energyEfficiencyManager.calculateEfficiency(
+            acData.targetTemp,
+            currentPower,
+            30
+          );
+        const efficiencyBadge =
+          window.energyEfficiencyManager.createEfficiencyBadge(efficiencyData);
+
+        // Remove old efficiency badge if exists
+        const oldEfficiencyBadge =
+          statusColumn.querySelector(".efficiency-badge");
+        if (oldEfficiencyBadge) {
+          oldEfficiencyBadge.remove();
+        }
+
+        // Add new efficiency badge
+        statusColumn.insertAdjacentHTML("beforeend", efficiencyBadge);
+      }
+
       const powerToggle = row.querySelector(".iphone-toggle input");
       if (powerToggle) {
         powerToggle.checked = acData.power;
@@ -480,11 +534,34 @@ class ACSpaManager {
     // Determine status display based on power state
     const statusDisplay = acData.power ? "online" : "offline";
 
+    // Calculate energy efficiency for this AC
+    let efficiencyData = null;
+    let efficiencyBadge = "";
+    let energyUsageWithIndicator = "1.2 kW";
+
+    if (acData.power && window.energyEfficiencyManager) {
+      const currentPower = (acData.voltage || 220) * (acData.current || 5);
+      efficiencyData = window.energyEfficiencyManager.calculateEfficiency(
+        acData.targetTemp,
+        currentPower,
+        30 // Default outdoor temp, can be dynamic later
+      );
+
+      efficiencyBadge =
+        window.energyEfficiencyManager.createEfficiencyBadge(efficiencyData);
+      const efficiencyArrow =
+        window.energyEfficiencyManager.createEfficiencyArrow(efficiencyData);
+      energyUsageWithIndicator = `${(currentPower / 1000).toFixed(
+        1
+      )} kW ${efficiencyArrow}`;
+    }
+
     row.innerHTML = `
       <td>${acData.id}</td>
       <td>${acData.location}</td>
       <td>
         <span class="status-badge ${statusDisplay}">${statusDisplay.toUpperCase()}</span>
+        ${efficiencyBadge}
       </td>
       <td class="current-temp-cell">${acData.currentTemp}°C</td>
       <td class="target-temp-cell">${acData.targetTemp}°C</td>
@@ -493,7 +570,7 @@ class ACSpaManager {
           acData.mode
         }">${acData.mode.toUpperCase()}</span>
       </td>
-      <td>1.2 kW</td>
+      <td class="energy-usage-cell">${energyUsageWithIndicator}</td>
       <td>Just now</td>
       <td>
         <div class="toggle-container">

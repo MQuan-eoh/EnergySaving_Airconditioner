@@ -46,6 +46,12 @@ eraWidget.init({
     fanSpeedControl = configuration.actions[7];
     console.log("Received configuration:", configuration);
 
+    // Expose global variables for energy efficiency manager
+    window.eraWidget = eraWidget;
+    window.tempControlAir1 = tempControlAir1;
+
+    console.log("Global E-RA variables exposed for energy efficiency manager");
+
     // Get initial device data after configuration is loaded
     fetchInitialDeviceData();
 
@@ -1174,6 +1180,11 @@ class TemperatureController {
       this.animateTemperatureChange(targetTempElement, this.targetTemp);
       console.log(`Temperature display updated: ${this.targetTemp}`);
     }
+
+    // Update energy efficiency recommendation widget
+    if (window.energyEfficiencyManager) {
+      window.energyEfficiencyManager.updateRecommendationWidget();
+    }
   }
   updateCurrentAirDisplay() {
     const currentAirElement = document.getElementById("spa-current-air");
@@ -1348,6 +1359,10 @@ class TemperatureController {
     if (this.validateTemperatureRange(temp)) {
       this.targetTemp = temp;
       this.updateTemperatureDisplay();
+
+      // Also send command to device
+      this.sendTemperatureToDevice();
+
       return true;
     }
     return false;
