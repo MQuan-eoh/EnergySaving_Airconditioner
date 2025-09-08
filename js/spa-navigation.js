@@ -12,6 +12,7 @@ class SmartACSPA {
     this.setupNavigation();
     this.setupModalHandlers();
     this.setupFixedBackButton();
+    this.setupFullscreenToggle();
     this.showDefaultPage();
     console.log("Smart AC SPA initialized successfully");
   }
@@ -97,23 +98,13 @@ class SmartACSPA {
       return;
     }
 
-    // TECH LEAD SOLUTION: Show button on ANY scroll activity (up/down) on non-dashboard pages
-    // This detects scroll events regardless of scroll position or direction
+    // TECH LEAD SOLUTION: Keep button always visible on non-dashboard pages
+    // The button should be shown immediately when page loads, not just on scroll
     if (!this.isFixedBackVisible) {
       this.showFixedBackButton();
     }
 
-    // Clear any existing hide timer
-    if (this.hideTimer) {
-      clearTimeout(this.hideTimer);
-      this.hideTimer = null;
-    }
-
-    // Optional: Hide button after 3 seconds of no scroll activity
-    // Comment out these lines if you want the button to stay permanently visible
-    // this.hideTimer = setTimeout(() => {
-    //   this.hideFixedBackButton();
-    // }, 3000);
+    // No need to hide timer since user wants button always visible
   }
 
   /**
@@ -274,9 +265,10 @@ class SmartACSPA {
       this.hideFixedBackButton();
       this.showHeaderBackButton();
     } else {
-      // On other pages, always show the fixed back button immediately
+      // On other pages, always show the fixed back button immediately and keep it visible
       this.showFixedBackButton();
-      // Button will remain visible and respond to any scroll activity
+      // Set flag to keep it always visible on non-dashboard pages
+      this.isFixedBackVisible = true;
     }
   }
 
@@ -498,6 +490,117 @@ class SmartACSPA {
    */
   pageExists(page) {
     return !!document.getElementById(`${page}-page`);
+  }
+
+  /**
+   * Setup fullscreen toggle functionality
+   */
+  setupFullscreenToggle() {
+    const fullscreenButton = document.getElementById("fullscreenToggle");
+    const fullscreenIcon = document.getElementById("fullscreenIcon");
+    
+    if (!fullscreenButton || !fullscreenIcon) {
+      console.warn("Fullscreen elements not found");
+      return;
+    }
+
+    fullscreenButton.addEventListener("click", () => {
+      this.toggleFullscreen();
+    });
+
+    // Listen for fullscreen change events
+    document.addEventListener("fullscreenchange", () => {
+      this.handleFullscreenChange();
+    });
+    
+    document.addEventListener("webkitfullscreenchange", () => {
+      this.handleFullscreenChange();
+    });
+    
+    document.addEventListener("mozfullscreenchange", () => {
+      this.handleFullscreenChange();
+    });
+    
+    document.addEventListener("MSFullscreenChange", () => {
+      this.handleFullscreenChange();
+    });
+
+    console.log("Fullscreen toggle setup completed");
+  }
+
+  /**
+   * Toggle fullscreen mode
+   */
+  toggleFullscreen() {
+    if (!document.fullscreenElement && 
+        !document.webkitFullscreenElement && 
+        !document.mozFullScreenElement && 
+        !document.msFullscreenElement) {
+      // Enter fullscreen
+      this.enterFullscreen();
+    } else {
+      // Exit fullscreen
+      this.exitFullscreen();
+    }
+  }
+
+  /**
+   * Enter fullscreen mode
+   */
+  enterFullscreen() {
+    const element = document.documentElement;
+    
+    if (element.requestFullscreen) {
+      element.requestFullscreen();
+    } else if (element.webkitRequestFullscreen) {
+      element.webkitRequestFullscreen();
+    } else if (element.mozRequestFullScreen) {
+      element.mozRequestFullScreen();
+    } else if (element.msRequestFullscreen) {
+      element.msRequestFullscreen();
+    }
+  }
+
+  /**
+   * Exit fullscreen mode
+   */
+  exitFullscreen() {
+    if (document.exitFullscreen) {
+      document.exitFullscreen();
+    } else if (document.webkitExitFullscreen) {
+      document.webkitExitFullscreen();
+    } else if (document.mozCancelFullScreen) {
+      document.mozCancelFullScreen();
+    } else if (document.msExitFullscreen) {
+      document.msExitFullscreen();
+    }
+  }
+
+  /**
+   * Handle fullscreen state changes
+   */
+  handleFullscreenChange() {
+    const fullscreenIcon = document.getElementById("fullscreenIcon");
+    const body = document.body;
+    
+    if (document.fullscreenElement || 
+        document.webkitFullscreenElement || 
+        document.mozFullScreenElement || 
+        document.msFullscreenElement) {
+      // Entered fullscreen
+      body.classList.add("fullscreen-mode");
+      if (fullscreenIcon) {
+        fullscreenIcon.className = "fas fa-compress";
+      }
+      console.log("Entered fullscreen mode");
+    } else {
+      // Exited fullscreen
+      body.classList.remove("fullscreen-mode");
+      if (fullscreenIcon) {
+        fullscreenIcon.className = "fas fa-expand";
+      }
+      console.log("Exited fullscreen mode");
+    }
   }
 }
 
