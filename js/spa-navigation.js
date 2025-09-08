@@ -11,6 +11,7 @@ class SmartACSPA {
   init() {
     this.setupNavigation();
     this.setupModalHandlers();
+    this.setupFixedBackButton();
     this.showDefaultPage();
     console.log("Smart AC SPA initialized successfully");
   }
@@ -48,6 +49,146 @@ class SmartACSPA {
 
     // Update page title
     this.updatePageTitle("dashboard");
+  }
+
+  /**
+   * Setup fixed back button functionality with scroll detection
+   */
+  setupFixedBackButton() {
+    this.fixedBackBtn = document.getElementById("fixed-back-btn");
+    this.isFixedBackVisible = false;
+    this.scrollTimer = null;
+
+    // Create debounced scroll handler for better performance
+    const debouncedScrollHandler = () => {
+      if (this.scrollTimer) {
+        clearTimeout(this.scrollTimer);
+      }
+      this.scrollTimer = setTimeout(() => {
+        this.handleScroll();
+      }, 16); // ~60fps
+    };
+
+    // Add scroll listener for main content area
+    const mainContent = document.querySelector(".main-content");
+    if (mainContent) {
+      mainContent.addEventListener("scroll", debouncedScrollHandler, {
+        passive: true,
+      });
+    }
+
+    // Also listen to window scroll as fallback
+    window.addEventListener("scroll", debouncedScrollHandler, {
+      passive: true,
+    });
+
+    console.log("Fixed back button functionality initialized");
+  }
+
+  /**
+   * Handle scroll events to show/hide fixed back button
+   */
+  handleScroll() {
+    if (!this.fixedBackBtn) return;
+
+    // Only show on non-dashboard pages
+    if (this.currentPage === "dashboard") {
+      this.hideFixedBackButton();
+      return;
+    }
+
+    // TECH LEAD SOLUTION: Show button on ANY scroll activity (up/down) on non-dashboard pages
+    // This detects scroll events regardless of scroll position or direction
+    if (!this.isFixedBackVisible) {
+      this.showFixedBackButton();
+    }
+
+    // Clear any existing hide timer
+    if (this.hideTimer) {
+      clearTimeout(this.hideTimer);
+      this.hideTimer = null;
+    }
+
+    // Optional: Hide button after 3 seconds of no scroll activity
+    // Comment out these lines if you want the button to stay permanently visible
+    // this.hideTimer = setTimeout(() => {
+    //   this.hideFixedBackButton();
+    // }, 3000);
+  }
+
+  /**
+   * Show fixed back button with animation
+   */
+  showFixedBackButton() {
+    if (!this.fixedBackBtn || this.isFixedBackVisible) return;
+
+    // Remove hidden class and prepare for animation
+    this.fixedBackBtn.classList.remove("hidden");
+    this.fixedBackBtn.style.opacity = "0";
+    this.fixedBackBtn.style.transform = "translateY(20px) scale(0.8)";
+
+    // Force reflow
+    this.fixedBackBtn.offsetHeight;
+
+    // Animate in
+    this.fixedBackBtn.style.transition =
+      "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)";
+    this.fixedBackBtn.style.opacity = "1";
+    this.fixedBackBtn.style.transform = "translateY(0) scale(1)";
+
+    this.isFixedBackVisible = true;
+
+    // Hide header back button to avoid duplication
+    this.hideHeaderBackButton();
+
+    console.log("Fixed back button shown");
+  }
+
+  /**
+   * Hide fixed back button with animation
+   */
+  hideFixedBackButton() {
+    if (!this.fixedBackBtn || !this.isFixedBackVisible) return;
+
+    this.fixedBackBtn.style.transition =
+      "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)";
+    this.fixedBackBtn.style.opacity = "0";
+    this.fixedBackBtn.style.transform = "translateY(20px) scale(0.8)";
+
+    setTimeout(() => {
+      this.fixedBackBtn.classList.add("hidden");
+      // Reset styles
+      this.fixedBackBtn.style.opacity = "";
+      this.fixedBackBtn.style.transform = "";
+      this.fixedBackBtn.style.transition = "";
+    }, 300);
+
+    this.isFixedBackVisible = false;
+
+    // Show header back button again
+    this.showHeaderBackButton();
+
+    console.log("Fixed back button hidden");
+  }
+
+  /**
+   * Hide header back button
+   */
+  hideHeaderBackButton() {
+    const headerRight = document.querySelector(".header-right");
+    if (headerRight) {
+      headerRight.classList.add("header-back-hidden");
+    }
+  }
+
+  /**
+   * Show header back button
+   */
+  showHeaderBackButton() {
+    const headerRight = document.querySelector(".header-right");
+    if (headerRight) {
+      headerRight.classList.remove("header-back-hidden");
+    }
   }
 
   /**
@@ -112,9 +253,31 @@ class SmartACSPA {
 
     // Update page title
     this.updatePageTitle(page);
+
+    // Update previous page
+    this.previousPage = this.currentPage;
     this.currentPage = page;
 
+    // Manage fixed back button based on page
+    this.manageFixedBackButtonForPage(page);
+
     console.log(`Navigated to page: ${page}`);
+  }
+
+  /**
+   * Manage fixed back button visibility based on current page
+   * @param {string} page - Current page name
+   */
+  manageFixedBackButtonForPage(page) {
+    if (page === "dashboard") {
+      // Always hide on dashboard
+      this.hideFixedBackButton();
+      this.showHeaderBackButton();
+    } else {
+      // On other pages, always show the fixed back button immediately
+      this.showFixedBackButton();
+      // Button will remain visible and respond to any scroll activity
+    }
   }
 
   /**
@@ -275,7 +438,8 @@ class SmartACSPA {
       }
     }
 
-    // Update current page tracker
+    // Update previous and current page
+    this.previousPage = this.currentPage;
     this.currentPage = "control";
 
     // Initialize temperature usage chart when entering control page
@@ -295,6 +459,9 @@ class SmartACSPA {
     if (window.acSpaManager) {
       window.acSpaManager.loadACDataToInterface(acId);
     }
+
+    // Manage fixed back button for control page
+    this.manageFixedBackButtonForPage("control");
   }
 
   /**

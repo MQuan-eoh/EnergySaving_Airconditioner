@@ -548,6 +548,128 @@
         position: relative;
       }
 
+      /* Fixed Back Button - Bottom Position */
+      .fixed-back-btn {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        z-index: 1050;
+        background: rgba(255, 255, 255, 0.12);
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        border-radius: 50px;
+        padding: 16px 24px;
+        color: white;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        -webkit-backdrop-filter: blur(25px) saturate(180%) brightness(1.1);
+        backdrop-filter: blur(25px) saturate(180%) brightness(1.1);
+        text-decoration: none;
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6),
+          0 0 30px rgba(255, 255, 255, 0.08),
+          inset 0 1px 0 rgba(255, 255, 255, 0.2),
+          inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+        min-width: 160px;
+        justify-content: center;
+      }
+
+      .fixed-back-btn::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(255, 255, 255, 0.4),
+          transparent
+        );
+        pointer-events: none;
+      }
+
+      .fixed-back-btn::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(
+          135deg,
+          rgba(255, 255, 255, 0.15) 0%,
+          transparent 20%,
+          transparent 80%,
+          rgba(0, 0, 0, 0.05) 100%
+        );
+        pointer-events: none;
+        border-radius: inherit;
+      }
+
+      .fixed-back-btn:hover {
+        background: rgba(255, 255, 255, 0.18);
+        border-color: rgba(255, 255, 255, 0.35);
+        transform: translateY(-4px) scale(1.05);
+        color: white;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8),
+          0 0 40px rgba(255, 255, 255, 0.15),
+          inset 0 1px 0 rgba(255, 255, 255, 0.3);
+      }
+
+      .fixed-back-btn i {
+        font-size: 16px;
+        transition: transform 0.3s ease;
+      }
+
+      .fixed-back-btn:hover i {
+        transform: translateX(-3px);
+      }
+
+      /* Accessibility and touch improvements */
+      .fixed-back-btn:focus {
+        outline: 2px solid rgba(255, 255, 255, 0.6);
+        outline-offset: 2px;
+      }
+
+      .fixed-back-btn:active {
+        transform: translateY(-2px) scale(0.98);
+      }
+
+      /* Improve touch target size for mobile */
+      @media (max-width: 768px) {
+        .fixed-back-btn {
+          min-height: 48px;
+          min-width: 48px;
+        }
+      }
+
+      /* Reduce motion for users who prefer it */
+      @media (prefers-reduced-motion: reduce) {
+        .fixed-back-btn {
+          transition: none !important;
+        }
+
+        .fixed-back-btn::before,
+        .fixed-back-btn::after {
+          transition: none !important;
+        }
+      }
+
+      /* Hide header back button when fixed button is shown */
+      .header-back-hidden .back-btn {
+        display: none;
+      }
+
+      /* Fixed back button initial hidden state */
+      .fixed-back-btn.hidden {
+        display: none !important;
+      }
+
       /* AC Status container styling */
       .ac-status {
         display: flex;
@@ -790,7 +912,7 @@
                         >
                       </div>
                     </div>
-                    <div class="header-right">
+                    <!-- <div class="header-right">
                       <button
                         class="dashboard-glass-btn back-btn"
                         onclick="handleBackToDashboard()"
@@ -798,7 +920,7 @@
                         <i class="fas fa-arrow-left"></i>
                         Back to Dashboard
                       </button>
-                    </div>
+                    </div> -->
                   </div>
 
                   <div class="control-content">
@@ -862,13 +984,15 @@
                             <i class="fas fa-bolt"></i>
                           </div>
                           <div class="electrical-info">
-                            <span
-                              class="electrical-value"
-                              id="spa-voltage-value"
-                              >220</span
-                            >
-                            <span class="electrical-unit">V</span>
                             <div class="electrical-label">Voltage</div>
+                            <div class="electrical-value-container">
+                              <span
+                                class="electrical-value"
+                                id="spa-voltage-value"
+                                >220</span
+                              >
+                              <span class="electrical-unit">V</span>
+                            </div>
                           </div>
                         </div>
                         <div class="electrical-item">
@@ -876,13 +1000,15 @@
                             <i class="fas fa-plug"></i>
                           </div>
                           <div class="electrical-info">
-                            <span
-                              class="electrical-value"
-                              id="spa-current-value"
-                              >1.2</span
-                            >
-                            <span class="electrical-unit">A</span>
                             <div class="electrical-label">Current</div>
+                            <div class="electrical-value-container">
+                              <span
+                                class="electrical-value"
+                                id="spa-current-value"
+                                >1.2</span
+                              >
+                              <span class="electrical-unit">A</span>
+                            </div>
                           </div>
                         </div>
                         <div class="electrical-item">
@@ -890,11 +1016,15 @@
                             <i class="fas fa-tachometer-alt"></i>
                           </div>
                           <div class="electrical-info">
-                            <span class="electrical-value" id="spa-power-value"
-                              >264</span
-                            >
-                            <span class="electrical-unit">W</span>
                             <div class="electrical-label">Power</div>
+                            <div class="electrical-value-container">
+                              <span
+                                class="electrical-value"
+                                id="spa-power-value"
+                                >264</span
+                              >
+                              <span class="electrical-unit">W</span>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -965,9 +1095,10 @@
                 </div>
               </div>
 
-              <!-- Weather & Environment -->
+              <!-- Weather & Fan Control -->
               <div class="col-lg-5">
-                <div class="weather-panel glass-effect">
+                <!-- Weather Panel (Compact) -->
+                <div class="weather-panel glass-effect compact">
                   <div class="panel-header">
                     <h3 class="panel-title">Environment</h3>
                   </div>
@@ -1008,16 +1139,6 @@
                   </div>
 
                   <div class="fan-control-content">
-                    <div class="fan-speed-display">
-                      <div class="fan-speed-icon" id="spa-fan-speed-icon">
-                        <i class="fas fa-fan"></i>
-                      </div>
-                      <div class="fan-speed-value" id="spa-fan-speed-value">
-                        0
-                      </div>
-                      <div class="fan-speed-label">Speed Level</div>
-                    </div>
-
                     <div class="fan-level-controls">
                       <button
                         class="fan-level-btn active"
@@ -1584,6 +1705,16 @@
         </div>
       </div>
     </div>
+
+    <!-- Fixed Back Button -->
+    <button
+      class="fixed-back-btn hidden"
+      id="fixed-back-btn"
+      onclick="handleBackToDashboard()"
+    >
+      <i class="fas fa-arrow-left"></i>
+      Back to Dashboard
+    </button>
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

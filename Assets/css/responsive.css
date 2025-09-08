@@ -2,6 +2,19 @@
 
 /* Mobile Landscape and up */
 @media (max-width: 991.98px) {
+  /* Fixed Back Button Mobile Positioning */
+  .fixed-back-btn {
+    bottom: 90px !important; /* Position above mobile nav */
+    right: 20px !important;
+    padding: 14px 20px !important;
+    font-size: 13px !important;
+    min-width: 140px !important;
+  }
+
+  .fixed-back-btn i {
+    font-size: 14px !important;
+  }
+
   /* Power-Image Row cho mobile */
   .power-image-row {
     flex-direction: column;
@@ -112,8 +125,13 @@
   }
 
   /* Chart adjustments */
+  .chart-panel {
+    padding: var(--spacing-sm) !important;
+    margin-bottom: var(--spacing-md);
+  }
+
   .chart-content {
-    height: 250px;
+    height: 237.5px;
   }
 
   .chart-controls {
@@ -192,6 +210,19 @@
 
 /* Mobile Portrait */
 @media (max-width: 767.98px) {
+  /* Fixed Back Button Mobile Portrait */
+  .fixed-back-btn {
+    bottom: 100px !important;
+    right: 15px !important;
+    padding: 12px 18px !important;
+    font-size: 12px !important;
+    min-width: 120px !important;
+  }
+
+  .fixed-back-btn i {
+    font-size: 13px !important;
+  }
+
   /* Air Conditioner cho mobile portrait */
   .ac-image-wrapper {
     width: 120px;
@@ -222,28 +253,28 @@
 
   /* Power button adjustments */
   .power-btn {
-    width: 100px;
-    height: 100px;
-    font-size: var(--font-size-lg);
+    width: 70px;
+    height: 70px;
+    font-size: var(--font-size-sm);
   }
 
   .power-btn i {
-    font-size: var(--font-size-xxl);
+    font-size: var(--font-size-lg);
   }
 
   /* Temperature display adjustments */
   .current-temp .temp-value {
-    font-size: 3rem;
+    font-size: 2rem;
   }
 
   .target-temp .temp-value {
-    font-size: var(--font-size-xxl);
+    font-size: var(--font-size-lg);
   }
 
   .temp-btn {
-    width: 50px;
-    height: 50px;
-    font-size: var(--font-size-base);
+    width: 38px;
+    height: 38px;
+    font-size: var(--font-size-xs);
   }
 
   /* Mode buttons mobile layout */
@@ -273,27 +304,27 @@
   }
 
   .weather-3d-icon {
-    width: 80px;
-    height: 80px;
-    font-size: 2rem;
+    width: 60px;
+    height: 60px;
+    font-size: 1.4rem;
   }
 
   .outdoor-temp .temp-value {
-    font-size: 2rem;
+    font-size: 1.4rem;
   }
 
   .humidity-circle {
-    width: 70px;
-    height: 70px;
+    width: 56px;
+    height: 56px;
   }
 
   .humidity-progress {
-    width: 55px;
-    height: 55px;
+    width: 42px;
+    height: 42px;
   }
 
   .humidity-value {
-    font-size: var(--font-size-base);
+    font-size: var(--font-size-xs);
   }
 
   /* Fan Control mobile layout */
@@ -303,13 +334,13 @@
   }
 
   .fan-speed-icon {
-    width: 50px;
-    height: 50px;
-    font-size: 1.2rem;
+    width: 42px;
+    height: 42px;
+    font-size: 1rem;
   }
 
   .fan-speed-value {
-    font-size: 1.5rem;
+    font-size: 1.2rem;
   }
 
   .fan-level-controls {
@@ -329,6 +360,21 @@
 
   .fan-level-text {
     font-size: 0.65rem;
+  }
+
+  /* Chart panel mobile portrait adjustments */
+  .chart-panel {
+    padding: var(--spacing-sm) !important;
+    margin-bottom: var(--spacing-md);
+  }
+
+  .chart-content {
+    height: 190px;
+    margin-top: var(--spacing-sm);
+  }
+
+  .chart-controls {
+    margin-bottom: var(--spacing-sm);
   }
 
   /* Carbon metrics mobile layout - VinFast Style */
@@ -431,6 +477,20 @@
 
 /* Small Mobile */
 @media (max-width: 575.98px) {
+  /* Fixed Back Button Very Small Mobile */
+  .fixed-back-btn {
+    bottom: 90px !important;
+    right: 10px !important;
+    padding: 10px 16px !important;
+    font-size: 11px !important;
+    min-width: 100px !important;
+    gap: 8px !important;
+  }
+
+  .fixed-back-btn i {
+    font-size: 12px !important;
+  }
+
   /* Air Conditioner cho màn hình rất nhỏ */
   .ac-image-wrapper {
     width: 100px;
@@ -476,27 +536,27 @@
   }
 
   .power-btn {
-    width: 80px;
-    height: 80px;
-    font-size: var(--font-size-base);
+    width: 60px;
+    height: 60px;
+    font-size: var(--font-size-xs);
   }
 
   .power-btn i {
-    font-size: var(--font-size-xl);
+    font-size: var(--font-size-lg);
   }
 
   .current-temp .temp-value {
-    font-size: 2.5rem;
+    font-size: 1.8rem;
   }
 
   .target-temp .temp-value {
-    font-size: var(--font-size-xl);
+    font-size: var(--font-size-base);
   }
 
   .temp-btn {
-    width: 45px;
-    height: 45px;
-    font-size: var(--font-size-sm);
+    width: 35px;
+    height: 35px;
+    font-size: var(--font-size-xs);
   }
 
   /* Mode buttons very small */
@@ -538,12 +598,19 @@
   }
 
   /* Chart very small */
+  .chart-panel {
+    padding: var(--spacing-xs) !important;
+    margin-bottom: var(--spacing-sm);
+  }
+
   .chart-content {
-    height: 200px;
+    height: 170px;
+    margin-top: var(--spacing-xs);
   }
 
   .chart-controls {
     justify-content: center;
+    margin-bottom: var(--spacing-xs);
   }
 
   .chart-btn {
@@ -635,8 +702,63 @@
     grid-template-columns: repeat(4, 1fr);
   }
 
+  /* Optimized chart height for tablet */
   .chart-content {
     height: 280px;
+    overflow: hidden;
+  }
+}
+
+/* Common Laptop Resolutions - 1366x768, 1440x900, 1600x900 */
+@media (min-width: 992px) and (max-width: 1599.98px) {
+  .chart-panel {
+    min-height: 320px;
+  }
+
+  .chart-content {
+    height: 260px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Control Panel Laptop Optimization */
+  .control-panel {
+    padding: var(--spacing-sm) !important;
+  }
+
+  .control-content {
+    gap: var(--spacing-xs);
+  }
+
+  .power-image-row {
+    margin-bottom: var(--spacing-sm);
+    gap: var(--spacing-md);
+  }
+
+  .temperature-section {
+    gap: var(--spacing-sm);
+  }
+
+  .mode-section {
+    margin: var(--spacing-xs) 0;
+  }
+
+  .section-title {
+    margin-bottom: var(--spacing-xs);
+  }
+
+  .ai-control-section {
+    padding: var(--spacing-xs);
+    margin-top: var(--spacing-xs);
+  }
+
+  .ai-toggle {
+    margin-bottom: var(--spacing-xs);
+  }
+
+  .toggle-label {
+    gap: var(--spacing-sm);
   }
 }
 
@@ -656,17 +778,27 @@
     margin-left: 260px;
   }
 
-  /* Slightly smaller spacing for medium screens */
+  /* Control Panel Compact Layout */
   .control-panel,
   .weather-panel,
   .fan-control-panel,
   .chart-panel,
   .carbon-panel {
-    padding: var(--spacing-lg);
+    padding: var(--spacing-sm);
   }
 
+  .control-content {
+    gap: var(--spacing-xs);
+  }
+
+  .power-image-row {
+    margin-bottom: var(--spacing-xs);
+  }
+
+  /* Optimized chart height for small desktop/large laptop */
   .chart-content {
-    height: 280px;
+    height: 300px;
+    overflow: hidden;
   }
 
   .weather-3d-icon {
@@ -685,6 +817,21 @@
   .airConditioner-images {
     width: 145px;
     height: 110px;
+  }
+
+  /* Control Panel Standard Desktop Layout */
+  .control-panel {
+    padding: var(--spacing-md);
+  }
+
+  .control-content {
+    gap: var(--spacing-sm);
+  }
+
+  /* Laptop screen chart optimization */
+  .chart-content {
+    height: 280px;
+    overflow: hidden;
   }
 }
 
@@ -731,7 +878,7 @@
   }
 
   .chart-content {
-    height: 350px;
+    height: 332.5px;
   }
 
   .control-panel,

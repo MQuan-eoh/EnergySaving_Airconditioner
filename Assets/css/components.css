@@ -12,7 +12,7 @@
   border: 1px solid rgba(255, 107, 53, 0.3);
   border-radius: 12px;
   color: var(--text-primary);
-  padding: var(--spacing-md) var(--spacing-lg);
+  padding: var(--spacing-sm) var(--spacing-md);
   font-weight: 500;
   cursor: pointer;
   transition: all var(--transition-fast);
@@ -39,7 +39,7 @@
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   color: var(--text-secondary);
-  padding: var(--spacing-md) var(--spacing-lg);
+  padding: var(--spacing-sm) var(--spacing-md);
   font-weight: 500;
   cursor: pointer;
   transition: all var(--transition-fast);
@@ -62,7 +62,7 @@
   border: 1px solid rgba(40, 167, 69, 0.3);
   border-radius: 12px;
   color: var(--text-primary);
-  padding: var(--spacing-md) var(--spacing-lg);
+  padding: var(--spacing-sm) var(--spacing-md);
   font-weight: 500;
   cursor: pointer;
   transition: all var(--transition-fast);
@@ -89,7 +89,7 @@
   border: 1px solid rgba(220, 53, 69, 0.3);
   border-radius: 12px;
   color: var(--text-primary);
-  padding: var(--spacing-md) var(--spacing-lg);
+  padding: var(--spacing-sm) var(--spacing-md);
   font-weight: 500;
   cursor: pointer;
   transition: all var(--transition-fast);

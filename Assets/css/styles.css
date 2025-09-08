@@ -140,25 +140,25 @@
   --font-size-xxl: 1.5rem;
   --font-size-xxxl: 2rem;
 
-  /* Spacing */
-  --spacing-xs: 0.5rem;
-  --spacing-sm: 0.75rem;
-  --spacing-md: 1rem;
-  --spacing-lg: 1.5rem;
-  --spacing-xl: 2rem;
-  --spacing-xxl: 3rem;
+  /* Spacing - Reduced by 5% */
+  --spacing-xs: 0.475rem;
+  --spacing-sm: 0.7125rem;
+  --spacing-md: 0.95rem;
+  --spacing-lg: 1.425rem;
+  --spacing-xl: 1.9rem;
+  --spacing-xxl: 2.85rem;
 
   /* Transitions */
   --transition-fast: 0.15s ease-out;
   --transition-normal: 0.25s ease-out;
   --transition-slow: 0.35s ease-out;
 
-  /* Border Radius - Login Design Style */
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
-  --radius-xl: 20px;
-  --radius-xxl: 30px;
+  /* Border Radius - Login Design Style - Reduced by 5% */
+  --radius-sm: 7.6px;
+  --radius-md: 11.4px;
+  --radius-lg: 15.2px;
+  --radius-xl: 19px;
+  --radius-xxl: 28.5px;
 
   /* Z-Index */
   --z-dropdown: 1000;
@@ -289,8 +289,8 @@ body::after {
 
 /* Navigation Sidebar - Enhanced Glass with Background Filter */
 .nav-sidebar {
-  width: 80px;
-  height: calc(100vh - 3rem);
+  width: 76px;
+  height: calc(100vh - 2.85rem);
   position: fixed;
   left: var(--spacing-lg);
   top: var(--spacing-lg);
@@ -310,8 +310,8 @@ body::after {
 }
 
 .nav-header {
-  width: 48px;
-  height: 48px;
+  width: 45.6px;
+  height: 45.6px;
   background: var(--glass-bg-hover);
   border-radius: var(--radius-md);
   display: flex;
@@ -334,8 +334,8 @@ body::after {
 }
 
 .nav-item {
-  width: 48px;
-  height: 48px;
+  width: 45.6px;
+  height: 45.6px;
 }
 
 .nav-link {
@@ -366,7 +366,7 @@ body::after {
 /* Main Content */
 .main-content {
   flex: 1;
-  margin-left: calc(80px + var(--spacing-xl));
+  margin-left: calc(76px + var(--spacing-xl));
   padding: var(--spacing-lg);
   padding-left: 0;
 }
@@ -390,8 +390,8 @@ body::after {
 }
 
 .user-avatar {
-  width: 44px;
-  height: 44px;
+  width: 41.8px;
+  height: 41.8px;
   border-radius: 50%;
   background: var(--glass-bg-hover);
   border: 1px solid var(--glass-border-hover);
@@ -453,7 +453,7 @@ body::after {
 .control-content {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-md);
+  gap: var(--spacing-sm);
 }
 
 /* Power and Air Conditioner Image Row */
@@ -462,7 +462,7 @@ body::after {
   justify-content: space-between;
   align-items: center;
   gap: var(--spacing-lg);
-  margin-bottom: var(--spacing-lg);
+  margin-bottom: var(--spacing-md);
 }
 
 .power-section {
@@ -470,15 +470,15 @@ body::after {
 }
 
 .power-btn {
-  width: 90px;
-  height: 90px;
+  width: 72px;
+  height: 72px;
   border-radius: var(--liquid-glass-radius);
   border: 2px solid var(--liquid-glass-border);
   background: var(--liquid-glass-bg);
   backdrop-filter: blur(var(--liquid-glass-blur));
   -webkit-backdrop-filter: blur(var(--liquid-glass-blur));
   color: var(--text-primary);
-  font-size: var(--font-size-base);
+  font-size: var(--font-size-sm);
   cursor: pointer;
   transition: all var(--transition-normal);
   display: flex;
@@ -491,13 +491,13 @@ body::after {
 
 /* Air Conditioner Images - Enhanced & Aligned */
 .airConditioner-container {
-  padding-top: 50px;
-  padding-left: 7%;
+  padding-top: 20px;
+  padding-left: 5%;
   flex: 0 0 auto;
   display: flex;
   align-items: center;
   justify-content: center;
-  max-height: 150px;
+  max-height: 120px;
 }
 
 .airConditioner-images {
@@ -505,7 +505,7 @@ body::after {
   flex-direction: column;
   align-items: center;
   gap: var(--spacing-xs);
-  padding: var(--spacing-sm);
+  padding: var(--spacing-xs);
   border-radius: var(--radius-md);
   transition: all var(--transition-normal);
 }
@@ -598,14 +598,14 @@ body::after {
 }
 
 .power-btn i {
-  font-size: var(--font-size-xl);
+  font-size: var(--font-size-lg);
 }
 
 /* Temperature Section */
 .temperature-section {
   display: grid;
   grid-template-columns: 1fr 2fr;
-  gap: var(--spacing-xl);
+  gap: var(--spacing-md);
   align-items: center;
 }
 
@@ -614,7 +614,7 @@ body::after {
 }
 
 .current-temp .temp-value {
-  font-size: 3rem;
+  font-size: 2rem;
   font-weight: 700;
   color: var(--accent-blue);
 }
@@ -627,26 +627,26 @@ body::after {
 .temp-label {
   font-size: var(--font-size-sm);
   color: var(--text-muted);
-  margin-top: var(--spacing-sm);
+  margin-top: var(--spacing-xs);
 }
 
 .temp-controls {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: var(--spacing-md);
+  gap: var(--spacing-sm);
 }
 
 .temp-btn {
-  width: 50px;
-  height: 50px;
+  width: 40px;
+  height: 40px;
   border-radius: var(--liquid-glass-radius);
   border: 1px solid var(--liquid-glass-border);
   background: var(--liquid-glass-bg);
   backdrop-filter: blur(var(--liquid-glass-blur));
   -webkit-backdrop-filter: blur(var(--liquid-glass-blur));
   color: var(--text-primary);
-  font-size: var(--font-size-base);
+  font-size: var(--font-size-sm);
   cursor: pointer;
   transition: all var(--transition-normal);
   display: flex;
@@ -667,8 +667,8 @@ body::after {
   text-align: center;
 }
 
-.target-temp .temp-value {
-  font-size: var(--font-size-xxl);
+.target-temp {
+  font-size: 1.2rem;
   font-weight: 600;
   color: var(--accent-orange);
 }
@@ -682,7 +682,7 @@ body::after {
   font-size: var(--font-size-lg);
   font-weight: 600;
   color: var(--text-primary);
-  margin-bottom: var(--spacing-lg);
+  margin-bottom: var(--spacing-sm);
 }
 
 .mode-buttons {
@@ -692,7 +692,7 @@ body::after {
 }
 
 .mode-btn {
-  padding: var(--spacing-md);
+  padding: var(--spacing-sm);
   border: 1px solid var(--liquid-glass-border);
   background: var(--liquid-glass-bg);
   backdrop-filter: blur(var(--liquid-glass-blur));
@@ -723,18 +723,18 @@ body::after {
 }
 
 .mode-btn i {
-  font-size: var(--font-size-xl);
+  font-size: var(--font-size-lg);
 }
 
 .mode-btn span {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-xs);
   font-weight: 500;
 }
 
 /* AI Control Section - Enhanced Mirror Glass */
 .ai-control-section {
   text-align: center;
-  padding: var(--spacing-md);
+  padding: var(--spacing-sm);
   background: var(--glass-bg);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
@@ -744,7 +744,7 @@ body::after {
 }
 
 .ai-toggle {
-  margin-bottom: var(--spacing-md);
+  margin-bottom: var(--spacing-sm);
 }
 
 .toggle-label {
@@ -758,8 +758,8 @@ body::after {
 
 .toggle-switch {
   position: relative;
-  width: 60px;
-  height: 30px;
+  width: 57px;
+  height: 28.5px;
   background: rgba(255, 255, 255, 0.2);
   border-radius: 30px;
   border: 1px solid var(--glass-border);
@@ -769,8 +769,8 @@ body::after {
 .toggle-switch::before {
   content: "";
   position: absolute;
-  width: 22px;
-  height: 22px;
+  width: 20.9px;
+  height: 20.9px;
   background: white;
   border-radius: 50%;
   top: 3px;
@@ -784,7 +784,7 @@ body::after {
 }
 
 .toggle-switch.active::before {
-  transform: translateX(30px);
+  transform: translateX(28.5px);
 }
 
 .ai-description {
@@ -838,14 +838,14 @@ body::after {
 }
 
 .weather-3d-icon {
-  width: 85px;
-  height: 85px;
+  width: 68px;
+  height: 68px;
   border-radius: 50%;
   background: linear-gradient(135deg, var(--accent-orange), var(--accent-red));
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 2rem;
+  font-size: 1.6rem;
   color: white;
   box-shadow: var(--hover-glow-primary);
 }
@@ -863,7 +863,7 @@ body::after {
 }
 
 .outdoor-temp .temp-value {
-  font-size: 2.2rem;
+  font-size: 1.2rem;
   font-weight: 700;
   color: var(--accent-orange);
 }
@@ -873,8 +873,8 @@ body::after {
 }
 
 .humidity-circle {
-  width: 80px;
-  height: 80px;
+  width: 64px;
+  height: 64px;
   border-radius: 50%;
   background: conic-gradient(
     var(--accent-blue) 0deg,
@@ -889,8 +889,8 @@ body::after {
 }
 
 .humidity-progress {
-  width: 60px;
-  height: 60px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   background: var(--glass-bg-dark);
   display: flex;
@@ -900,7 +900,7 @@ body::after {
 }
 
 .humidity-value {
-  font-size: var(--font-size-base);
+  font-size: var(--font-size-sm);
   font-weight: 700;
   color: var(--accent-blue);
 }
@@ -918,7 +918,9 @@ body::after {
 /* Fan Control Panel */
 .fan-control-panel {
   padding: var(--spacing-md);
-  height: 45%;
+  height: auto;
+  min-height: fit-content;
+  margin-top: var(--spacing-md);
   background: rgba(255, 255, 255, 0.08) !important;
   -webkit-backdrop-filter: blur(30px) saturate(180%) brightness(1.1) !important;
   backdrop-filter: blur(30px) saturate(180%) brightness(1.1) !important;
@@ -951,8 +953,9 @@ body::after {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--spacing-md);
-  height: 100%;
+  gap: var(--spacing-sm);
+  height: auto;
+  padding: var(--spacing-sm) 0;
 }
 
 .fan-speed-display {
@@ -961,14 +964,14 @@ body::after {
 }
 
 .fan-speed-icon {
-  width: 60px;
-  height: 60px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   background: linear-gradient(135deg, #a855f7, #9333ea);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.5rem;
+  font-size: 1.2rem;
   color: white;
   margin: 0 auto var(--spacing-sm);
   box-shadow: 0 8px 32px rgba(168, 85, 247, 0.3);
@@ -989,7 +992,7 @@ body::after {
 }
 
 .fan-speed-value {
-  font-size: 1.8rem;
+  font-size: 1.4rem;
   font-weight: 700;
   color: #a855f7;
   margin-bottom: 4px;
@@ -1007,7 +1010,7 @@ body::after {
   grid-template-columns: repeat(3, 1fr);
   gap: var(--spacing-sm);
   width: 100%;
-  max-width: 280px;
+  max-width: 266px;
 }
 
 .fan-level-btn {
@@ -1178,7 +1181,8 @@ body::after {
 }
 .chart-content {
   margin-top: var(--spacing-md);
-  height: 220px;
+  height: 250px;
+  overflow: hidden;
 }
 
 /* Devices Panel */
@@ -1213,8 +1217,8 @@ body::after {
 }
 
 .device-icon {
-  width: 40px;
-  height: 40px;
+  width: 38px;
+  height: 38px;
   border-radius: var(--radius-md);
   background: var(--accent-blue);
   display: flex;
@@ -1259,8 +1263,8 @@ body::after {
 .toggle-slider-small {
   position: relative;
   display: inline-block;
-  width: 50px;
-  height: 24px;
+  width: 47.5px;
+  height: 22.8px;
   background: rgba(255, 255, 255, 0.2);
   border-radius: 24px;
   border: 1px solid var(--glass-border);
@@ -1271,8 +1275,8 @@ body::after {
 .toggle-slider-small:before {
   position: absolute;
   content: "";
-  height: 18px;
-  width: 18px;
+  height: 17.1px;
+  width: 17.1px;
   left: 2px;
   bottom: 2px;
   background: white;
