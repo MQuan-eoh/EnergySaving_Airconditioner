@@ -81,43 +81,45 @@ class ACConfigurationManager {
 
     // Listen for AC data updates from SPA Manager
     window.acEventSystem.on("ac-data-updated", (data) => {
-      if (this.acConfigurations[data.acId]) {
+      if (data && data.acId && this.acConfigurations[data.acId]) {
         console.log(`AC data updated for configured unit: ${data.acId}`);
-        // Trigger energy efficiency recalculation
-        this.triggerEnergyEfficiencyUpdate(data.acId, data.acData);
+        // Trigger energy efficiency recalculation with safe data handling
+        this.triggerEnergyEfficiencyUpdate(data.acId, data.acData || {});
       }
     });
 
     // Listen for energy efficiency calculations
     window.acEventSystem.on("energy-efficiency-calculated", (data) => {
-      console.log(
-        `Energy efficiency calculated for AC: ${data.acId}`,
-        data.efficiency
-      );
+      if (data && data.acId) {
+        console.log(
+          `Energy efficiency calculated for AC: ${data.acId}`,
+          data.efficiency
+        );
+      }
     });
 
     // Listen for temperature changes
     window.acEventSystem.on("temperature-changed", (data) => {
-      if (this.acConfigurations[data.acId]) {
+      if (data && data.acId && this.acConfigurations[data.acId]) {
         console.log(
           `Temperature changed for configured AC: ${data.acId} to ${data.temperature}°C`
         );
-        // Update efficiency calculations
+        // Update efficiency calculations with safe data handling
         this.triggerEnergyEfficiencyUpdate(data.acId, {
-          targetTemp: data.temperature,
+          targetTemp: data.temperature || 22,
         });
       }
     });
 
     // Listen for power consumption updates
     window.acEventSystem.on("power-consumption-updated", (data) => {
-      if (this.acConfigurations[data.acId]) {
+      if (data && data.acId && this.acConfigurations[data.acId]) {
         console.log(
           `Power consumption updated for AC: ${data.acId} to ${data.power}W`
         );
-        // Trigger efficiency recalculation
+        // Trigger efficiency recalculation with safe data handling
         this.triggerEnergyEfficiencyUpdate(data.acId, {
-          currentPower: data.power,
+          currentPower: data.power || null,
         });
       }
     });
@@ -130,36 +132,56 @@ class ACConfigurationManager {
    * Trigger energy efficiency calculation update via EDA
    */
   triggerEnergyEfficiencyUpdate(acId, acData) {
-    if (window.energyEfficiencyManager && this.acConfigurations[acId]) {
-      const config = this.acConfigurations[acId];
+    // Add defensive programming to prevent undefined errors
+    if (
+      !window.energyEfficiencyManager ||
+      !this.acConfigurations[acId] ||
+      !acData
+    ) {
+      console.warn("Cannot trigger energy efficiency update:", {
+        energyManagerExists: !!window.energyEfficiencyManager,
+        configExists: !!this.acConfigurations[acId],
+        acDataExists: !!acData,
+        acId: acId,
+      });
+      return;
+    }
 
-      // Calculate current power if not provided
-      let currentPower = acData.currentPower;
-      if (!currentPower && acData.voltage && acData.current) {
-        currentPower = acData.voltage * acData.current;
+    const config = this.acConfigurations[acId];
+
+    // Calculate current power if not provided - with safe property access
+    let currentPower = acData.currentPower || null;
+    if (!currentPower && acData.voltage && acData.current) {
+      currentPower = acData.voltage * acData.current;
+    }
+
+    // Get target temperature with safe property access
+    const targetTemp = acData.targetTemp || config.defaultTempRange?.min || 22;
+
+    // Only proceed if we have sufficient data
+    if (currentPower && targetTemp) {
+      const efficiency =
+        window.energyEfficiencyManager.calculateEfficiencyForAC(
+          acId,
+          targetTemp,
+          currentPower
+        );
+
+      // Emit efficiency calculation result
+      if (window.acEventSystem) {
+        window.acEventSystem.emit("energy-efficiency-calculated", {
+          acId: acId,
+          efficiency: efficiency,
+          configuration: config,
+          acData: acData,
+        });
       }
-
-      // Get target temperature
-      const targetTemp = acData.targetTemp || config.defaultTempRange.min;
-
-      if (currentPower && targetTemp) {
-        const efficiency =
-          window.energyEfficiencyManager.calculateEfficiencyForAC(
-            acId,
-            targetTemp,
-            currentPower
-          );
-
-        // Emit efficiency calculation result
-        if (window.acEventSystem) {
-          window.acEventSystem.emit("energy-efficiency-calculated", {
-            acId: acId,
-            efficiency: efficiency,
-            configuration: config,
-            acData: acData,
-          });
-        }
-      }
+    } else {
+      console.log("Insufficient data for energy efficiency calculation:", {
+        acId: acId,
+        currentPower: currentPower,
+        targetTemp: targetTemp,
+      });
     }
   }
 
@@ -179,6 +201,9 @@ class ACConfigurationManager {
       console.warn("AC configuration form not found");
       return;
     }
+
+    // Setup required field styling and indicators
+    this.setupRequiredFieldIndicators();
 
     // Populate AC unit dropdowns from ACSpaManager
     this.populateACUnitsDropdown();
@@ -215,6 +240,322 @@ class ACConfigurationManager {
     });
 
     console.log("Configuration form setup complete");
+  }
+
+  /**
+   * SETUP REQUIRED FIELD INDICATORS
+   * Add visual indicators for required fields and validation styling
+   */
+  setupRequiredFieldIndicators() {
+    // Define required fields with their corresponding labels
+    const requiredFields = [
+      { id: "ac-id", label: "AC Unit" },
+      { id: "ac-hp-capacity", label: "HP Capacity" },
+      { id: "ac-technology", label: "Technology" },
+      { id: "ac-brand", label: "Brand" },
+      { id: "room-area", label: "Room Area" },
+      { id: "room-type", label: "Room Type" },
+    ];
+
+    // Add required indicators (red asterisk) to labels
+    requiredFields.forEach((field) => {
+      const fieldElement = document.getElementById(field.id);
+      const label = document.querySelector(`label[for="${field.id}"]`);
+
+      if (label && !label.querySelector(".required-indicator")) {
+        // Add red asterisk to label
+        const requiredIndicator = document.createElement("span");
+        requiredIndicator.className = "required-indicator";
+        requiredIndicator.innerHTML =
+          ' <span style="color: #ef4444; font-weight: bold;">*</span>';
+        requiredIndicator.title = "This field is required";
+        label.appendChild(requiredIndicator);
+      }
+
+      if (fieldElement) {
+        // Add required attribute
+        fieldElement.setAttribute("required", "true");
+
+        // Add validation styling on blur
+        fieldElement.addEventListener("blur", () => {
+          this.validateSingleField(fieldElement, field.label);
+        });
+
+        // Add real-time validation
+        fieldElement.addEventListener("input", () => {
+          this.clearFieldValidation(fieldElement);
+        });
+
+        // Add focus styling
+        fieldElement.addEventListener("focus", () => {
+          this.highlightField(fieldElement, "focus");
+        });
+      }
+    });
+
+    // Add CSS styles for validation
+    this.addValidationStyles();
+
+    console.log("Required field indicators setup complete");
+  }
+
+  /**
+   * ADD VALIDATION STYLES
+   * Inject CSS styles for field validation
+   */
+  addValidationStyles() {
+    if (document.getElementById("ac-config-validation-styles")) return;
+
+    const style = document.createElement("style");
+    style.id = "ac-config-validation-styles";
+    style.textContent = `
+      /* Required field validation styles */
+      .field-error {
+        border: 2px solid #ef4444 !important;
+        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
+        animation: shake 0.3s ease-in-out;
+      }
+
+      .field-success {
+        border: 2px solid #10b981 !important;
+        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1) !important;
+      }
+
+      .field-focus {
+        border: 2px solid #3b82f6 !important;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+      }
+
+      .required-indicator {
+        display: inline-block;
+        margin-left: 2px;
+      }
+
+      .field-error-message {
+        color: #ef4444;
+        font-size: 12px;
+        margin-top: 4px;
+        display: block;
+        animation: fadeIn 0.3s ease-in-out;
+      }
+
+      .field-success-message {
+        color: #10b981;
+        font-size: 12px;
+        margin-top: 4px;
+        display: block;
+        animation: fadeIn 0.3s ease-in-out;
+      }
+
+      @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-4px); }
+        75% { transform: translateX(4px); }
+      }
+
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-5px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
+      /* Enhanced styling for required fields */
+      .glass-input[required]:not(:focus):invalid,
+      .glass-select[required]:not(:focus):invalid {
+        border-left: 4px solid #ef4444;
+      }
+
+      .glass-input[required]:focus,
+      .glass-select[required]:focus {
+        border-left: 4px solid #3b82f6;
+      }
+
+      .glass-input[required]:valid,
+      .glass-select[required]:valid {
+        border-left: 4px solid #10b981;
+      }
+    `;
+
+    document.head.appendChild(style);
+  }
+
+  /**
+   * VALIDATE SINGLE FIELD
+   * Validate individual field và show appropriate styling
+   */
+  validateSingleField(fieldElement, fieldLabel) {
+    const value = fieldElement.value?.trim();
+    const fieldContainer = fieldElement.parentElement;
+
+    // Remove existing validation messages
+    this.clearFieldValidation(fieldElement);
+
+    if (!value) {
+      // Field is empty - show error
+      fieldElement.classList.add("field-error");
+      fieldElement.classList.remove("field-success");
+
+      const errorMessage = document.createElement("span");
+      errorMessage.className = "field-error-message";
+      errorMessage.textContent = `${fieldLabel} is required`;
+      fieldContainer.appendChild(errorMessage);
+
+      return false;
+    } else {
+      // Field has value - show success
+      fieldElement.classList.add("field-success");
+      fieldElement.classList.remove("field-error");
+
+      const successMessage = document.createElement("span");
+      successMessage.className = "field-success-message";
+      successMessage.innerHTML = '<i class="fas fa-check"></i> Valid';
+      fieldContainer.appendChild(successMessage);
+
+      return true;
+    }
+  }
+
+  /**
+   * CLEAR FIELD VALIDATION
+   * Remove validation styling and messages from field
+   */
+  clearFieldValidation(fieldElement) {
+    fieldElement.classList.remove(
+      "field-error",
+      "field-success",
+      "field-focus"
+    );
+
+    const container = fieldElement.parentElement;
+    const existingMessages = container.querySelectorAll(
+      ".field-error-message, .field-success-message"
+    );
+    existingMessages.forEach((msg) => msg.remove());
+  }
+
+  /**
+   * HIGHLIGHT FIELD
+   * Add focus styling to field
+   */
+  highlightField(fieldElement, type = "focus") {
+    this.clearFieldValidation(fieldElement);
+    fieldElement.classList.add(`field-${type}`);
+  }
+
+  /**
+   * VALIDATE ALL REQUIRED FIELDS
+   * Validate all required fields at once và highlight errors
+   */
+  validateAllRequiredFields() {
+    const requiredFields = [
+      { id: "ac-id", label: "AC Unit" },
+      { id: "ac-hp-capacity", label: "HP Capacity" },
+      { id: "ac-technology", label: "Technology" },
+      { id: "ac-brand", label: "Brand" },
+      { id: "room-area", label: "Room Area" },
+      { id: "room-type", label: "Room Type" },
+    ];
+
+    let allValid = true;
+    const invalidFields = [];
+
+    requiredFields.forEach((field) => {
+      const fieldElement = document.getElementById(field.id);
+      if (fieldElement) {
+        const isValid = this.validateSingleField(fieldElement, field.label);
+        if (!isValid) {
+          allValid = false;
+          invalidFields.push(field.label);
+        }
+      }
+    });
+
+    // Show summary error message if validation fails
+    if (!allValid) {
+      this.showFieldValidationSummary(invalidFields);
+
+      // Focus first invalid field
+      const firstInvalidField = document.querySelector(".field-error");
+      if (firstInvalidField) {
+        firstInvalidField.focus();
+        firstInvalidField.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+      }
+    }
+
+    return allValid;
+  }
+
+  /**
+   * SHOW FIELD VALIDATION SUMMARY
+   * Show summary of validation errors
+   */
+  showFieldValidationSummary(invalidFields) {
+    const message = `Please fill in the following required fields: ${invalidFields.join(
+      ", "
+    )}`;
+    this.showFeedback("error", message);
+  }
+
+  /**
+   * SHOW VALIDATION SUCCESS
+   * Show success message when all validations pass
+   */
+  showValidationSuccess() {
+    // Clear all field validations and show success state
+    const requiredFields = [
+      "ac-id",
+      "ac-hp-capacity",
+      "ac-technology",
+      "ac-brand",
+      "room-area",
+      "room-type",
+    ];
+
+    requiredFields.forEach((fieldId) => {
+      const fieldElement = document.getElementById(fieldId);
+      if (fieldElement && fieldElement.value?.trim()) {
+        this.clearFieldValidation(fieldElement);
+        fieldElement.classList.add("field-success");
+
+        const container = fieldElement.parentElement;
+        const successMessage = document.createElement("span");
+        successMessage.className = "field-success-message";
+        successMessage.innerHTML = '<i class="fas fa-check"></i> Valid';
+        container.appendChild(successMessage);
+      }
+    });
+
+    // Show temporary success notification
+    this.showFeedback(
+      "success",
+      "All required fields are valid. Saving configuration..."
+    );
+  }
+
+  /**
+   * RESET FORM VALIDATION
+   * Clear all validation styling and messages from form
+   */
+  resetFormValidation() {
+    const allFields = [
+      "ac-id",
+      "ac-hp-capacity",
+      "ac-technology",
+      "ac-brand",
+      "room-area",
+      "room-type",
+    ];
+
+    allFields.forEach((fieldId) => {
+      const fieldElement = document.getElementById(fieldId);
+      if (fieldElement) {
+        this.clearFieldValidation(fieldElement);
+      }
+    });
+
+    console.log("Form validation styling reset");
   }
 
   /**
@@ -421,6 +762,7 @@ class ACConfigurationManager {
 
     this.hidePowerSpecifications();
     this.hideExampleCalculation();
+    this.resetFormValidation(); // Clear validation styling when clearing form
   }
 
   /**
@@ -677,25 +1019,8 @@ class ACConfigurationManager {
    * Validate that all required fields are filled
    */
   validateFormData(formData) {
-    const requiredFields = [
-      "acId",
-      "hpCapacity",
-      "technology",
-      "brand",
-      "roomArea",
-      "roomType",
-    ];
-
-    for (const field of requiredFields) {
-      if (
-        !formData[field] ||
-        (typeof formData[field] === "string" && formData[field].trim() === "")
-      ) {
-        console.error(`Required field missing: ${field}`);
-        this.showFeedback("error", `Please fill in the ${field} field`);
-        return false;
-      }
-    }
+    // Note: Required field validation is now handled by validateAllRequiredFields()
+    // This method focuses on business logic validation only
 
     // Validate HP capacity exists in specifications
     if (!this.acSpecifications[formData.hpCapacity]) {
@@ -747,14 +1072,21 @@ class ACConfigurationManager {
     const formData = this.getFormData();
     console.log("Extracted form data:", formData);
 
-    if (!this.validateFormData(formData)) {
-      console.log("Form validation failed");
-      this.showFeedback(
-        "error",
-        "Please fill in all required fields correctly"
-      );
+    // First validate required fields with visual feedback
+    if (!this.validateAllRequiredFields()) {
+      console.log("Required field validation failed");
       return;
     }
+
+    // Then validate data logic
+    if (!this.validateFormData(formData)) {
+      console.log("Form data validation failed");
+      this.showFeedback("error", "Please correct the errors in the form");
+      return;
+    }
+
+    // Show success feedback for validation
+    this.showValidationSuccess();
 
     console.log("Form validation passed, proceeding with save...");
 
@@ -1109,6 +1441,7 @@ class ACConfigurationManager {
       modal.classList.add("show");
       this.populateACUnitsDropdown(); // Refresh config AC units dropdown
       this.populateMainACDropdown(); // Refresh main AC units dropdown
+      this.resetFormValidation(); // Clear any existing validation styling
     }
   }
 
@@ -1202,11 +1535,42 @@ class ACConfigurationManager {
   loadConfigurationsFromStorage() {
     try {
       const stored = localStorage.getItem("ac-configurations");
-      return stored ? JSON.parse(stored) : {};
+      const configurations = stored ? JSON.parse(stored) : {};
+
+      // Normalize configurations để đảm bảo có đủ required properties
+      return this.normalizeConfigurations(configurations);
     } catch (error) {
       console.error("Failed to load configurations from storage:", error);
       return {};
     }
+  }
+
+  /**
+   * NORMALIZE CONFIGURATIONS
+   * Ensure all configurations have required properties với default values
+   */
+  normalizeConfigurations(configurations) {
+    const normalized = {};
+
+    Object.keys(configurations).forEach((acId) => {
+      const config = configurations[acId];
+
+      // Ensure defaultTempRange exists
+      normalized[acId] = {
+        ...config,
+        defaultTempRange: config.defaultTempRange || {
+          min: config.defaultTempMin || 22,
+          max: config.defaultTempMax || 26,
+        },
+        // Ensure other critical properties have defaults
+        hpCapacity: config.hpCapacity || "2HP",
+        technology: config.technology || "inverter",
+        roomArea: config.roomArea || 25,
+        energyCostPerKWh: config.energyCostPerKWh || 0.12,
+      };
+    });
+
+    return normalized;
   }
 
   saveConfigurationsToStorage() {
