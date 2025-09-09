@@ -249,10 +249,84 @@ class SmartACSPA {
     this.previousPage = this.currentPage;
     this.currentPage = page;
 
+    // Initialize page-specific functionality
+    this.initializePageFunctionality(page);
+
     // Manage fixed back button based on page
     this.manageFixedBackButtonForPage(page);
 
     console.log(`Navigated to page: ${page}`);
+  }
+
+  /**
+   * Initialize page-specific functionality
+   * @param {string} page - Page name
+   */
+  initializePageFunctionality(page) {
+    switch (page) {
+      case "settings":
+        // Initialize AC Configuration Manager for settings page
+        this.initializeSettingsPage();
+        break;
+      case "control":
+        // Initialize temperature chart if needed
+        if (
+          window.temperatureUsageChart &&
+          !window.temperatureUsageChart.isInitialized
+        ) {
+          setTimeout(() => {
+            window.temperatureUsageChart.initializeChart();
+          }, 500);
+        }
+        break;
+      case "energy":
+        // Initialize energy management components
+        this.initializeEnergyPage();
+        break;
+      case "analytics":
+        // Initialize analytics components
+        this.initializeAnalyticsPage();
+        break;
+    }
+  }
+
+  /**
+   * Initialize settings page functionality
+   */
+  initializeSettingsPage() {
+    console.log("Initializing settings page functionality");
+
+    // Initialize AC Configuration Manager if available
+    if (window.ACConfigurationManager) {
+      setTimeout(() => {
+        if (!window.acConfigManager) {
+          window.acConfigManager = new window.ACConfigurationManager();
+          console.log("AC Configuration Manager initialized for settings page");
+        } else {
+          // Refresh the configuration table if manager already exists
+          window.acConfigManager.loadACConfigurations();
+          console.log("AC Configuration Manager refreshed");
+        }
+      }, 100);
+    } else {
+      console.warn("AC Configuration Manager not available");
+    }
+  }
+
+  /**
+   * Initialize energy page functionality
+   */
+  initializeEnergyPage() {
+    console.log("Initializing energy page functionality");
+    // Energy page specific initialization can be added here
+  }
+
+  /**
+   * Initialize analytics page functionality
+   */
+  initializeAnalyticsPage() {
+    console.log("Initializing analytics page functionality");
+    // Analytics page specific initialization can be added here
   }
 
   /**
@@ -498,7 +572,7 @@ class SmartACSPA {
   setupFullscreenToggle() {
     const fullscreenButton = document.getElementById("fullscreenToggle");
     const fullscreenIcon = document.getElementById("fullscreenIcon");
-    
+
     if (!fullscreenButton || !fullscreenIcon) {
       console.warn("Fullscreen elements not found");
       return;
@@ -512,15 +586,15 @@ class SmartACSPA {
     document.addEventListener("fullscreenchange", () => {
       this.handleFullscreenChange();
     });
-    
+
     document.addEventListener("webkitfullscreenchange", () => {
       this.handleFullscreenChange();
     });
-    
+
     document.addEventListener("mozfullscreenchange", () => {
       this.handleFullscreenChange();
     });
-    
+
     document.addEventListener("MSFullscreenChange", () => {
       this.handleFullscreenChange();
     });
@@ -532,10 +606,12 @@ class SmartACSPA {
    * Toggle fullscreen mode
    */
   toggleFullscreen() {
-    if (!document.fullscreenElement && 
-        !document.webkitFullscreenElement && 
-        !document.mozFullScreenElement && 
-        !document.msFullscreenElement) {
+    if (
+      !document.fullscreenElement &&
+      !document.webkitFullscreenElement &&
+      !document.mozFullScreenElement &&
+      !document.msFullscreenElement
+    ) {
       // Enter fullscreen
       this.enterFullscreen();
     } else {
@@ -549,7 +625,7 @@ class SmartACSPA {
    */
   enterFullscreen() {
     const element = document.documentElement;
-    
+
     if (element.requestFullscreen) {
       element.requestFullscreen();
     } else if (element.webkitRequestFullscreen) {
@@ -582,11 +658,13 @@ class SmartACSPA {
   handleFullscreenChange() {
     const fullscreenIcon = document.getElementById("fullscreenIcon");
     const body = document.body;
-    
-    if (document.fullscreenElement || 
-        document.webkitFullscreenElement || 
-        document.mozFullScreenElement || 
-        document.msFullscreenElement) {
+
+    if (
+      document.fullscreenElement ||
+      document.webkitFullscreenElement ||
+      document.mozFullScreenElement ||
+      document.msFullscreenElement
+    ) {
       // Entered fullscreen
       body.classList.add("fullscreen-mode");
       if (fullscreenIcon) {

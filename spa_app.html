@@ -385,9 +385,10 @@
         backdrop-filter: blur(10px);
         padding: 30px;
         width: 90%;
-        max-width: 500px;
+        max-width: 700px; /* Increased for better form space */
         max-height: 90vh;
         overflow-y: auto;
+        box-sizing: border-box;
       }
 
       .modal-header {
@@ -422,6 +423,8 @@
 
       .form-group {
         margin-bottom: 20px;
+        width: 100%;
+        box-sizing: border-box;
       }
 
       .form-group label {
@@ -430,6 +433,7 @@
         color: rgba(255, 255, 255, 0.8);
         font-size: 14px;
         font-weight: 500;
+        word-wrap: break-word;
       }
 
       .glass-input,
@@ -771,6 +775,349 @@
         white-space: nowrap;
       }
 
+      /* AC Configuration Settings Styles */
+      .settings-header {
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .settings-header h2 {
+        color: white;
+        font-size: 24px;
+        font-weight: 600;
+        margin-bottom: 8px;
+      }
+
+      .settings-header p {
+        color: rgba(255, 255, 255, 0.7);
+        margin: 0;
+        font-size: 14px;
+      }
+
+
+
+      /* Energy Settings Content */
+      .energy-settings-content {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+
+      .energy-settings-content h3 {
+        color: white;
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 20px;
+      }
+
+      .input-group {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .input-group {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        position: relative;
+      }
+
+      .input-group .glass-input {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .input-unit {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 14px;
+        font-weight: 500;
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+
+      .temp-range-inputs {
+        display: flex;
+        gap: 16px;
+      }
+
+      .temp-range-input {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .temp-range-input label {
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 12px;
+        font-weight: 500;
+      }
+
+      .temp-range-input .input-with-unit {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        position: relative;
+        width: 100%;
+        overflow: hidden;
+      }
+
+      .temp-range-input input {
+        flex: 1;
+        min-width: 0;
+        width: auto;
+        max-width: calc(100% - 32px); /* Reserve space for unit span */
+      }
+
+      .temp-range-input span {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 12px;
+        font-weight: 500;
+        white-space: nowrap;
+        flex-shrink: 0;
+        min-width: 24px;
+        text-align: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .settings-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: flex-end;
+        margin-top: 20px;
+      }
+
+      /* Formula Explanation */
+      .formula-explanation {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+
+      .formula-explanation h3 {
+        color: white;
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 20px;
+      }
+
+      .formula-section {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        padding: 16px;
+      }
+
+      .formula-section h4 {
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .formula-code {
+        background: rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        padding: 12px;
+        font-family: "Courier New", monospace;
+        font-size: 12px;
+        color: #64ffda;
+        line-height: 1.5;
+      }
+
+      .tech-multipliers,
+      .room-factors {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .tech-item,
+      .room-item {
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 13px;
+        padding: 8px;
+        background: rgba(255, 255, 255, 0.02);
+        border-radius: 6px;
+        border-left: 3px solid #64ffda;
+      }
+
+      /* Modal Form Styling */
+      .form-row {
+        display: flex;
+        gap: 16px;
+        width: 100%;
+        box-sizing: border-box;
+        flex-wrap: wrap;
+      }
+
+      .form-group.half-width {
+        flex: 1;
+        min-width: 200px;
+        box-sizing: border-box;
+      }
+
+      /* Power Specifications Display */
+      .power-specs-display {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        padding: 16px;
+        margin: 20px 0;
+      }
+
+      .power-specs-display h4 {
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .power-specs-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+      }
+
+      .power-spec-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 12px;
+        background: rgba(255, 255, 255, 0.02);
+        border-radius: 6px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .power-spec-item label {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 12px;
+        font-weight: 500;
+      }
+
+      .power-spec-item span {
+        color: #64ffda;
+        font-size: 13px;
+        font-weight: 600;
+      }
+
+      /* Example Calculation */
+      .example-calculation {
+        background: rgba(100, 255, 218, 0.05);
+        border: 1px solid rgba(100, 255, 218, 0.2);
+        border-radius: 12px;
+        padding: 16px;
+        margin: 20px 0;
+      }
+
+      .example-calculation h4 {
+        color: #64ffda;
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 12px;
+      }
+
+      .calculation-result {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .calc-step {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 6px 0;
+      }
+
+      .calc-label {
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 12px;
+      }
+
+      .calc-value {
+        color: #64ffda;
+        font-size: 13px;
+        font-weight: 600;
+      }
+
+      /* HP Capacity Badge */
+      .hp-capacity-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+      }
+
+      .hp-capacity-badge.hp-1 {
+        background: rgba(59, 130, 246, 0.2);
+        color: #3b82f6;
+        border: 1px solid rgba(59, 130, 246, 0.3);
+      }
+
+      .hp-capacity-badge.hp-1-5 {
+        background: rgba(16, 185, 129, 0.2);
+        color: #10b981;
+        border: 1px solid rgba(16, 185, 129, 0.3);
+      }
+
+      .hp-capacity-badge.hp-2 {
+        background: rgba(245, 158, 11, 0.2);
+        color: #f59e0b;
+        border: 1px solid rgba(245, 158, 11, 0.3);
+      }
+
+      .hp-capacity-badge.hp-2-5 {
+        background: rgba(239, 68, 68, 0.2);
+        color: #ef4444;
+        border: 1px solid rgba(239, 68, 68, 0.3);
+      }
+
+      /* Technology Badge */
+      .technology-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+      }
+
+      .technology-badge.non-inverter {
+        background: rgba(156, 163, 175, 0.2);
+        color: #9ca3af;
+        border: 1px solid rgba(156, 163, 175, 0.3);
+      }
+
+      .technology-badge.inverter {
+        background: rgba(34, 197, 94, 0.2);
+        color: #22c55e;
+        border: 1px solid rgba(34, 197, 94, 0.3);
+      }
+
+      .technology-badge.dual-inverter {
+        background: rgba(168, 85, 247, 0.2);
+        color: #a855f7;
+        border: 1px solid rgba(168, 85, 247, 0.3);
+      }
+
       /* Responsive navigation improvements - only override what's necessary */
       @media (max-width: 991.98px) {
         .nav-sidebar {
@@ -807,6 +1154,44 @@
         .main-content {
           margin-left: 0;
           margin-bottom: 80px;
+        }
+
+        .power-specs-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .form-row {
+          flex-direction: column;
+        }
+
+        .temp-range-inputs {
+          flex-direction: column;
+          gap: 16px;
+        }
+
+        .temp-range-input .input-with-unit {
+          width: 100%;
+        }
+
+        .temp-range-input input {
+          max-width: calc(100% - 40px); /* More space for unit on mobile */
+        }
+
+        /* Modal responsive adjustments */
+        .modal-content {
+          width: 95%;
+          max-width: 95vw;
+          padding: 20px;
+          margin: 10px;
+        }
+
+        .form-row {
+          flex-direction: column;
+          gap: 16px;
+        }
+
+        .form-group.half-width {
+          width: 100%;
         }
       }
 
@@ -939,16 +1324,6 @@
               <i class="fas fa-chart-line"></i>
             </a>
           </li>
-          <li class="nav-item">
-            <a
-              href="#settings"
-              class="nav-link spa-nav-link"
-              data-page="settings"
-              title="Settings"
-            >
-              <i class="fas fa-cog"></i>
-            </a>
-          </li>
         </ul>
       </nav>
 
@@ -965,6 +1340,15 @@
             </p>
           </div>
           <div class="header-right">
+            <!-- AC Settings Button -->
+            <button
+              class="fullscreen-toggle-btn glass-effect"
+              id="acSettingsToggle"
+              title="AC Configuration Settings"
+              onclick="window.acConfigManager.openConfigModal()"
+            >
+              <i class="fas fa-cog"></i>
+            </button>
             <!-- Fullscreen Toggle Button -->
             <button
               class="fullscreen-toggle-btn glass-effect"
@@ -1577,13 +1961,6 @@
               Filter
             </button>
             <button
-              class="dashboard-glass-btn setting"
-              onclick="window.spaApp.openSettings()"
-            >
-              <i class="fas fa-cog"></i>
-              Settings
-            </button>
-            <button
               class="dashboard-glass-btn add primary"
               onclick="window.spaApp.openAddModal()"
             >
@@ -1681,6 +2058,7 @@
               </tbody>
             </table>
           </div>
+
         </div>
 
         <!-- Page: Energy -->
@@ -1725,22 +2103,6 @@
                 <div class="alert alert-info mt-3">
                   <i class="fas fa-info-circle"></i>
                   Analytics features will be implemented here
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Page: Settings -->
-        <div id="settings-page" class="page">
-          <div class="row g-4">
-            <div class="col-12">
-              <div class="glass-effect p-4">
-                <h2>Settings</h2>
-                <p>System configuration and preferences</p>
-                <div class="alert alert-info mt-3">
-                  <i class="fas fa-info-circle"></i>
-                  Settings features will be implemented here
                 </div>
               </div>
             </div>
@@ -1802,6 +2164,466 @@
       </div>
     </div>
 
+    <!-- AC Configuration Modal -->
+                      <!-- Dynamic content populated by AC Config Manager -->
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+    <!-- AC Configuration Modal -->
+    <div class="modal" id="ac-config-modal">
+      <div class="modal-content glass-effect">
+        <div class="modal-header">
+          <h3 id="config-modal-title">Configure AC Unit</h3>
+          <button
+            class="close-btn"
+            onclick="window.acConfigManager.closeConfigModal()"
+          >
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        
+        <form id="ac-config-form">
+          <!-- AC Basic Information -->
+          <div class="form-row">
+            <div class="form-group">
+              <label for="ac-id">AC Unit ID</label>
+              <select
+                id="ac-id"
+                class="glass-select"
+                required
+              >
+                <option value="">Select AC Unit</option>
+                <!-- Options will be populated dynamically -->
+              </select>
+            </div>
+          </div>
+
+          <!-- AC Technical Specifications -->
+          <div class="form-row">
+            <div class="form-group half-width">
+              <label for="ac-hp-capacity">HP Capacity</label>
+              <select id="ac-hp-capacity" class="glass-select" required>
+                <option value="">Select HP Capacity</option>
+                <option value="1">1 HP (9,000 BTU)</option>
+                <option value="1.5">1.5 HP (12,000 BTU)</option>
+                <option value="2">2 HP (18,000 BTU)</option>
+                <option value="2.5">2.5 HP (24,000 BTU)</option>
+                <option value="3">3 HP (30,000 BTU)</option>
+                <option value="4">4 HP (36,000 BTU)</option>
+                <option value="5">5 HP (48,000 BTU)</option>
+              </select>
+            </div>
+            <div class="form-group half-width">
+              <label for="ac-technology">Technology Type</label>
+              <select id="ac-technology" class="glass-select" required>
+                <option value="">Select Technology</option>
+                <option value="non-inverter">Non-Inverter</option>
+                <option value="inverter">Inverter</option>
+                <option value="dual-inverter">Dual Inverter</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Brand and Model -->
+          <div class="form-row">
+            <div class="form-group half-width">
+              <label for="ac-brand">Brand</label>
+              <select id="ac-brand" class="glass-select" required>
+                <option value="">Select Brand</option>
+                <option value="daikin">Daikin</option>
+                <option value="mitsubishi">Mitsubishi Electric</option>
+                <option value="panasonic">Panasonic</option>
+                <option value="lg">LG</option>
+                <option value="samsung">Samsung</option>
+                <option value="carrier">Carrier</option>
+                <option value="toshiba">Toshiba</option>
+                <option value="sharp">Sharp</option>
+                <option value="gree">Gree</option>
+                <option value="midea">Midea</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div class="form-group half-width">
+              <label for="ac-model">Model</label>
+              <input
+                type="text"
+                id="ac-model"
+                class="glass-input"
+                placeholder="Enter model number"
+              />
+            </div>
+          </div>
+
+          <!-- Room Specifications -->
+          <div class="form-row">
+            <div class="form-group half-width">
+              <label for="room-area">Room Area (m²)</label>
+              <input
+                type="number"
+                id="room-area"
+                class="glass-input"
+                placeholder="Enter room area"
+                min="5"
+                max="200"
+                step="0.1"
+                required
+              />
+            </div>
+            <div class="form-group half-width">
+              <label for="room-type">Room Type</label>
+              <select id="room-type" class="glass-select" required>
+                <option value="">Select Room Type</option>
+                <option value="bedroom">Bedroom</option>
+                <option value="living-room">Living Room</option>
+                <option value="office">Office</option>
+                <option value="meeting-room">Meeting Room</option>
+                <option value="server-room">Server Room</option>
+                <option value="restaurant">Restaurant</option>
+                <option value="retail">Retail Store</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Energy and Operating Parameters -->
+          <div class="form-row">
+            <div class="form-group half-width">
+              <label for="energy-star-rating">Energy Star Rating</label>
+              <select id="energy-star-rating" class="glass-select">
+                <option value="">Select Rating</option>
+                <option value="1">1 Star</option>
+                <option value="2">2 Stars</option>
+                <option value="3">3 Stars</option>
+                <option value="4">4 Stars</option>
+                <option value="5">5 Stars</option>
+              </select>
+            </div>
+            <div class="form-group half-width">
+              <label for="installation-year">Installation Year</label>
+              <input
+                type="number"
+                id="installation-year"
+                class="glass-input"
+                placeholder="2024"
+                min="2000"
+                max="2030"
+              />
+            </div>
+          </div>
+
+          <!-- Operating Settings -->
+          <div class="form-group">
+            <label>Default Operating Temperature Range</label>
+            <div class="temp-range-inputs">
+              <div class="temp-range-input">
+                <label>Min Temp</label>
+                <div class="input-with-unit">
+                  <input
+                    type="number"
+                    id="default-temp-min"
+                    class="glass-input"
+                    value="22"
+                    min="16"
+                    max="25"
+                  />
+                  <span>°C</span>
+                </div>
+              </div>
+              <div class="temp-range-input">
+                <label>Max Temp</label>
+                <div class="input-with-unit">
+                  <input
+                    type="number"
+                    id="default-temp-max"
+                    class="glass-input"
+                    value="26"
+                    min="20"
+                    max="30"
+                  />
+                  <span>°C</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Power Specifications Display -->
+          <div class="power-specs-display">
+            <h4>Calculated Power Specifications</h4>
+            <div class="power-specs-grid">
+              <div class="power-spec-item">
+                <label>Base Power Consumption:</label>
+                <span id="calculated-base-power">-- W</span>
+              </div>
+              <div class="power-spec-item">
+                <label>Efficiency Rating:</label>
+                <span id="calculated-efficiency">-- %</span>
+              </div>
+              <div class="power-spec-item">
+                <label>Coverage Ratio:</label>
+                <span id="calculated-coverage">-- %</span>
+              </div>
+              <div class="power-spec-item">
+                <label>Estimated Daily Cost:</label>
+                <span id="calculated-daily-cost">-- USD</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Form Actions -->
+          <div class="form-actions">
+            <button
+              type="button"
+              class="dashboard-glass-btn"
+              onclick="window.acConfigManager.resetForm()"
+            >
+              <i class="fas fa-undo"></i>
+              Reset
+            </button>
+            <button
+              type="button"
+              class="dashboard-glass-btn"
+              onclick="window.acConfigManager.previewCalculation()"
+            >
+              <i class="fas fa-calculator"></i>
+              Preview
+            </button>
+            <button
+              type="submit"
+              class="dashboard-glass-btn add"
+              onclick="window.acConfigManager.saveConfiguration(event)"
+            >
+              <i class="fas fa-save"></i>
+              Save Configuration
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Add AC Modal -->
+    <div class="modal" id="spa-add-modal">
+      <div class="modal-content glass-effect">
+        <div class="modal-header">
+          <h3>Add New Air Conditioner</h3>
+          <button class="close-btn" onclick="window.spaApp.closeAddModal()">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label>AC Unit ID</label>
+            <input
+              type="text"
+              class="form-control glass-input"
+              placeholder="e.g. AC-006"
+            />
+          </div>
+          <div class="form-group">
+            <label>Location</label>
+            <input
+              type="text"
+              class="form-control glass-input"
+              placeholder="e.g. Guest Room"
+            />
+          </div>
+          <div class="form-group">
+            <label>Initial Mode</label>
+            <select class="form-control glass-select">
+              <option value="auto">Auto</option>
+              <option value="cool">Cool</option>
+              <option value="dry">Dry</option>
+              <option value="fan">Fan</option>
+            </select>
+          </div>
+          <div class="form-actions">
+            <button
+              class="dashboard-glass-btn"
+              onclick="window.spaApp.closeAddModal()"
+            >
+              Cancel
+            </button>
+            <button
+              class="dashboard-glass-btn add primary"
+              onclick="window.spaApp.saveAC()"
+            >
+              Add AC Unit
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AC Configuration Modal -->
+    <div class="modal" id="ac-config-modal">
+      <div class="modal-content glass-effect">
+        <div class="modal-header">
+          <h3 id="config-modal-title">Configure AC Unit</h3>
+          <button
+            class="close-btn"
+            onclick="window.acConfigManager.closeConfigModal()"
+          >
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form id="ac-config-form">
+            <div class="form-row">
+              <div class="form-group half-width">
+                <label for="config-ac-id">AC Unit ID</label>
+                <select id="config-ac-id" class="glass-select" required>
+                  <option value="">Select AC Unit</option>
+                  <!-- Dynamically populated -->
+                </select>
+              </div>
+              <div class="form-group half-width">
+                <label for="config-location">Location</label>
+                <input
+                  type="text"
+                  id="config-location"
+                  class="glass-input"
+                  placeholder="e.g. Living Room"
+                  readonly
+                />
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group half-width">
+                <label for="config-hp-capacity">HP Capacity</label>
+                <select id="config-hp-capacity" class="glass-select" required>
+                  <option value="">Select HP Capacity</option>
+                  <option value="1HP">1 HP (800W - 1000W)</option>
+                  <option value="1.5HP">1.5 HP (1200W - 1500W)</option>
+                  <option value="2HP">2 HP (1600W - 2000W)</option>
+                  <option value="2.5HP">2.5 HP (2000W - 2500W)</option>
+                </select>
+              </div>
+              <div class="form-group half-width">
+                <label for="config-technology">Technology Type</label>
+                <select id="config-technology" class="glass-select" required>
+                  <option value="">Select Technology</option>
+                  <option value="non-inverter">
+                    Non-Inverter (25W/°C, 70% efficiency)
+                  </option>
+                  <option value="inverter">
+                    Inverter (18W/°C, 85% efficiency)
+                  </option>
+                  <option value="dual-inverter">
+                    Dual-Inverter (15W/°C, 95% efficiency)
+                  </option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group half-width">
+                <label for="config-room-size">Room Size Category</label>
+                <select id="config-room-size" class="glass-select" required>
+                  <option value="">Select Room Size</option>
+                  <option value="small">Small (10-20m²) - Bedroom</option>
+                  <option value="medium">Medium (20-35m²) - Living Room</option>
+                  <option value="large">Large (35-50m²) - Open Space</option>
+                  <option value="xlarge">X-Large (50+m²) - Commercial</option>
+                </select>
+              </div>
+              <div class="form-group half-width">
+                <label for="config-energy-cost">Energy Cost (per kWh)</label>
+                <input
+                  type="number"
+                  id="config-energy-cost"
+                  class="glass-input"
+                  placeholder="0.12"
+                  min="0.01"
+                  max="1.00"
+                  step="0.01"
+                  value="0.12"
+                />
+              </div>
+            </div>
+
+            <!-- Power Specifications Display -->
+            <div
+              class="power-specs-display"
+              id="power-specs-display"
+              style="display: none"
+            >
+              <h4>Calculated Power Specifications</h4>
+              <div class="power-specs-grid">
+                <div class="power-spec-item">
+                  <label>Nominal Power:</label>
+                  <span id="spec-nominal-power">-</span>
+                </div>
+                <div class="power-spec-item">
+                  <label>Maximum Power:</label>
+                  <span id="spec-max-power">-</span>
+                </div>
+                <div class="power-spec-item">
+                  <label>Minimum Power:</label>
+                  <span id="spec-min-power">-</span>
+                </div>
+                <div class="power-spec-item">
+                  <label>Power per Degree:</label>
+                  <span id="spec-power-per-degree">-</span>
+                </div>
+                <div class="power-spec-item">
+                  <label>Efficiency Rating:</label>
+                  <span id="spec-efficiency">-</span>
+                </div>
+                <div class="power-spec-item">
+                  <label>Room Multiplier:</label>
+                  <span id="spec-room-multiplier">-</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Example Calculation -->
+            <div
+              class="example-calculation"
+              id="example-calculation"
+              style="display: none"
+            >
+              <h4>Example: 30°C Outdoor → 22°C Indoor</h4>
+              <div class="calculation-result">
+                <div class="calc-step">
+                  <span class="calc-label">Temperature Difference:</span>
+                  <span class="calc-value" id="calc-temp-diff">8°C</span>
+                </div>
+                <div class="calc-step">
+                  <span class="calc-label">Optimal Power Required:</span>
+                  <span class="calc-value" id="calc-optimal-power">512W</span>
+                </div>
+                <div class="calc-step">
+                  <span class="calc-label">Estimated Cost per Hour:</span>
+                  <span class="calc-value" id="calc-hourly-cost">$0.061</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button
+                type="button"
+                class="dashboard-glass-btn"
+                onclick="window.acConfigManager.closeConfigModal()"
+              >
+                Cancel
+              </button>
+              <button type="submit" class="dashboard-glass-btn add primary">
+                <i class="fas fa-save"></i>
+                Save Configuration
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
     <!-- Fixed Back Button -->
     <button
       class="fixed-back-btn hidden"
@@ -1820,6 +2642,8 @@
     <script src="js/event-system.js"></script>
     <!-- Energy Efficiency Management System -->
     <script src="js/energy-efficiency-manager.js"></script>
+    <!-- AC Configuration Management System -->
+    <script src="js/ac-configuration-manager.js"></script>
     <!-- Smart AC Temperature Control System -->
     <script src="js/eRaServices-controls.js"></script>
     <!-- AC SPA Management System -->

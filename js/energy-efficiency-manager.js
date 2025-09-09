@@ -20,13 +20,403 @@ class EnergyEfficiencyManager {
       poor: 0,
     };
 
-    // Power consumption baseline (watts per degree difference)
-    this.baselinePowerPerDegree = 15;
-    this.minimumPower = 180; // Minimum power when AC is running efficiently
+    // DEPRECATED: Legacy baseline values - replaced by AC-specific configurations
+    this.baselinePowerPerDegree = 15; // Will be overridden by AC configurations
+    this.minimumPower = 180; // Will be overridden by AC configurations
+
+    // NEW: AC-specific configurations from AC Configuration Manager
+    this.acConfigurations = {}; // Stores per-unit specifications
+
+    // AC Specifications Database - from ENERGY-EFFICIENCY-FORMULA.md
+    this.acSpecifications = {
+      "1HP": { nominalPower: 800, maxPower: 1000, minPower: 200 },
+      "1.5HP": { nominalPower: 1200, maxPower: 1500, minPower: 300 },
+      "2HP": { nominalPower: 1600, maxPower: 2000, minPower: 400 },
+      "2.5HP": { nominalPower: 2000, maxPower: 2500, minPower: 500 },
+    };
+
+    // Technology Multipliers - from ENERGY-EFFICIENCY-FORMULA.md
+    this.technologyMultipliers = {
+      "non-inverter": { efficiency: 0.7, powerPerDegree: 25 },
+      inverter: { efficiency: 0.85, powerPerDegree: 18 },
+      "dual-inverter": { efficiency: 0.95, powerPerDegree: 15 },
+    };
+
+    // Room Size Factors - from ENERGY-EFFICIENCY-FORMULA.md
+    this.roomSizeFactors = {
+      small: { area: "10-20m²", multiplier: 0.8 }, // Bedroom
+      medium: { area: "20-35m²", multiplier: 1.0 }, // Living Room
+      large: { area: "35-50m²", multiplier: 1.3 }, // Open Space
+      xlarge: { area: "50+m²", multiplier: 1.6 }, // Commercial
+    };
+
+    // Global energy cost setting
+    this.globalEnergyCostPerKWh = 0.12;
+  }
+
+  /**
+   * CONFIGURE AC UNIT - NEW METHOD
+   * Configure specifications for a specific AC unit
+   * Called by AC Configuration Manager
+   */
+  configureACUnit(acId, configuration) {
+    const { type, technology, roomSize, energyCostPerKWh } = configuration;
+
+    // Validate configuration
+    if (!this.acSpecifications[type]) {
+      throw new Error(`Invalid AC type: ${type}`);
+    }
+    if (!this.technologyMultipliers[technology]) {
+      throw new Error(`Invalid technology: ${technology}`);
+    }
+    if (!this.roomSizeFactors[roomSize]) {
+      throw new Error(`Invalid room size: ${roomSize}`);
+    }
+
+    // Store AC-specific configuration
+    this.acConfigurations[acId] = {
+      type: type,
+      technology: technology,
+      roomSize: roomSize,
+      energyCostPerKWh: energyCostPerKWh || this.globalEnergyCostPerKWh,
+
+      // Pre-calculate power specifications for efficiency
+      nominalPower: this.acSpecifications[type].nominalPower,
+      maxPower: this.acSpecifications[type].maxPower,
+      minPower: this.acSpecifications[type].minPower,
+      efficiency: this.technologyMultipliers[technology].efficiency,
+      powerPerDegree: this.technologyMultipliers[technology].powerPerDegree,
+      roomMultiplier: this.roomSizeFactors[roomSize].multiplier,
+
+      // Calculated final specifications
+      adjustedMinPower:
+        this.acSpecifications[type].minPower *
+        this.roomSizeFactors[roomSize].multiplier,
+      adjustedMaxPower:
+        this.acSpecifications[type].maxPower *
+        this.roomSizeFactors[roomSize].multiplier,
+      adjustedNominalPower:
+        this.acSpecifications[type].nominalPower *
+        this.roomSizeFactors[roomSize].multiplier,
+      adjustedPowerPerDegree:
+        this.technologyMultipliers[technology].powerPerDegree *
+        this.roomSizeFactors[roomSize].multiplier,
+
+      configuredAt: new Date().toISOString(),
+    };
+
+    console.log(
+      `AC ${acId} configured with realistic specifications:`,
+      this.acConfigurations[acId]
+    );
+  }
+
+  /**
+   * REMOVE AC CONFIGURATION
+   * Remove configuration for specific AC unit
+   */
+  removeACConfiguration(acId) {
+    if (this.acConfigurations[acId]) {
+      delete this.acConfigurations[acId];
+      console.log(`Configuration removed for AC ${acId}`);
+    }
+  }
+
+  /**
+   * UPDATE GLOBAL SETTINGS
+   * Update global settings from AC Configuration Manager
+   */
+  updateGlobalSettings(settings) {
+    if (settings.outdoorTemp) {
+      this.outdoorTemp = settings.outdoorTemp;
+    }
+    if (settings.energyCostPerKWh) {
+      this.globalEnergyCostPerKWh = settings.energyCostPerKWh;
+    }
+    if (settings.optimalTempRange) {
+      this.optimalTempRange = settings.optimalTempRange;
+    }
+
+    console.log("Global settings updated:", settings);
+  }
+
+  /**
+   * CALCULATE EFFICIENCY FOR SPECIFIC AC - ENHANCED METHOD
+   * Calculate energy efficiency using AC-specific configurations
+   * Fallback to legacy calculation if AC not configured
+   */
+  calculateEfficiencyForAC(
+    acId,
+    targetTemp,
+    currentPower,
+    outdoorTemp = this.outdoorTemp
+  ) {
+    const acConfig = this.acConfigurations[acId];
+
+    if (acConfig) {
+      // Use AC-specific realistic calculation
+      return this.calculateRealisticEfficiency(
+        acConfig,
+        targetTemp,
+        currentPower,
+        outdoorTemp
+      );
+    } else {
+      // Fallback to legacy calculation
+      console.warn(
+        `AC ${acId} not configured. Using legacy calculation. Please configure AC specifications in Settings.`
+      );
+      return this.calculateEfficiency(targetTemp, currentPower, outdoorTemp);
+    }
+  }
+
+  /**
+   * REALISTIC EFFICIENCY CALCULATION - NEW METHOD
+   * Implements the advanced formula from ENERGY-EFFICIENCY-FORMULA.md
+   */
+  calculateRealisticEfficiency(
+    acConfig,
+    targetTemp,
+    currentPower,
+    outdoorTemp = this.outdoorTemp
+  ) {
+    // Calculate temperature difference
+    const tempDifference = Math.abs(outdoorTemp - targetTemp);
+
+    // Calculate optimal power using AC-specific specifications
+    const optimalPower =
+      acConfig.adjustedMinPower +
+      tempDifference * acConfig.adjustedPowerPerDegree;
+
+    // Ensure optimal power doesn't exceed AC capacity
+    const finalOptimalPower = Math.min(optimalPower, acConfig.adjustedMaxPower);
+
+    // Calculate efficiency score (0-100)
+    let efficiencyScore = 100;
+
+    // Temperature penalties (adjusted for realistic ranges)
+    if (targetTemp < 18) {
+      efficiencyScore -= (18 - targetTemp) * 12; // Extreme cold penalty
+    } else if (targetTemp < 20) {
+      efficiencyScore -= (20 - targetTemp) * 8; // Very cold penalty
+    }
+
+    if (targetTemp > 28) {
+      efficiencyScore -= (targetTemp - 28) * 6; // Too hot penalty
+    } else if (targetTemp > 30) {
+      efficiencyScore -= (targetTemp - 30) * 10; // Extreme hot penalty
+    }
+
+    // Power consumption penalty (relative to AC capacity)
+    if (currentPower > finalOptimalPower) {
+      const powerWasteRatio =
+        (currentPower - finalOptimalPower) / finalOptimalPower;
+      const powerPenalty = Math.min(powerWasteRatio * 60, 40); // Max 40 point penalty
+      efficiencyScore -= powerPenalty;
+    }
+
+    // Technology efficiency bonus
+    const technologyBonus = (acConfig.efficiency - 0.7) * 20; // Up to 5 points for dual-inverter
+    efficiencyScore += technologyBonus;
+
+    // Optimal temperature range bonus
+    if (
+      targetTemp >= this.optimalTempRange.min &&
+      targetTemp <= this.optimalTempRange.max
+    ) {
+      efficiencyScore += 10;
+    }
+
+    // Capacity utilization penalty
+    const capacityUtilization = currentPower / acConfig.adjustedNominalPower;
+    if (capacityUtilization > 1.2) {
+      const capacityPenalty = (capacityUtilization - 1.2) * 15;
+      efficiencyScore -= capacityPenalty;
+    }
+
+    // Ensure score is between 0-100
+    efficiencyScore = Math.max(0, Math.min(100, efficiencyScore));
+
+    // Calculate potential savings using AC-specific energy cost
+    const potentialSavings =
+      currentPower > finalOptimalPower
+        ? (((currentPower - finalOptimalPower) / currentPower) * 100).toFixed(1)
+        : 0;
+
+    // Determine efficiency level
+    const level = this.getEfficiencyLevel(efficiencyScore);
+
+    // Generate realistic recommendations
+    const recommendations = this.getRealisticRecommendations(
+      acConfig,
+      targetTemp,
+      currentPower,
+      finalOptimalPower,
+      outdoorTemp
+    );
+
+    return {
+      score: Math.round(efficiencyScore),
+      level: level,
+      potentialSavings: potentialSavings,
+      optimalPower: Math.round(finalOptimalPower),
+      currentPower: currentPower,
+      tempDifference: tempDifference,
+      recommendations: recommendations,
+      isOptimalRange:
+        targetTemp >= this.optimalTempRange.min &&
+        targetTemp <= this.optimalTempRange.max,
+
+      // Additional realistic data
+      acConfiguration: acConfig,
+      capacityUtilization: Math.round(capacityUtilization * 100),
+      technologyEfficiency: Math.round(acConfig.efficiency * 100),
+      hourlyCost: ((currentPower / 1000) * acConfig.energyCostPerKWh).toFixed(
+        3
+      ),
+      optimalHourlyCost: (
+        (finalOptimalPower / 1000) *
+        acConfig.energyCostPerKWh
+      ).toFixed(3),
+    };
+  }
+
+  /**
+   * REALISTIC RECOMMENDATIONS - NEW METHOD
+   * Generate recommendations based on AC specifications and capacity
+   */
+  getRealisticRecommendations(
+    acConfig,
+    targetTemp,
+    currentPower,
+    optimalPower,
+    outdoorTemp
+  ) {
+    const recommendations = [];
+
+    // Temperature recommendations based on AC capacity
+    if (targetTemp < this.optimalTempRange.min) {
+      const suggestedTemp = this.optimalTempRange.min;
+      const savings = this.calculateSavingsForACTemp(
+        acConfig,
+        targetTemp,
+        suggestedTemp,
+        outdoorTemp
+      );
+
+      recommendations.push({
+        type: "temperature",
+        action: "increase",
+        message: `Increase temperature to ${suggestedTemp}°C for ${savings}% energy savings`,
+        suggestedTemp: suggestedTemp,
+        estimatedSavings: savings,
+        priority: "high",
+      });
+    } else if (targetTemp > this.optimalTempRange.max) {
+      const suggestedTemp = this.optimalTempRange.max;
+      const savings = this.calculateSavingsForACTemp(
+        acConfig,
+        targetTemp,
+        suggestedTemp,
+        outdoorTemp
+      );
+
+      recommendations.push({
+        type: "temperature",
+        action: "decrease",
+        message: `Decrease temperature to ${suggestedTemp}°C for ${savings}% energy savings`,
+        suggestedTemp: suggestedTemp,
+        estimatedSavings: savings,
+        priority: "medium",
+      });
+    }
+
+    // Capacity utilization recommendations
+    const capacityUtilization = currentPower / acConfig.adjustedNominalPower;
+    if (capacityUtilization > 1.1) {
+      recommendations.push({
+        type: "capacity",
+        action: "upgrade",
+        message: `Your ${acConfig.type} AC is running at ${Math.round(
+          capacityUtilization * 100
+        )}% capacity. Consider upgrading to a higher HP unit.`,
+        currentCapacity: Math.round(capacityUtilization * 100),
+        suggestedUpgrade: this.suggestACUpgrade(acConfig.type),
+        priority: "medium",
+      });
+    }
+
+    // Technology recommendations
+    if (
+      acConfig.technology === "non-inverter" &&
+      (currentPower - optimalPower) / optimalPower > 0.2
+    ) {
+      recommendations.push({
+        type: "technology",
+        action: "upgrade",
+        message: "Consider upgrading to inverter AC for 15-30% energy savings",
+        currentTechnology: acConfig.technology,
+        suggestedTechnology: "inverter",
+        estimatedSavings: "15-30",
+        priority: "low",
+      });
+    }
+
+    // Power consumption recommendations
+    if (currentPower > optimalPower * 1.2) {
+      recommendations.push({
+        type: "maintenance",
+        action: "service",
+        message:
+          "AC consuming excessive power. Check filters and schedule maintenance.",
+        excessConsumption: Math.round(
+          ((currentPower - optimalPower) / optimalPower) * 100
+        ),
+        priority: "high",
+      });
+    }
+
+    return recommendations;
+  }
+
+  /**
+   * CALCULATE SAVINGS FOR AC TEMPERATURE CHANGE
+   * Calculate realistic savings based on AC specifications
+   */
+  calculateSavingsForACTemp(acConfig, currentTemp, suggestedTemp, outdoorTemp) {
+    const currentDiff = Math.abs(outdoorTemp - currentTemp);
+    const suggestedDiff = Math.abs(outdoorTemp - suggestedTemp);
+
+    const currentEstimatedPower =
+      acConfig.adjustedMinPower + currentDiff * acConfig.adjustedPowerPerDegree;
+    const suggestedEstimatedPower =
+      acConfig.adjustedMinPower +
+      suggestedDiff * acConfig.adjustedPowerPerDegree;
+
+    const savings =
+      ((currentEstimatedPower - suggestedEstimatedPower) /
+        currentEstimatedPower) *
+      100;
+    return Math.max(0, Math.round(savings));
+  }
+
+  /**
+   * SUGGEST AC UPGRADE
+   * Suggest next HP capacity for upgrade
+   */
+  suggestACUpgrade(currentType) {
+    const upgradeMap = {
+      "1HP": "1.5HP",
+      "1.5HP": "2HP",
+      "2HP": "2.5HP",
+      "2.5HP": "3HP",
+    };
+    return upgradeMap[currentType] || "Higher capacity unit";
   }
 
   /**
    * Calculate energy efficiency score based on target temperature and power consumption
+   * LEGACY METHOD - Enhanced to detect AC configurations
    * @param {number} targetTemp - Target temperature setting
    * @param {number} currentPower - Current power consumption in watts
    * @param {number} outdoorTemp - Outdoor temperature (optional)
@@ -37,6 +427,29 @@ class EnergyEfficiencyManager {
     currentPower,
     outdoorTemp = this.outdoorTemp
   ) {
+    // NEW: Try to determine which AC this calculation is for
+    // Check if we're in control page context and have a selected AC
+    let acId = null;
+    if (window.acSpaManager && window.acSpaManager.selectedAC) {
+      acId = window.acSpaManager.selectedAC;
+    }
+
+    // NEW: Use AC-specific calculation if configuration exists
+    if (acId && this.acConfigurations[acId]) {
+      console.log(`Using realistic calculation for configured AC: ${acId}`);
+      return this.calculateRealisticEfficiency(
+        this.acConfigurations[acId],
+        targetTemp,
+        currentPower,
+        outdoorTemp
+      );
+    }
+
+    // LEGACY: Fall back to original calculation for unconfigured ACs
+    console.log(
+      "Using legacy calculation - AC not configured or not identified"
+    );
+
     // Calculate temperature difference from outdoor
     const tempDifference = Math.abs(outdoorTemp - targetTemp);
 
@@ -99,6 +512,12 @@ class EnergyEfficiencyManager {
       isOptimalRange:
         targetTemp >= this.optimalTempRange.min &&
         targetTemp <= this.optimalTempRange.max,
+
+      // NEW: Add configuration hint
+      configurationHint: acId
+        ? `Configure AC ${acId} in Settings for more accurate calculations`
+        : "Configure your AC in Settings for more accurate calculations",
+      isLegacyCalculation: true,
     };
   }
 

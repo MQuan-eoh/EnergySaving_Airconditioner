@@ -223,11 +223,34 @@ class GlobalDeviceDataManager {
    */
   updateDeviceData(newData) {
     // Object destructuring syntax: const { prop1, prop2 } = object;
-    const { targetTemp, currentTemp, mode, fanSpeed, power, current, voltage } =
-      newData;
+    const {
+      targetTemp,
+      currentTemp,
+      mode,
+      fanSpeed,
+      power,
+      current,
+      voltage,
+      // AC Configuration Properties
+      hpCapacity,
+      technology,
+      brand,
+      model,
+      location,
+      roomArea,
+      roomType,
+      energyStarRating,
+      installationYear,
+      // Energy Efficiency Properties
+      energyCostPerKWh,
+      energyConsumption,
+      dailyUsageHours,
+      estimatedMonthlyCost,
+    } = newData;
 
     // Create new data object using object literal syntax
     this.deviceData = {
+      // Basic Device Properties
       targetTemp: targetTemp || 22,
       currentTemp: currentTemp || 22,
       mode: mode || 0,
@@ -237,6 +260,23 @@ class GlobalDeviceDataManager {
       isPowerOn: power || false,
       current: current || 0,
       voltage: voltage || 0,
+
+      // AC Configuration Properties - integration với AC Configuration Manager
+      hpCapacity: hpCapacity || "2HP",
+      technology: technology || "inverter",
+      brand: brand || "Unknown",
+      model: model || "Unknown",
+      location: location || "Living Room",
+      roomArea: roomArea || 25,
+      roomType: roomType || "medium",
+      energyStarRating: energyStarRating || 3,
+      installationYear: installationYear || new Date().getFullYear(),
+
+      // Energy Efficiency Properties - integration với Energy Efficiency Manager
+      energyCostPerKWh: energyCostPerKWh || 3000,
+      energyConsumption: energyConsumption || 0,
+      dailyUsageHours: dailyUsageHours || 8,
+      estimatedMonthlyCost: estimatedMonthlyCost || 0,
     };
 
     console.log("Global device data updated:", this.deviceData);
@@ -256,8 +296,9 @@ class GlobalDeviceDataManager {
       // Convert device mode value to string mode
       const modeString = this.mapDeviceValueToMode(this.deviceData.mode);
       //At updateDeviceData(newData) -- newData stored with this.deviceData
-      // Object creation with computed properties
+      // Object creation with computed properties - Enhanced với AC Configuration properties
       const acUpdateData = {
+        // Basic Device Properties
         currentTemp: this.deviceData.currentTemp, //currentTemp at this.deviceData = {targetTemp,currentTemp,. . . .etc}
         targetTemp: this.deviceData.targetTemp,
         mode: modeString,
@@ -266,6 +307,24 @@ class GlobalDeviceDataManager {
         lastUpdated: this.deviceData.timestamp,
         current: this.deviceData.current,
         voltage: this.deviceData.voltage,
+        fanSpeed: this.deviceData.fanSpeed,
+
+        // AC Configuration Properties - Integration với AC Configuration Manager
+        hpCapacity: this.deviceData.hpCapacity,
+        technology: this.deviceData.technology,
+        brand: this.deviceData.brand,
+        model: this.deviceData.model,
+        location: this.deviceData.location,
+        roomArea: this.deviceData.roomArea,
+        roomType: this.deviceData.roomType,
+        energyStarRating: this.deviceData.energyStarRating,
+        installationYear: this.deviceData.installationYear,
+
+        // Energy Efficiency Properties - Integration với Energy Efficiency Manager
+        energyCostPerKWh: this.deviceData.energyCostPerKWh,
+        energyConsumption: this.deviceData.energyConsumption,
+        dailyUsageHours: this.deviceData.dailyUsageHours,
+        estimatedMonthlyCost: this.deviceData.estimatedMonthlyCost,
       };
       // Call ACSpaManager update method
       window.acSpaManager.updateACDataRealtime("AC-001", acUpdateData);
@@ -295,6 +354,41 @@ class GlobalDeviceDataManager {
    */
   getDeviceData() {
     return this.deviceData ? { ...this.deviceData } : null; // Spread operator để tạo copy
+  }
+
+  /**
+   * UPDATE AC CONFIGURATION
+   * Method để update AC configuration properties và notify subscribers
+   */
+  updateACConfiguration(acId, configuration) {
+    if (this.deviceData) {
+      // Update device data với new configuration
+      this.deviceData = {
+        ...this.deviceData,
+        ...configuration,
+        lastConfigUpdate: new Date().toISOString(),
+      };
+
+      console.log(
+        `AC Configuration updated in Global Device Data Manager for ${acId}:`,
+        configuration
+      );
+
+      // Notify all subscribers about configuration change
+      this.notifySubscribers(this.deviceData);
+
+      // Update ACSpaManager với new configuration
+      this.updateACSpaManagerData();
+
+      // Trigger event system notification nếu có
+      if (window.acEventSystem) {
+        window.acEventSystem.emit("ac-configuration-updated", {
+          acId: acId,
+          configuration: configuration,
+          timestamp: new Date().toISOString(),
+        });
+      }
+    }
   }
 
   /**
@@ -676,6 +770,7 @@ function initializeWithDeviceData() {
 
 class TemperatureController {
   constructor(acId = "AC-001") {
+    // Basic Device Properties
     this.acId = acId;
     this.currentTemp = 22;
     this.targetTemp = 22;
@@ -688,7 +783,95 @@ class TemperatureController {
     this.fanSpeed = 0;
     this.current = 0;
     this.voltage = 0;
+
+    // AC Configuration Properties - integration với AC Configuration Manager
+    this.hpCapacity = "2HP";
+    this.technology = "inverter";
+    this.brand = "Unknown";
+    this.model = "Unknown";
+    this.location = "Living Room";
+    this.roomArea = 25;
+    this.roomType = "medium";
+    this.energyStarRating = 3;
+    this.installationYear = new Date().getFullYear();
+    this.defaultTempMin = 22;
+    this.defaultTempMax = 26;
+
+    // Energy Efficiency Properties - integration với Energy Efficiency Manager
+    this.energyCostPerKWh = 3000; // VND per kWh
+    this.energyConsumption = 0; // Current power consumption in watts
+    this.dailyUsageHours = 8; // Average daily usage hours
+    this.estimatedMonthlyCost = 0; // Estimated monthly cost in VND
+    this.powerEfficiencyRating = 0.85; // Technology efficiency multiplier
+    this.roomSizeMultiplier = 1.0; // Room size factor
+
+    // Load configuration from AC Configuration Manager nếu có
+    this.loadACConfiguration();
+
     this.init();
+  }
+
+  /**
+   * LOAD AC CONFIGURATION FROM AC CONFIGURATION MANAGER
+   * Tích hợp với AC Configuration Manager để load configuration đã save
+   */
+  loadACConfiguration() {
+    if (
+      window.acConfigManager &&
+      window.acConfigManager.isACConfigured(this.acId)
+    ) {
+      const config = window.acConfigManager.getACConfiguration(this.acId);
+
+      if (config) {
+        // Update AC Configuration Properties
+        this.hpCapacity = config.hpCapacity || this.hpCapacity;
+        this.technology = config.technology || this.technology;
+        this.brand = config.brand || this.brand;
+        this.model = config.model || this.model;
+        this.location = config.location || this.location;
+        this.roomArea = config.roomArea || this.roomArea;
+        this.roomType = config.roomType || this.roomType;
+        this.energyStarRating =
+          config.energyStarRating || this.energyStarRating;
+        this.installationYear =
+          config.installationYear || this.installationYear;
+        this.defaultTempMin = config.defaultTempMin || this.defaultTempMin;
+        this.defaultTempMax = config.defaultTempMax || this.defaultTempMax;
+
+        // Update Energy Efficiency Properties
+        this.energyCostPerKWh =
+          config.energyCostPerKWh || this.energyCostPerKWh;
+
+        console.log(`AC Configuration loaded for ${this.acId}:`, config);
+      }
+    } else {
+      console.log(
+        `No saved configuration found for AC ${this.acId}, using defaults`
+      );
+    }
+  }
+
+  /**
+   * UPDATE AC CONFIGURATION
+   * Method để update configuration khi user thay đổi settings
+   */
+  updateACConfiguration(newConfig) {
+    // Update properties
+    Object.keys(newConfig).forEach((key) => {
+      if (this.hasOwnProperty(key)) {
+        this[key] = newConfig[key];
+      }
+    });
+
+    // Save to AC Configuration Manager
+    if (window.acConfigManager) {
+      window.acConfigManager.applyConfigurationToEnergyManager(
+        this.acId,
+        newConfig
+      );
+    }
+
+    console.log(`AC Configuration updated for ${this.acId}:`, newConfig);
   }
 
   init() {
@@ -697,6 +880,7 @@ class TemperatureController {
     this.setupTemperatureControls();
     this.setupModeControls();
     this.setupFanControls();
+    this.setupConfigurationEventListeners();
 
     // Initialize displays
     this.updateModeDisplay();
@@ -704,6 +888,34 @@ class TemperatureController {
     this.updateTemperatureDisplay();
     this.updateFanSpeedDisplay();
     this.updateElectricalDisplay(this.current, this.voltage);
+  }
+
+  /**
+   * SETUP CONFIGURATION EVENT LISTENERS
+   * Listen for AC configuration changes via Event-Driven Architecture
+   */
+  setupConfigurationEventListeners() {
+    if (window.acEventSystem) {
+      // Listen for AC configuration updates
+      window.acEventSystem.on("ac-configuration-updated", (data) => {
+        if (data.acId === this.acId) {
+          this.syncWithACConfiguration(data.acId, data.configuration);
+        }
+      });
+
+      // Listen for energy efficiency calculation results
+      window.acEventSystem.on("energy-efficiency-calculated", (data) => {
+        if (data.acId === this.acId) {
+          this.energyConsumption =
+            data.energyConsumption || this.energyConsumption;
+          this.estimatedMonthlyCost =
+            data.estimatedMonthlyCost || this.estimatedMonthlyCost;
+          this.updateACDataInManager();
+        }
+      });
+
+      console.log(`Configuration event listeners setup for AC ${this.acId}`);
+    }
   }
 
   loadACData() {
@@ -1375,8 +1587,9 @@ class TemperatureController {
    */
   updateACDataInManager() {
     if (window.acSpaManager) {
-      // Use the new real-time update method
+      // Use the new real-time update method - Enhanced với AC Configuration properties
       window.acSpaManager.updateACDataRealtime(this.acId, {
+        // Basic Device Properties
         currentTemp: this.currentTemp,
         targetTemp: this.targetTemp,
         mode: this.currentMode,
@@ -1386,7 +1599,77 @@ class TemperatureController {
         lastUpdated: new Date().toISOString(),
         current: this.current,
         voltage: this.voltage,
+
+        // AC Configuration Properties - Integration với AC Configuration Manager
+        hpCapacity: this.hpCapacity,
+        technology: this.technology,
+        brand: this.brand,
+        model: this.model,
+        location: this.location,
+        roomArea: this.roomArea,
+        roomType: this.roomType,
+        energyStarRating: this.energyStarRating,
+        installationYear: this.installationYear,
+        defaultTempMin: this.defaultTempMin,
+        defaultTempMax: this.defaultTempMax,
+
+        // Energy Efficiency Properties - Integration với Energy Efficiency Manager
+        energyCostPerKWh: this.energyCostPerKWh,
+        energyConsumption: this.energyConsumption,
+        dailyUsageHours: this.dailyUsageHours,
+        estimatedMonthlyCost: this.estimatedMonthlyCost,
+        powerEfficiencyRating: this.powerEfficiencyRating,
+        roomSizeMultiplier: this.roomSizeMultiplier,
       });
+    }
+  }
+
+  /**
+   * SYNC WITH AC CONFIGURATION MANAGER
+   * Method được call từ AC Configuration Manager khi user update configuration
+   */
+  syncWithACConfiguration(acId, configuration) {
+    if (acId === this.acId) {
+      // Update AC Configuration Properties
+      this.hpCapacity = configuration.hpCapacity || this.hpCapacity;
+      this.technology = configuration.technology || this.technology;
+      this.brand = configuration.brand || this.brand;
+      this.model = configuration.model || this.model;
+      this.location = configuration.location || this.location;
+      this.roomArea = configuration.roomArea || this.roomArea;
+      this.roomType = configuration.roomType || this.roomType;
+      this.energyStarRating =
+        configuration.energyStarRating || this.energyStarRating;
+      this.installationYear =
+        configuration.installationYear || this.installationYear;
+      this.defaultTempMin = configuration.defaultTempMin || this.defaultTempMin;
+      this.defaultTempMax = configuration.defaultTempMax || this.defaultTempMax;
+
+      // Update Energy Efficiency Properties
+      this.energyCostPerKWh =
+        configuration.energyCostPerKWh || this.energyCostPerKWh;
+
+      // Update temperature range based on new defaults
+      this.tempRange.min = this.defaultTempMin;
+      this.tempRange.max = this.defaultTempMax;
+
+      // Update AC data in manager với new configuration
+      this.updateACDataInManager();
+
+      // Trigger energy efficiency recalculation if manager exists
+      if (window.energyEfficiencyManager) {
+        window.energyEfficiencyManager.calculateEnergyEfficiency(acId, {
+          currentTemp: this.currentTemp,
+          targetTemp: this.targetTemp,
+          mode: this.currentMode,
+          power: this.isPowerOn,
+        });
+      }
+
+      console.log(
+        `Temperature Controller synced with AC Configuration for ${acId}:`,
+        configuration
+      );
     }
   }
 
