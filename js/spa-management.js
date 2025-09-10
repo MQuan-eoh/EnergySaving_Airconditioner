@@ -30,6 +30,9 @@ class ACSpaManager {
     this.setupDashboardAutoRefresh();
     this.subscribeToGlobalDeviceData();
     this.initializeDashboardWithDefaultData();
+    this.loadAllACConfigurations();
+    this.setupConfigurationEventListeners();
+    this.loadAndApplyACConfiguration();
 
     // Delay stats update to ensure DOM is fully ready
     setTimeout(() => {
@@ -241,6 +244,9 @@ class ACSpaManager {
 
     console.log("Loading AC data to interface:", acData);
 
+    // Load and apply AC configuration from Configuration Manager
+    this.loadAndApplyACConfiguration(acId);
+
     // Initialize or update temperature controller for this AC
     if (!window.tempController || window.tempController.acId !== acId) {
       window.tempController = new TemperatureController(acId);
@@ -278,18 +284,21 @@ class ACSpaManager {
       statusIndicatorEl.classList.add(acData.power ? "on" : "off");
     }
 
-    // Update temperature recommendation widget
+    // Update temperature recommendation widget (Vietnamese version)
     if (window.energyEfficiencyManager) {
       const recommendationWidget = document.getElementById(
         "spa-temp-recommendation-widget"
       );
       if (recommendationWidget) {
         recommendationWidget.innerHTML =
-          window.energyEfficiencyManager.createTemperatureRecommendationWidget(
+          window.energyEfficiencyManager.createTemperatureRecommendationWidgetVN(
             acData
           );
       }
     }
+
+    // Update AC configuration display if exists
+    this.updateACConfigurationDisplay(acId);
   }
 
   /**
@@ -484,12 +493,26 @@ class ACSpaManager {
       const statusColumn = row.querySelector("td:nth-child(3)");
       if (statusColumn && acData.power && window.energyEfficiencyManager) {
         const currentPower = (acData.voltage || 220) * (acData.current || 5);
-        const efficiencyData =
-          window.energyEfficiencyManager.calculateEfficiency(
+        const configStatus = this.getACConfigurationStatus(acId);
+
+        // Use configured AC calculation if available, otherwise use legacy method
+        let efficiencyData;
+        if (configStatus.configured) {
+          efficiencyData =
+            window.energyEfficiencyManager.calculateEfficiencyForAC(
+              acId,
+              acData.targetTemp,
+              currentPower,
+              30
+            );
+        } else {
+          efficiencyData = window.energyEfficiencyManager.calculateEfficiency(
             acData.targetTemp,
             currentPower,
             30
           );
+        }
+
         const efficiencyBadge =
           window.energyEfficiencyManager.createEfficiencyBadge(efficiencyData);
 
@@ -502,6 +525,15 @@ class ACSpaManager {
 
         // Add new efficiency badge
         statusColumn.insertAdjacentHTML("beforeend", efficiencyBadge);
+
+        // Update config badge if needed
+        const configBadge = statusColumn.querySelector(".config-badge");
+        if (configBadge) {
+          configBadge.className = `config-badge ${
+            configStatus.configured ? "configured" : "not-configured"
+          }`;
+          configBadge.title = configStatus.message;
+        }
       }
 
       const powerToggle = row.querySelector(".iphone-toggle input");
@@ -534,6 +566,12 @@ class ACSpaManager {
     // Determine status display based on power state
     const statusDisplay = acData.power ? "online" : "offline";
 
+    // Get AC configuration status
+    const configStatus = this.getACConfigurationStatus(acData.id);
+    const configBadge = configStatus.configured
+      ? '<span class="config-badge configured" title="Configured with custom specifications"><i class="fas fa-cog"></i></span>'
+      : '<span class="config-badge not-configured" title="Using default calculations"><i class="fas fa-exclamation-triangle"></i></span>';
+
     // Calculate energy efficiency for this AC
     let efficiencyData = null;
     let efficiencyBadge = "";
@@ -541,11 +579,23 @@ class ACSpaManager {
 
     if (acData.power && window.energyEfficiencyManager) {
       const currentPower = (acData.voltage || 220) * (acData.current || 5);
-      efficiencyData = window.energyEfficiencyManager.calculateEfficiency(
-        acData.targetTemp,
-        currentPower,
-        30 // Default outdoor temp, can be dynamic later
-      );
+
+      // Use configured AC calculation if available, otherwise use legacy method
+      if (configStatus.configured) {
+        efficiencyData =
+          window.energyEfficiencyManager.calculateEfficiencyForAC(
+            acData.id,
+            acData.targetTemp,
+            currentPower,
+            30 // Default outdoor temp, can be dynamic later
+          );
+      } else {
+        efficiencyData = window.energyEfficiencyManager.calculateEfficiency(
+          acData.targetTemp,
+          currentPower,
+          30 // Default outdoor temp, can be dynamic later
+        );
+      }
 
       efficiencyBadge =
         window.energyEfficiencyManager.createEfficiencyBadge(efficiencyData);
@@ -561,6 +611,7 @@ class ACSpaManager {
       <td>${acData.location}</td>
       <td>
         <span class="status-badge ${statusDisplay}">${statusDisplay.toUpperCase()}</span>
+        ${configBadge}
         ${efficiencyBadge}
       </td>
       <td class="current-temp-cell">${acData.currentTemp}°C</td>
@@ -592,7 +643,9 @@ class ACSpaManager {
       "Created table row for",
       acData.id,
       "with power status:",
-      acData.power ? "ON" : "OFF"
+      acData.power ? "ON" : "OFF",
+      "configured:",
+      configStatus.configured
     );
 
     return row;
@@ -614,10 +667,257 @@ class ACSpaManager {
       console.log(`Update indicator added for ${acId}`);
     }
   }
+
+  /**
+   * Load and apply AC configuration from Configuration Manager
+   */
+  loadAndApplyACConfiguration(acId) {
+    if (!window.acConfigManager || !window.energyEfficiencyManager) {
+      console.warn(
+        "AC Configuration Manager or Energy Efficiency Manager not available"
+      );
+      return;
+    }
+
+    // Get configuration from Configuration Manager
+    const acConfig = window.acConfigManager.getACConfiguration(acId);
+
+    if (acConfig) {
+      console.log(`Loading configuration for AC ${acId}:`, acConfig);
+
+      // Apply configuration to Energy Efficiency Manager
+      try {
+        window.energyEfficiencyManager.configureACUnit(acId, {
+          type: acConfig.hpCapacity,
+          technology: acConfig.technology,
+          roomSize:
+            acConfig.roomSizeCategory ||
+            this.calculateRoomSizeCategory(acConfig.roomArea),
+          energyCostPerKWh: acConfig.energyCostPerKWh || 0.12,
+          brand: acConfig.brand,
+          model: acConfig.model,
+          roomArea: acConfig.roomArea,
+          roomType: acConfig.roomType,
+          defaultTempRange: acConfig.defaultTempRange,
+        });
+
+        console.log(
+          `Configuration applied to Energy Efficiency Manager for ${acId}`
+        );
+
+        // Emit event for successful configuration load
+        if (window.acEventSystem) {
+          window.acEventSystem.emit("ac-configuration-loaded", {
+            acId: acId,
+            configuration: acConfig,
+          });
+        }
+      } catch (error) {
+        console.error(`Failed to apply configuration for ${acId}:`, error);
+      }
+    } else {
+      console.log(
+        `No configuration found for AC ${acId} - using default calculations`
+      );
+    }
+  }
+
+  /**
+   * Calculate room size category based on area
+   */
+  calculateRoomSizeCategory(area) {
+    if (area <= 20) return "small";
+    if (area <= 35) return "medium";
+    if (area <= 50) return "large";
+    return "xlarge";
+  }
+
+  /**
+   * Update AC configuration display in control interface
+   */
+  updateACConfigurationDisplay(acId) {
+    if (!window.acConfigManager) {
+      return;
+    }
+
+    const acConfig = window.acConfigManager.getACConfiguration(acId);
+    const configDisplay = document.getElementById("spa-ac-config-display");
+
+    if (configDisplay) {
+      if (acConfig) {
+        configDisplay.innerHTML = `
+          <div class="ac-config-info">
+            <div class="config-item">
+              <span class="config-label">Capacity:</span>
+              <span class="config-value">${acConfig.hpCapacity}</span>
+            </div>
+            <div class="config-item">
+              <span class="config-label">Technology:</span>
+              <span class="config-value">${acConfig.technology}</span>
+            </div>
+            <div class="config-item">
+              <span class="config-label">Room:</span>
+              <span class="config-value">${acConfig.roomArea}m² (${
+          acConfig.roomType
+        })</span>
+            </div>
+            <div class="config-item">
+              <span class="config-label">Brand:</span>
+              <span class="config-value">${acConfig.brand || "N/A"}</span>
+            </div>
+          </div>
+        `;
+        configDisplay.style.display = "block";
+      } else {
+        configDisplay.innerHTML = `
+          <div class="ac-config-warning">
+            <i class="fas fa-exclamation-triangle"></i>
+            <span>AC not configured. Configure in Settings for accurate efficiency calculations.</span>
+            <button onclick="window.spaApp.navigateTo('settings')" class="btn-configure">Configure Now</button>
+          </div>
+        `;
+        configDisplay.style.display = "block";
+      }
+    }
+  }
+
+  /**
+   * Get AC configuration status
+   */
+  getACConfigurationStatus(acId) {
+    if (!window.acConfigManager) {
+      return {
+        configured: false,
+        message: "Configuration Manager not available",
+      };
+    }
+
+    const isConfigured = window.acConfigManager.isACConfigured(acId);
+    return {
+      configured: isConfigured,
+      message: isConfigured
+        ? "AC is configured with custom specifications"
+        : "AC using default calculations - configure for better accuracy",
+    };
+  }
+
+  /**
+   * Load all AC configurations on initialization
+   */
+  loadAllACConfigurations() {
+    if (!window.acConfigManager || !window.energyEfficiencyManager) {
+      console.warn("Configuration managers not available - will retry later");
+      // Retry after a delay
+      setTimeout(() => {
+        this.loadAllACConfigurations();
+      }, 1000);
+      return;
+    }
+
+    console.log("Loading all AC configurations...");
+
+    // Get all configured AC IDs from Configuration Manager
+    const configuredACIds = window.acConfigManager.getConfiguredACIds();
+
+    configuredACIds.forEach((acId) => {
+      this.loadAndApplyACConfiguration(acId);
+    });
+
+    console.log(`Loaded configurations for ${configuredACIds.length} AC units`);
+  }
+
+  /**
+   * Setup configuration event listeners
+   */
+  setupConfigurationEventListeners() {
+    if (!window.acEventSystem) {
+      console.warn("Event system not available for configuration listeners");
+      return;
+    }
+
+    // Listen for AC configuration saved events
+    window.acEventSystem.on("ac-configuration-saved", (eventData) => {
+      const { acId, configuration } = eventData;
+      console.log(`Configuration saved for ${acId}, reloading...`);
+
+      // Reload configuration for this AC
+      this.loadAndApplyACConfiguration(acId);
+
+      // Update dashboard if currently on dashboard
+      if (window.spaApp?.getCurrentPage() === "dashboard") {
+        this.updateDashboardTableRow(acId, this.getACData(acId));
+      }
+
+      // Update control interface if this AC is currently selected
+      if (this.selectedAC === acId) {
+        this.updateACConfigurationDisplay(acId);
+      }
+    });
+
+    // Listen for configuration deletions
+    window.acEventSystem.on("ac-configuration-deleted", (eventData) => {
+      const { acId } = eventData;
+      console.log(`Configuration deleted for ${acId}`);
+
+      // Remove configuration from Energy Efficiency Manager
+      if (window.energyEfficiencyManager?.removeACConfiguration) {
+        window.energyEfficiencyManager.removeACConfiguration(acId);
+      }
+
+      // Update displays
+      if (window.spaApp?.getCurrentPage() === "dashboard") {
+        this.updateDashboardTableRow(acId, this.getACData(acId));
+      }
+
+      if (this.selectedAC === acId) {
+        this.updateACConfigurationDisplay(acId);
+      }
+    });
+
+    console.log("Configuration event listeners setup complete");
+  }
+
+  /**
+   * Refresh AC configuration for specific AC
+   */
+  refreshACConfiguration(acId) {
+    console.log(`Refreshing configuration for ${acId}`);
+    this.loadAndApplyACConfiguration(acId);
+
+    // Update relevant displays
+    if (window.spaApp?.getCurrentPage() === "dashboard") {
+      this.updateDashboardTableRow(acId, this.getACData(acId));
+    }
+
+    if (this.selectedAC === acId) {
+      this.updateACConfigurationDisplay(acId);
+
+      // Refresh recommendation widget
+      if (window.energyEfficiencyManager) {
+        const recommendationWidget = document.getElementById(
+          "spa-temp-recommendation-widget"
+        );
+        if (recommendationWidget) {
+          const acData = this.getACData(acId);
+          recommendationWidget.innerHTML =
+            window.energyEfficiencyManager.createTemperatureRecommendationWidgetVN(
+              acData
+            );
+        }
+      }
+    }
+  }
 }
 
 // Initialize AC SPA Manager when DOM is loaded
 document.addEventListener("DOMContentLoaded", () => {
+  // Initialize Energy Efficiency Manager first
+  if (typeof EnergyEfficiencyManager !== "undefined") {
+    window.energyEfficiencyManager = new EnergyEfficiencyManager();
+    console.log("Energy Efficiency Manager initialized");
+  }
+
+  // Initialize AC SPA Manager
   window.acSpaManager = new ACSpaManager();
   window.acSpaManager.init();
   console.log("AC SPA Manager ready!");

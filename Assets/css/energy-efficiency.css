@@ -1,5 +1,246 @@
 /* Energy Efficiency Visualization Styles */
 
+/* Vietnamese Temperature Recommendation Widget */
+.temp-recommendation-vn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 16px;
+  padding: 16px;
+  margin: 16px 0;
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  transition: all 0.3s ease;
+}
+
+.temp-recommendation-vn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.25);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+.temp-recommendation-vn .recommendation-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: white;
+}
+
+.temp-recommendation-vn .recommendation-message {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 13px;
+  line-height: 1.4;
+  margin-bottom: 12px;
+}
+
+.btn-xem-chi-tiet {
+  background: linear-gradient(135deg, #10b981, #059669);
+  border: none;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.btn-xem-chi-tiet:hover {
+  background: linear-gradient(135deg, #059669, #047857);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+}
+
+/* Vietnamese Modal Styles - Compact Glass Design */
+.modal-content-vn {
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: blur(var(--glass-blur, 20px));
+  backdrop-filter: blur(var(--glass-blur, 20px));
+  border: 1px solid var(--glass-border);
+  border-radius: var(--glass-border-radius, 16px);
+  box-shadow: var(--glass-shadow);
+  max-width: 500px;
+  width: 85%;
+  max-height: 80vh;
+  overflow-y: auto;
+  transform: scale(0.9);
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  opacity: 0;
+  animation: modalSlideIn 0.4s ease forwards;
+}
+
+.modal-content-vn.show {
+  transform: scale(1);
+  opacity: 1;
+}
+
+@keyframes modalSlideIn {
+  0% {
+    transform: scale(0.8) translateY(20px);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+
+.modal-content-vn h2 {
+  color: rgba(255, 255, 255, 0.95);
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  text-align: center;
+  border-bottom: 1px solid var(--glass-border);
+  padding-bottom: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.modal-content-vn h2::before {
+  content: "⚡";
+  font-size: 20px;
+  color: #10b981;
+}
+
+.modal-content-vn ul {
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.modal-content-vn li {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 13px;
+  transition: all 0.2s ease;
+}
+
+.modal-content-vn li:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.15);
+  transform: translateX(2px);
+}
+
+.modal-content-vn li b {
+  color: rgba(255, 255, 255, 0.95);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.modal-content-vn li b::before {
+  content: "•";
+  color: #10b981;
+  font-weight: bold;
+}
+
+.modal-content-vn li span:last-child {
+  font-weight: 600;
+  color: #10b981;
+  font-family: "Inter", monospace;
+}
+
+.modal-content-vn button {
+  background: linear-gradient(
+    135deg,
+    var(--glass-bg-hover),
+    var(--glass-bg-active)
+  );
+  border: 1px solid var(--glass-border-light);
+  color: rgba(255, 255, 255, 0.95);
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: block;
+  margin: 16px auto 0;
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  min-width: 120px;
+}
+
+.modal-content-vn button:hover {
+  background: linear-gradient(
+    135deg,
+    var(--glass-bg-active),
+    rgba(255, 255, 255, 0.15)
+  );
+  border-color: var(--glass-border-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.modal-content-vn button:active {
+  transform: translateY(0);
+}
+
+/* Close button icon */
+.modal-content-vn button::before {
+  content: "✕";
+  margin-right: 6px;
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+/* Responsive design for mobile */
+@media (max-width: 768px) {
+  .modal-content-vn {
+    max-width: 95%;
+    width: 95%;
+    max-height: 85vh;
+  }
+
+  .modal-content-vn h2 {
+    font-size: 16px;
+  }
+
+  .modal-content-vn li {
+    font-size: 12px;
+    padding: 8px 10px;
+  }
+
+  .modal-content-vn button {
+    font-size: 12px;
+    padding: 8px 16px;
+  }
+}
+
+/* Scrollbar styling for modal content */
+.modal-content-vn::-webkit-scrollbar {
+  width: 4px;
+}
+
+.modal-content-vn::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 2px;
+}
+
+.modal-content-vn::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+}
+
+.modal-content-vn::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
 /* Efficiency Badge Base Styles */
 .efficiency-badge {
   position: relative;
@@ -479,4 +720,336 @@
     font-size: 11px;
     padding: 6px 12px;
   }
+}
+
+/* Configuration Status Badges */
+.config-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  font-size: 10px;
+  margin-left: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.config-badge.configured {
+  background: rgba(16, 185, 129, 0.2);
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  color: #10b981;
+}
+
+.config-badge.not-configured {
+  background: rgba(245, 158, 11, 0.2);
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  color: #f59e0b;
+}
+
+.config-badge:hover {
+  transform: scale(1.1);
+}
+
+/* AC Configuration Display in Control Interface */
+.ac-config-info {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 12px;
+  margin: 12px 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.config-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+}
+
+.config-label {
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 500;
+}
+
+.config-value {
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 600;
+}
+
+.ac-config-warning {
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-radius: 12px;
+  padding: 12px;
+  margin: 12px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #f59e0b;
+}
+
+.ac-config-warning i {
+  font-size: 16px;
+}
+
+.btn-configure {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  border: none;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-left: auto;
+}
+
+.btn-configure:hover {
+  background: linear-gradient(135deg, #d97706, #b45309);
+  transform: translateY(-1px);
+}
+
+/* Outdoor Temperature Control Styles */
+.outdoor-temp-control {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  padding: 16px;
+  margin: 16px 0;
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  transition: all 0.3s ease;
+}
+
+.temp-control-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.control-label {
+  font-weight: 600;
+  color: white;
+  font-size: 14px;
+}
+
+.temp-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.current-temp {
+  font-weight: 700;
+  color: #10b981;
+  font-size: 16px;
+}
+
+.temp-source {
+  font-size: 12px;
+  color: #94a3b8;
+  font-style: italic;
+}
+
+.temp-input-group {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.temp-input {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.temp-input:focus {
+  outline: none;
+  border-color: #10b981;
+  background: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+}
+
+.temp-input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.update-temp-btn,
+.refresh-temp-btn {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 14px;
+}
+
+.update-temp-btn {
+  background: #10b981;
+  color: white;
+}
+
+.update-temp-btn:hover {
+  background: #059669;
+  transform: translateY(-1px);
+}
+
+.refresh-temp-btn {
+  background: #3b82f6;
+  color: white;
+  min-width: 44px;
+}
+
+.refresh-temp-btn:hover {
+  background: #2563eb;
+  transform: translateY(-1px);
+}
+
+.temp-reliability {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.reliability-indicator {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: inline-block;
+  width: fit-content;
+}
+
+.reliability-high {
+  background: rgba(16, 185, 129, 0.2);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.reliability-medium {
+  background: rgba(251, 191, 36, 0.2);
+  color: #fbbf24;
+  border: 1px solid rgba(251, 191, 36, 0.3);
+}
+
+.reliability-low {
+  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.temp-recommendation {
+  font-size: 12px;
+  color: #94a3b8;
+  line-height: 1.4;
+}
+
+/* Vietnamese Modal Temperature Control */
+.outdoor-temp-control-vn {
+  margin-top: 20px;
+  padding: 15px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.outdoor-temp-control-vn h4 {
+  margin: 0 0 10px 0;
+  color: #10b981;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.temp-info-vn {
+  margin-bottom: 10px;
+}
+
+.temp-info-vn small {
+  color: #94a3b8;
+  font-size: 12px;
+}
+
+.temp-input-group-vn {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.temp-input-vn {
+  flex: 1;
+  padding: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.temp-input-vn:focus {
+  outline: none;
+  border-color: #10b981;
+  background: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+}
+
+.temp-input-vn::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.update-temp-btn-vn,
+.refresh-temp-btn-vn {
+  padding: 8px 12px;
+  border: none;
+  border-radius: 5px;
+  color: white;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  font-size: 13px;
+}
+
+.update-temp-btn-vn {
+  background: #10b981;
+}
+
+.update-temp-btn-vn:hover {
+  background: #059669;
+  transform: translateY(-1px);
+}
+
+.refresh-temp-btn-vn {
+  background: #3b82f6;
+}
+
+.refresh-temp-btn-vn:hover {
+  background: #2563eb;
+  transform: translateY(-1px);
+}
+
+.temp-recommendation-vn {
+  margin-top: 8px;
+}
+
+.temp-recommendation-vn small {
+  color: #fbbf24;
+  font-size: 12px;
+  line-height: 1.4;
 }

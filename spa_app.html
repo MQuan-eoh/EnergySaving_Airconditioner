@@ -30,6 +30,8 @@
     <link rel="stylesheet" href="Assets/css/responsive.css" />
     <link rel="stylesheet" href="Assets/css/electrical-display.css" />
     <link rel="stylesheet" href="Assets/css/energy-efficiency.css" />
+    <link rel="stylesheet" href="Assets/css/weather-panel.css" />
+    <link rel="stylesheet" href="Assets/css/compact-panels.css" />
 
     <style>
       /* Page Header Styling */
@@ -1577,36 +1579,101 @@
 
               <!-- Weather & Fan Control -->
               <div class="col-lg-5">
-                <!-- Weather Panel (Compact) -->
-                <div class="weather-panel glass-effect compact">
-                  <div class="panel-header">
-                    <h3 class="panel-title">Environment</h3>
-                  </div>
+                <!-- Enhanced 3D Weather Panel -->
+                <div id="spa-weather-panel-container">
+                  <!-- Dynamic weather panel will be inserted here by JavaScript -->
+                  <div class="weather-panel glass-effect compact" id="spa-weather-panel-fallback">
+                    <div class="weather-header">
+                      <div class="weather-location">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>Vạn Phúc, Thủ Đức</span>
+                      </div>
+                      <div class="weather-update-time">Loading...</div>
+                    </div>
 
-                  <div class="weather-content">
-                    <div class="weather-icon">
-                      <div class="weather-3d-icon" id="spa-weather-icon">
-                        <i class="fas fa-sun"></i>
+                    <div class="weather-main">
+                      <div class="weather-temperature">
+                        <div class="temp-value">30°C</div>
+                        <div class="temp-description">Đang tải thời tiết...</div>
+                      </div>
+                      <div class="weather-icon-3d weather-icon-sunny">
+                        <i class="icon-base fas fa-sun"></i>
                       </div>
                     </div>
 
-                    <div class="weather-info">
-                      <div class="outdoor-temp">
-                        <span class="temp-value" id="spa-outdoor-temp">30</span>
-                        <span class="temp-unit">°C</span>
-                        <div class="temp-label">Outdoor</div>
+                    <div class="weather-details">
+                      <div class="weather-detail-item">
+                        <div class="weather-detail-icon humidity">
+                          <i class="fas fa-tint"></i>
+                        </div>
+                        <div class="weather-detail-content">
+                          <div class="weather-detail-label">Độ ẩm</div>
+                          <div class="weather-detail-value">70%</div>
+                        </div>
+                      </div>
+                      
+                      <div class="weather-detail-item">
+                        <div class="weather-detail-icon wind">
+                          <i class="fas fa-wind"></i>
+                        </div>
+                        <div class="weather-detail-content">
+                          <div class="weather-detail-label">Gió</div>
+                          <div class="weather-detail-value">8 km/h</div>
+                        </div>
                       </div>
 
-                      <div class="humidity-info">
-                        <div class="humidity-circle" id="spa-humidity-progress">
-                          <div class="humidity-progress">
-                            <span class="humidity-value" id="spa-humidity-value"
-                              >65</span
-                            >
-                            <span class="humidity-unit">%</span>
-                          </div>
+                      <div class="weather-detail-item">
+                        <div class="weather-detail-icon pressure">
+                          <i class="fas fa-thermometer-half"></i>
                         </div>
-                        <div class="humidity-label">Humidity</div>
+                        <div class="weather-detail-content">
+                          <div class="weather-detail-label">Áp suất</div>
+                          <div class="weather-detail-value">1013 hPa</div>
+                        </div>
+                      </div>
+
+                      <div class="weather-detail-item">
+                        <div class="weather-detail-icon visibility">
+                          <i class="fas fa-eye"></i>
+                        </div>
+                        <div class="weather-detail-content">
+                          <div class="weather-detail-label">Nguồn</div>
+                          <div class="weather-detail-value">Mặc định</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="weather-actions">
+                      <button class="weather-refresh-btn" onclick="window.energyEfficiencyManager.refreshOutdoorTemp()">
+                        <i class="fas fa-sync-alt"></i>
+                        Làm mới
+                      </button>
+                      <div class="weather-status">
+                        <span class="weather-status-badge offline">
+                          <i class="fas fa-circle"></i>
+                          Đang tải
+                        </span>
+                      </div>
+                    </div>
+
+                    <div class="weather-manual-input">
+                      <button class="manual-temp-toggle" onclick="this.classList.toggle('active'); this.nextElementSibling.classList.toggle('active')">
+                        <i class="fas fa-edit"></i> Nhập thủ công
+                      </button>
+                      <div class="manual-input-group">
+                        <div class="manual-temp-controls">
+                          <input type="number" 
+                                 class="manual-temp-input" 
+                                 id="spa-manual-temp"
+                                 min="15" 
+                                 max="45" 
+                                 step="0.5"
+                                 placeholder="Nhập nhiệt độ...">
+                          <button class="manual-temp-apply" 
+                                  onclick="window.energyEfficiencyManager.setManualOutdoorTemp(document.getElementById('spa-manual-temp').value)">
+                            Áp dụng
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>
