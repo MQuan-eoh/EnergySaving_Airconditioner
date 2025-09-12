@@ -257,6 +257,10 @@ class ElectricityBillManager {
                   <i class="fab fa-google"></i>
                   Google
                 </button>
+                <button class="btn-status btn-status-stats" id="view-monthly-stats">
+                  <i class="fas fa-chart-bar"></i>
+                  Thống Kê
+                </button>
               </div>
             </div>
             
@@ -509,6 +513,136 @@ class ElectricityBillManager {
 
     // Insert modal into DOM
     document.body.insertAdjacentHTML("beforeend", modalHTML);
+
+    // Add Monthly Statistics Modal
+    const statsModalHTML = `
+      <!-- Monthly Statistics Modal -->
+      <div class="electricity-bill-modal stats-modal" id="monthly-stats-modal">
+        <div class="electricity-bill-content stats-content">
+          <div class="bill-modal-header">
+            <h2 class="bill-modal-title">
+              <i class="fas fa-chart-bar"></i>
+              Thống Kê Hóa Đơn Điện Hàng Tháng
+            </h2>
+            <p class="bill-modal-subtitle">
+              Xem tổng quan dữ liệu tiêu thụ điện năng và chi phí theo từng tháng
+            </p>
+            
+            <button class="bill-modal-close" id="stats-modal-close">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+
+          <div class="bill-modal-body">
+            <!-- Statistics Content -->
+            <div class="stats-content-layout">
+              <!-- Summary Cards -->
+              <div class="stats-summary-cards">
+                <div class="stats-card total-bills">
+                  <div class="stats-card-icon">
+                    <i class="fas fa-file-invoice-dollar"></i>
+                  </div>
+                  <div class="stats-card-content">
+                    <h3>Tổng Hóa Đơn</h3>
+                    <div class="stats-card-value" id="total-bills-count">0</div>
+                    <div class="stats-card-label">tháng theo dõi</div>
+                  </div>
+                </div>
+
+                <div class="stats-card total-amount">
+                  <div class="stats-card-icon">
+                    <i class="fas fa-money-bill-wave"></i>
+                  </div>
+                  <div class="stats-card-content">
+                    <h3>Tổng Chi Phí</h3>
+                    <div class="stats-card-value" id="total-amount-value">0 VND</div>
+                    <div class="stats-card-label">tổng tiền điện</div>
+                  </div>
+                </div>
+
+                <div class="stats-card total-consumption">
+                  <div class="stats-card-icon">
+                    <i class="fas fa-bolt"></i>
+                  </div>
+                  <div class="stats-card-content">
+                    <h3>Tổng Tiêu Thụ</h3>
+                    <div class="stats-card-value" id="total-consumption-value">0 kWh</div>
+                    <div class="stats-card-label">điện năng sử dụng</div>
+                  </div>
+                </div>
+
+                <div class="stats-card average-monthly">
+                  <div class="stats-card-icon">
+                    <i class="fas fa-chart-pie"></i>
+                  </div>
+                  <div class="stats-card-content">
+                    <h3>Trung Bình/Tháng</h3>
+                    <div class="stats-card-value" id="average-monthly-value">0 VND</div>
+                    <div class="stats-card-label">chi phí trung bình</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Monthly Data Table -->
+              <div class="monthly-data-table-container">
+                <div class="table-header">
+                  <h3>
+                    <i class="fas fa-table"></i>
+                    Chi Tiết Theo Tháng
+                  </h3>
+                  <div class="table-actions">
+                    <button class="btn-glass-secondary" id="refresh-stats">
+                      <i class="fas fa-sync-alt"></i>
+                      Làm Mới
+                    </button>
+                    <button class="btn-glass-primary" id="export-stats">
+                      <i class="fas fa-download"></i>
+                      Xuất Excel
+                    </button>
+                  </div>
+                </div>
+
+                <div class="stats-list-wrapper">
+                  <div id="monthly-stats-list" class="monthly-stats-list">
+                    <!-- Dynamic content populated by JavaScript -->
+                  </div>
+                </div>
+              </div>
+
+              <!-- Chart Visualization -->
+              <div class="stats-chart-container">
+                <div class="chart-header">
+                  <h3>
+                    <i class="fas fa-chart-line"></i>
+                    Biểu Đồ Xu Hướng
+                  </h3>
+                  <div class="chart-controls">
+                    <button class="chart-toggle-btn active" data-chart="amount">
+                      <i class="fas fa-money-bill"></i>
+                      Tiền Điện
+                    </button>
+                    <button class="chart-toggle-btn" data-chart="consumption">
+                      <i class="fas fa-bolt"></i>
+                      Điện Năng
+                    </button>
+                  </div>
+                </div>
+                <div class="chart-wrapper">
+                  <canvas id="monthly-stats-chart"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Loading Overlay -->
+          <div class="loading-overlay" id="stats-loading-overlay">
+            <div class="loading-spinner"></div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    document.body.insertAdjacentHTML("beforeend", statsModalHTML);
   }
 
   /**
@@ -530,6 +664,21 @@ class ElectricityBillManager {
     document
       .getElementById("google-signin")
       .addEventListener("click", () => this.handleGoogleSignIn());
+    
+    // Monthly statistics button
+    document
+      .getElementById("view-monthly-stats")
+      .addEventListener("click", () => this.showMonthlyStats());
+    
+    // Stats modal controls
+    document
+      .getElementById("stats-modal-close")
+      .addEventListener("click", () => this.hideMonthlyStats());
+    document
+      .getElementById("monthly-stats-modal")
+      .addEventListener("click", (e) => {
+        if (e.target.id === "monthly-stats-modal") this.hideMonthlyStats();
+      });
     // Calendar navigation
     document
       .getElementById("prev-month")
@@ -591,6 +740,22 @@ class ElectricityBillManager {
     document
       .getElementById("export-summary")
       .addEventListener("click", () => this.exportToExcel("summary"));
+
+    // Stats modal action buttons
+    document
+      .getElementById("refresh-stats")
+      .addEventListener("click", () => this.refreshStats());
+    document
+      .getElementById("export-stats")
+      .addEventListener("click", () => this.exportStatsToExcel());
+
+    // Chart toggle buttons
+    document.querySelectorAll(".chart-toggle-btn").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        const chartType = e.target.closest(".chart-toggle-btn").dataset.chart;
+        this.toggleChart(chartType);
+      });
+    });
 
     // Calendar day selection will be bound dynamically
   }
@@ -1014,6 +1179,9 @@ class ElectricityBillManager {
         if (!success) {
           throw new Error("Firebase save failed");
         }
+
+        // Clear form inputs after successful Firebase save
+        this.clearBillInputs();
       } else {
         // Fallback to localStorage
         this.saveToStorage();
@@ -1098,6 +1266,34 @@ class ElectricityBillManager {
         }
       }
     }
+  }
+
+  /**
+   * CLEAR BILL INPUT FIELDS ONLY
+   * Clear only bill amount and power consumption fields after successful save
+   */
+  clearBillInputs() {
+    const billAmountInput = document.getElementById("bill-amount");
+    const powerConsumptionInput = document.getElementById("power-consumption");
+
+    if (billAmountInput) {
+      billAmountInput.value = "";
+      // Reset placeholder
+      billAmountInput.placeholder = "Nhập số tiền điện tháng này)";
+    }
+
+    if (powerConsumptionInput) {
+      powerConsumptionInput.value = "";
+    }
+
+    // Focus on bill amount input for quick re-entry
+    setTimeout(() => {
+      if (billAmountInput) {
+        billAmountInput.focus();
+      }
+    }, 100);
+
+    console.log(" Bill input fields cleared after successful save");
   }
 
   clearForm() {
@@ -1607,6 +1803,413 @@ class ElectricityBillManager {
 
   showLoading(show) {
     const overlay = document.getElementById("bill-loading-overlay");
+    if (show) {
+      overlay.classList.add("show");
+    } else {
+      overlay.classList.remove("show");
+    }
+  }
+
+  /**
+   * MONTHLY STATISTICS MANAGEMENT
+   * Handle monthly stats modal and data visualization
+   */
+  async showMonthlyStats() {
+    const statsModal = document.getElementById("monthly-stats-modal");
+    statsModal.classList.add("show");
+    document.body.style.overflow = "hidden";
+
+    // Load and display statistics
+    this.showStatsLoading(true);
+    await this.loadMonthlyStatistics();
+    this.showStatsLoading(false);
+  }
+
+  hideMonthlyStats() {
+    const statsModal = document.getElementById("monthly-stats-modal");
+    statsModal.classList.remove("show");
+    document.body.style.overflow = "";
+  }
+
+  async loadMonthlyStatistics() {
+    try {
+      // Ensure we have the latest data
+      if (this.storageManager) {
+        const latestData = await this.storageManager.loadBillData();
+        if (latestData && latestData.size > 0) {
+          this.billData = latestData;
+        }
+      }
+
+      const billDataArray = Array.from(this.billData.values());
+      
+      if (billDataArray.length === 0) {
+        this.showStatsEmptyState();
+        return;
+      }
+
+      // Calculate summary statistics
+      this.updateSummaryCards(billDataArray);
+
+      // Populate monthly data table
+      this.populateMonthlyTable(billDataArray);
+
+      // Create visualization chart
+      this.createStatsChart(billDataArray);
+
+      console.log(`✅ Monthly statistics loaded: ${billDataArray.length} months`);
+    } catch (error) {
+      console.error("Error loading monthly statistics:", error);
+      this.showNotification("Lỗi tải thống kê tháng", "error");
+    }
+  }
+
+  updateSummaryCards(billDataArray) {
+    // Calculate totals and averages
+    const totalBills = billDataArray.length;
+    const totalAmount = billDataArray.reduce((sum, data) => {
+      return sum + (data.amount || data.billAmount || 0);
+    }, 0);
+    const totalConsumption = billDataArray.reduce((sum, data) => {
+      return sum + (data.kwh || data.powerConsumption || 0);
+    }, 0);
+    const averageMonthly = totalAmount / totalBills;
+
+    // Update DOM elements
+    document.getElementById("total-bills-count").textContent = totalBills;
+    document.getElementById("total-amount-value").textContent = this.formatCurrency(totalAmount);
+    document.getElementById("total-consumption-value").textContent = `${totalConsumption.toFixed(1)} kWh`;
+    document.getElementById("average-monthly-value").textContent = this.formatCurrency(averageMonthly);
+  }
+
+  populateMonthlyTable(billDataArray) {
+    const container = document.getElementById("monthly-stats-list");
+    
+    // Group data by year
+    const dataByYear = {};
+    billDataArray.forEach(data => {
+      const year = data.year;
+      if (!dataByYear[year]) {
+        dataByYear[year] = [];
+      }
+      dataByYear[year].push(data);
+    });
+
+    // Sort years (newest first)
+    const sortedYears = Object.keys(dataByYear).sort((a, b) => b - a);
+    
+    let html = "";
+    
+    sortedYears.forEach(year => {
+      // Sort months within year
+      const monthsData = dataByYear[year].sort((a, b) => a.month - b.month);
+      
+      html += `
+        <div class="year-group">
+          <div class="year-header">
+            <h3 class="year-title">
+              <i class="fas fa-calendar-alt"></i>
+              Năm ${year}
+            </h3>
+            <div class="year-summary">
+              ${this.getYearSummary(monthsData)}
+            </div>
+          </div>
+          <div class="months-list">
+            ${this.generateMonthsList(monthsData)}
+          </div>
+        </div>
+      `;
+    });
+
+    if (html === "") {
+      html = `
+        <div class="empty-state">
+          <div class="empty-state-content">
+            <i class="fas fa-chart-bar empty-state-icon"></i>
+            <h4>Chưa Có Dữ Liệu</h4>
+            <p>Hãy thêm hóa đơn điện để xem thống kê</p>
+          </div>
+        </div>
+      `;
+    }
+
+    container.innerHTML = html;
+  }
+
+  generateMonthsList(monthsData) {
+    const monthNames = [
+      "Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6",
+      "Tháng 7", "Tháng 8", "Tháng 9", "Tháng 10", "Tháng 11", "Tháng 12"
+    ];
+
+    let html = "";
+    
+    // Create array for all 12 months
+    const allMonths = Array.from({length: 12}, (_, i) => {
+      const existingData = monthsData.find(data => data.month === i);
+      return existingData || { month: i, hasData: false };
+    });
+
+    allMonths.forEach((data, index) => {
+      const monthName = monthNames[index];
+      
+      if (data.hasData === false) {
+        // No data for this month
+        html += `
+          <div class="month-item no-data">
+            <span class="month-name">${monthName}:</span>
+            <span class="month-data">Chưa có dữ liệu</span>
+          </div>
+        `;
+      } else {
+        // Has data for this month
+        const amount = data.amount || data.billAmount || 0;
+        const kwh = data.kwh || data.powerConsumption || 0;
+        const workingDays = data.workingDaysCount || data.workingDays?.length || 0;
+        
+        html += `
+          <div class="month-item has-data">
+            <span class="month-name">${monthName}:</span>
+            <span class="month-data">
+              <span class="amount-info">
+                <i class="fas fa-money-bill-wave"></i>
+                ${this.formatCurrency(amount)}
+              </span>
+              <span class="consumption-info">
+                <i class="fas fa-bolt"></i>
+                ${kwh.toFixed(1)} kWh
+              </span>
+              <span class="days-info">
+                <i class="fas fa-calendar-day"></i>
+                ${workingDays} ngày
+              </span>
+            </span>
+          </div>
+        `;
+      }
+    });
+
+    return html;
+  }
+
+  getYearSummary(monthsData) {
+    const totalAmount = monthsData.reduce((sum, data) => sum + (data.amount || data.billAmount || 0), 0);
+    const totalKwh = monthsData.reduce((sum, data) => sum + (data.kwh || data.powerConsumption || 0), 0);
+    const monthsCount = monthsData.length;
+    
+    return `
+      <span class="year-summary-item">
+        <i class="fas fa-chart-line"></i>
+        ${monthsCount} tháng
+      </span>
+      <span class="year-summary-item">
+        <i class="fas fa-money-bill-wave"></i>
+        ${this.formatCurrency(totalAmount)}
+      </span>
+      <span class="year-summary-item">
+        <i class="fas fa-bolt"></i>
+        ${totalKwh.toFixed(1)} kWh
+      </span>
+    `;
+  }
+
+  createStatsChart(billDataArray) {
+    const canvas = document.getElementById("monthly-stats-chart");
+    const ctx = canvas.getContext("2d");
+
+    // Destroy existing chart if exists
+    if (this.statsChart) {
+      this.statsChart.destroy();
+    }
+
+    // Sort data by date for chart
+    const sortedData = billDataArray.sort((a, b) => {
+      const dateA = new Date(a.year, a.month);
+      const dateB = new Date(b.year, b.month);
+      return dateA - dateB;
+    });
+
+    const labels = sortedData.map(data => 
+      `${(data.month + 1).toString().padStart(2, '0')}/${data.year}`
+    );
+    
+    const amountData = sortedData.map(data => data.amount || data.billAmount || 0);
+    const consumptionData = sortedData.map(data => data.kwh || data.powerConsumption || 0);
+
+    this.statsChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            label: 'Tiền Điện (VND)',
+            data: amountData,
+            borderColor: 'rgba(16, 185, 129, 1)',
+            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+            borderWidth: 3,
+            fill: true,
+            tension: 0.4,
+            pointBackgroundColor: 'rgba(16, 185, 129, 1)',
+            pointBorderColor: '#ffffff',
+            pointBorderWidth: 2,
+            pointRadius: 6,
+            hidden: false
+          },
+          {
+            label: 'Điện Năng (kWh)',
+            data: consumptionData,
+            borderColor: 'rgba(59, 130, 246, 1)',
+            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+            borderWidth: 3,
+            fill: true,
+            tension: 0.4,
+            pointBackgroundColor: 'rgba(59, 130, 246, 1)',
+            pointBorderColor: '#ffffff',
+            pointBorderWidth: 2,
+            pointRadius: 6,
+            hidden: true,
+            yAxisID: 'y1'
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: false // We use custom toggle buttons
+          },
+          tooltip: {
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            titleColor: '#ffffff',
+            bodyColor: '#ffffff',
+            borderColor: 'rgba(255, 255, 255, 0.1)',
+            borderWidth: 1,
+            cornerRadius: 8,
+            displayColors: true
+          }
+        },
+        scales: {
+          x: {
+            grid: {
+              color: 'rgba(255, 255, 255, 0.1)',
+              borderColor: 'rgba(255, 255, 255, 0.2)'
+            },
+            ticks: {
+              color: 'rgba(255, 255, 255, 0.7)',
+              font: {
+                size: 12
+              }
+            }
+          },
+          y: {
+            grid: {
+              color: 'rgba(255, 255, 255, 0.1)',
+              borderColor: 'rgba(255, 255, 255, 0.2)'
+            },
+            ticks: {
+              color: 'rgba(255, 255, 255, 0.7)',
+              font: {
+                size: 12
+              },
+              callback: function(value) {
+                return new Intl.NumberFormat('vi-VN').format(value) + ' VND';
+              }
+            }
+          },
+          y1: {
+            type: 'linear',
+            display: false,
+            position: 'right',
+            grid: {
+              drawOnChartArea: false,
+            },
+            ticks: {
+              color: 'rgba(255, 255, 255, 0.7)',
+              callback: function(value) {
+                return value.toFixed(1) + ' kWh';
+              }
+            }
+          }
+        },
+        interaction: {
+          intersect: false,
+          mode: 'index'
+        }
+      }
+    });
+  }
+
+  toggleChart(chartType) {
+    if (!this.statsChart) return;
+
+    // Update button states
+    document.querySelectorAll(".chart-toggle-btn").forEach(btn => {
+      btn.classList.remove("active");
+    });
+    document.querySelector(`[data-chart="${chartType}"]`).classList.add("active");
+
+    // Toggle dataset visibility
+    if (chartType === 'amount') {
+      this.statsChart.data.datasets[0].hidden = false; // Amount
+      this.statsChart.data.datasets[1].hidden = true;  // Consumption
+      this.statsChart.options.scales.y.display = true;
+      this.statsChart.options.scales.y1.display = false;
+    } else if (chartType === 'consumption') {
+      this.statsChart.data.datasets[0].hidden = true;  // Amount
+      this.statsChart.data.datasets[1].hidden = false; // Consumption
+      this.statsChart.options.scales.y.display = false;
+      this.statsChart.options.scales.y1.display = true;
+    }
+
+    this.statsChart.update();
+  }
+
+  showStatsEmptyState() {
+    const container = document.getElementById("monthly-stats-list");
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state-content">
+          <i class="fas fa-chart-bar empty-state-icon"></i>
+          <h4>Chưa Có Dữ Liệu</h4>
+          <p>Hãy thêm hóa đơn điện để xem thống kê</p>
+        </div>
+      </div>
+    `;
+
+    // Clear summary cards
+    document.getElementById("total-bills-count").textContent = "0";
+    document.getElementById("total-amount-value").textContent = "0 VND";
+    document.getElementById("total-consumption-value").textContent = "0 kWh";
+    document.getElementById("average-monthly-value").textContent = "0 VND";
+  }
+
+  async refreshStats() {
+    this.showStatsLoading(true);
+    await this.loadMonthlyStatistics();
+    this.showStatsLoading(false);
+    this.showNotification("Đã làm mới thống kê!", "success");
+  }
+
+  async exportStatsToExcel() {
+    try {
+      this.showStatsLoading(true);
+      
+      // Use existing export functionality
+      await this.exportToExcel("detailed");
+      
+      this.showNotification("Đã xuất thống kê Excel thành công!", "success");
+    } catch (error) {
+      console.error("Export stats error:", error);
+      this.showNotification("Lỗi xuất thống kê Excel!", "error");
+    } finally {
+      this.showStatsLoading(false);
+    }
+  }
+
+  showStatsLoading(show) {
+    const overlay = document.getElementById("stats-loading-overlay");
     if (show) {
       overlay.classList.add("show");
     } else {

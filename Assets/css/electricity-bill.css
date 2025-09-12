@@ -88,9 +88,9 @@
   border: 1px solid var(--glass-border-light);
   border-radius: 24px;
   box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7);
-  width: 95%;
-  max-width: 1400px;
-  max-height: 90vh;
+  width: 90%;
+  max-width: 1200px;
+  max-height: 85vh;
   overflow: hidden;
   position: relative;
   transform: scale(0.95);
@@ -132,7 +132,7 @@
 
 /* ========== MODAL HEADER ========== */
 .bill-modal-header {
-  padding: 2rem 2.5rem 1.5rem;
+  padding: 1.5rem 2rem 1rem;
   border-bottom: 1px solid var(--glass-border);
   background: linear-gradient(
     135deg,
@@ -143,24 +143,24 @@
 }
 
 .bill-modal-title {
-  font-size: 1.75rem;
+  font-size: 1.5rem;
   font-weight: 700;
   color: var(--text-primary);
   margin: 0;
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 0.75rem;
 }
 
 .bill-modal-title i {
   color: var(--accent-green);
-  font-size: 1.5rem;
+  font-size: 1.25rem;
 }
 
 .bill-modal-subtitle {
-  font-size: 0.95rem;
+  font-size: 0.85rem;
   color: var(--text-secondary);
-  margin-top: 0.5rem;
+  margin-top: 0.4rem;
   font-weight: 400;
 }
 
@@ -194,19 +194,40 @@
 .bill-modal-body {
   padding: 0;
   overflow-y: auto;
-  max-height: calc(90vh - 140px);
+  max-height: calc(85vh - 120px);
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+}
+
+/* Custom scrollbar for webkit browsers */
+.bill-modal-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.bill-modal-body::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 3px;
+}
+
+.bill-modal-body::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 3px;
+}
+
+.bill-modal-body::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
 }
 
 .bill-content-layout {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 0;
-  min-height: 600px;
+  min-height: 500px;
 }
 
 /* ========== LEFT PANEL - CALENDAR SECTION ========== */
 .bill-calendar-section {
-  padding: 2rem;
+  padding: 1.5rem;
   border-right: 1px solid var(--glass-border);
   background: linear-gradient(
     135deg,
@@ -219,18 +240,18 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.5rem;
-  padding-bottom: 1rem;
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.75rem;
   border-bottom: 1px solid var(--glass-border);
 }
 
 .calendar-title {
-  font-size: 1.25rem;
+  font-size: 1.1rem;
   font-weight: 600;
   color: var(--text-primary);
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.6rem;
 }
 
 .calendar-title i {
@@ -311,8 +332,8 @@
 .glass-calendar {
   background: var(--calendar-glass-bg);
   border: 1px solid var(--calendar-glass-border);
-  border-radius: 20px;
-  padding: 1.5rem;
+  border-radius: 16px;
+  padding: 1.25rem;
   -webkit-backdrop-filter: var(--calendar-glass-blur);
   backdrop-filter: var(--calendar-glass-blur);
   box-shadow: var(--calendar-glass-shadow);
@@ -404,23 +425,23 @@
 
 /* ========== SELECTION INFO ========== */
 .selection-info {
-  margin-top: 1.5rem;
-  padding: 1.25rem;
+  margin-top: 1.25rem;
+  padding: 1rem;
   background: rgba(16, 185, 129, 0.08);
   border: 1px solid rgba(16, 185, 129, 0.2);
-  border-radius: 16px;
+  border-radius: 12px;
   -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
 }
 
 .selection-info h4 {
-  font-size: 1rem;
+  font-size: 0.9rem;
   font-weight: 600;
   color: var(--accent-green);
-  margin: 0 0 0.75rem 0;
+  margin: 0 0 0.6rem 0;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.4rem;
 }
 
 .selected-month-info {
@@ -449,7 +470,7 @@
 
 /* ========== RIGHT PANEL - BILL INPUT SECTION ========== */
 .bill-input-section {
-  padding: 2rem;
+  padding: 1.5rem;
   background: linear-gradient(
     135deg,
     rgba(16, 185, 129, 0.03) 0%,
@@ -458,19 +479,19 @@
 }
 
 .input-section-header {
-  margin-bottom: 2rem;
-  padding-bottom: 1rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.75rem;
   border-bottom: 1px solid var(--glass-border);
 }
 
 .input-section-title {
-  font-size: 1.25rem;
+  font-size: 1.1rem;
   font-weight: 600;
   color: var(--text-primary);
-  margin: 0 0 0.5rem 0;
+  margin: 0 0 0.4rem 0;
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.6rem;
 }
 
 .input-section-title i {
@@ -478,7 +499,7 @@
 }
 
 .input-section-subtitle {
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   color: var(--text-secondary);
   margin: 0;
 }
@@ -487,36 +508,36 @@
 .bill-input-form {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1.25rem;
 }
 
 .form-group-glass {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.4rem;
 }
 
 .form-label-glass {
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   font-weight: 600;
   color: var(--text-primary);
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.4rem;
 }
 
 .form-label-glass i {
   color: var(--accent-green);
-  font-size: 0.8rem;
+  font-size: 0.75rem;
 }
 
 .form-input-glass {
   background: var(--bill-input-bg);
   border: 1px solid var(--bill-input-border);
-  border-radius: 12px;
-  padding: 0.9rem 1.2rem;
+  border-radius: 10px;
+  padding: 0.8rem 1rem;
   color: var(--text-primary);
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   transition: all 0.3s ease;
   -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
@@ -552,20 +573,20 @@
 .working-config {
   background: var(--workdays-bg);
   border: 1px solid var(--workdays-border);
-  border-radius: 16px;
-  padding: 1.5rem;
+  border-radius: 12px;
+  padding: 1.25rem;
   -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
 }
 
 .working-config h4 {
-  font-size: 1rem;
+  font-size: 0.9rem;
   font-weight: 600;
   color: var(--accent-purple);
-  margin: 0 0 1rem 0;
+  margin: 0 0 0.8rem 0;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.4rem;
 }
 
 .working-days-grid {
@@ -619,11 +640,11 @@
 
 /* ========== ACTION BUTTONS ========== */
 .bill-form-actions {
-  margin-top: 2rem;
-  padding-top: 1.5rem;
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
   border-top: 1px solid var(--glass-border);
   display: flex;
-  gap: 1rem;
+  gap: 0.75rem;
   justify-content: flex-end;
 }
 
@@ -634,15 +655,16 @@
     rgba(5, 150, 105, 0.7)
   );
   border: 1px solid rgba(16, 185, 129, 0.4);
-  border-radius: 12px;
-  padding: 0.8rem 1.5rem;
+  border-radius: 10px;
+  padding: 0.7rem 1.25rem;
   color: white;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.4rem;
+  font-size: 0.9rem;
   -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
 }
@@ -660,12 +682,13 @@
 .btn-glass-secondary {
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 12px;
-  padding: 0.8rem 1.5rem;
+  border-radius: 10px;
+  padding: 0.7rem 1.25rem;
   color: var(--text-secondary);
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
+  font-size: 0.9rem;
   -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
 }
@@ -679,7 +702,7 @@
 /* ========== COMPARISON RESULTS SECTION ========== */
 .comparison-results {
   grid-column: 1 / -1;
-  padding: 2rem;
+  padding: 1.5rem;
   background: linear-gradient(
     135deg,
     rgba(139, 92, 246, 0.05) 0%,
@@ -690,18 +713,18 @@
 
 .comparison-header {
   text-align: center;
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
 }
 
 .comparison-title {
-  font-size: 1.5rem;
+  font-size: 1.3rem;
   font-weight: 700;
   color: var(--text-primary);
-  margin: 0 0 0.5rem 0;
+  margin: 0 0 0.4rem 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.75rem;
+  gap: 0.6rem;
 }
 
 .comparison-title i {
@@ -710,7 +733,7 @@
 
 .comparison-subtitle {
   color: var(--text-secondary);
-  font-size: 0.95rem;
+  font-size: 0.85rem;
 }
 
 .comparison-grid {
@@ -914,8 +937,9 @@
   }
 
   .electricity-bill-content {
-    width: 98%;
+    width: 95%;
     max-width: none;
+    max-height: 90vh;
   }
 
   .comparison-grid {
@@ -928,7 +952,16 @@
   .bill-calendar-section,
   .bill-input-section,
   .comparison-results {
-    padding: 1.5rem;
+    padding: 1.25rem;
+  }
+
+  .electricity-bill-content {
+    width: 98%;
+    max-height: 95vh;
+  }
+
+  .bill-modal-body {
+    max-height: calc(95vh - 100px);
   }
 
   .month-year-picker {
@@ -1047,3 +1080,630 @@
     transform: rotate(360deg);
   }
 }
+
+/* 
+  MONTHLY STATISTICS MODAL STYLES 
+  Complete styling for statistics modal with glassmorphism design
+*/
+
+/* Statistics modal main styling */
+.bill-modal#monthly-stats-modal {
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  background: rgba(0, 0, 0, 0.7);
+}
+
+.bill-modal#monthly-stats-modal .bill-modal-content {
+  width: 95%;
+  max-width: 1200px;
+  height: 90vh;
+  max-height: 90vh;
+  background: rgba(17, 24, 39, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7),
+    0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+
+.bill-modal#monthly-stats-modal .bill-modal-header {
+  background: linear-gradient(
+    135deg,
+    rgba(16, 185, 129, 0.1),
+    rgba(59, 130, 246, 0.1)
+  );
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 20px 25px;
+  border-radius: 20px 20px 0 0;
+  position: relative;
+}
+
+.bill-modal#monthly-stats-modal .bill-modal-title {
+  color: #ffffff;
+  font-size: 22px;
+  font-weight: 600;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.bill-modal#monthly-stats-modal .bill-modal-title i {
+  color: #10b981;
+  font-size: 24px;
+}
+
+/* Statistics summary cards */
+.stats-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+  margin: 20px 0;
+  padding: 0 5px;
+}
+
+.stats-card {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.1),
+    rgba(255, 255, 255, 0.05)
+  );
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 15px;
+  text-align: center;
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.stats-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #10b981, #3b82f6);
+  border-radius: 12px 12px 0 0;
+}
+
+.stats-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.stats-card-icon {
+  font-size: 22px;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.stats-card:nth-child(1) .stats-card-icon {
+  color: #10b981;
+}
+.stats-card:nth-child(2) .stats-card-icon {
+  color: #3b82f6;
+}
+.stats-card:nth-child(3) .stats-card-icon {
+  color: #f59e0b;
+}
+.stats-card:nth-child(4) .stats-card-icon {
+  color: #ef4444;
+}
+
+.stats-card-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 6px 0;
+  display: block;
+}
+
+.stats-card-label {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Statistics controls */
+.stats-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 20px 0;
+  padding: 0 5px;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.stats-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.stats-btn {
+  background: linear-gradient(
+    135deg,
+    rgba(16, 185, 129, 0.2),
+    rgba(16, 185, 129, 0.1)
+  );
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  color: #10b981;
+  border-radius: 10px;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.stats-btn:hover {
+  background: linear-gradient(
+    135deg,
+    rgba(16, 185, 129, 0.3),
+    rgba(16, 185, 129, 0.2)
+  );
+  border-color: rgba(16, 185, 129, 0.5);
+  transform: translateY(-2px);
+}
+
+.stats-btn i {
+  font-size: 14px;
+}
+
+/* Chart controls */
+.chart-controls {
+  display: flex;
+  gap: 8px;
+}
+
+.chart-toggle-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.7);
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.chart-toggle-btn.active,
+.chart-toggle-btn:hover {
+  background: linear-gradient(
+    135deg,
+    rgba(59, 130, 246, 0.3),
+    rgba(59, 130, 246, 0.2)
+  );
+  border-color: rgba(59, 130, 246, 0.5);
+  color: #3b82f6;
+}
+
+/* Statistics list container - replacing table */
+.stats-list-wrapper {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  overflow: hidden;
+  margin: 20px 0;
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+
+.monthly-stats-list {
+  padding: 15px;
+  max-height: 400px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+}
+
+.monthly-stats-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.monthly-stats-list::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 3px;
+}
+
+.monthly-stats-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 3px;
+}
+
+/* Year group styling */
+.year-group {
+  margin-bottom: 25px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.04));
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.year-header {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(59, 130, 246, 0.15));
+  padding: 15px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.year-title {
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.year-title i {
+  color: #10b981;
+  font-size: 20px;
+}
+
+.year-summary {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.year-summary-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.year-summary-item i {
+  color: #3b82f6;
+  font-size: 14px;
+}
+
+/* Months list styling */
+.months-list {
+  padding: 15px 20px 20px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 12px;
+}
+
+.month-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 15px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.month-item.has-data {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.05));
+  border-color: rgba(16, 185, 129, 0.2);
+}
+
+.month-item.has-data:hover {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(16, 185, 129, 0.08));
+  border-color: rgba(16, 185, 129, 0.3);
+  transform: translateX(3px);
+}
+
+.month-item.no-data {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.08);
+  opacity: 0.6;
+}
+
+.month-name {
+  font-weight: 600;
+  color: #ffffff;
+  min-width: 80px;
+  font-size: 14px;
+}
+
+.month-data {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  flex-wrap: wrap;
+  flex: 1;
+  justify-content: flex-end;
+}
+
+.month-item.no-data .month-data {
+  color: rgba(255, 255, 255, 0.5);
+  font-style: italic;
+  font-size: 13px;
+}
+
+/* Month data info items */
+.amount-info, .consumption-info, .days-info {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 4px 8px;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
+.amount-info {
+  background: rgba(16, 185, 129, 0.2);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.consumption-info {
+  background: rgba(59, 130, 246, 0.2);
+  color: #3b82f6;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.days-info {
+  background: rgba(245, 158, 11, 0.2);
+  color: #f59e0b;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.amount-info i, .consumption-info i, .days-info i {
+  font-size: 11px;
+}
+
+/* Responsive for list layout */
+@media (max-width: 768px) {
+  .year-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  
+  .year-summary {
+    gap: 15px;
+  }
+  
+  .months-list {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding: 10px 15px 15px;
+  }
+  
+  .month-data {
+    gap: 10px;
+  }
+  
+  .amount-info, .consumption-info, .days-info {
+    font-size: 12px;
+    padding: 3px 6px;
+  }
+}
+
+@media (max-width: 480px) {
+  .month-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .month-data {
+    width: 100%;
+    justify-content: flex-start;
+    gap: 8px;
+  }
+  
+  .year-summary {
+    gap: 10px;
+  }
+  
+  .year-summary-item {
+    font-size: 13px;
+  }
+}
+
+/* Chart container */
+.chart-container {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 20px;
+  margin: 15px 0;
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+
+.chart-wrapper {
+  position: relative;
+  height: 300px;
+  width: 100%;
+}
+
+/* Empty state styling */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.empty-state-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+}
+
+.empty-state-icon {
+  font-size: 48px;
+  color: rgba(255, 255, 255, 0.3);
+  margin-bottom: 10px;
+}
+
+.empty-state h4 {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.empty-state p {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 14px;
+  margin: 0;
+}
+
+/* Loading overlay for statistics */
+#stats-loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 20px;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+  z-index: 1000;
+}
+
+#stats-loading-overlay.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+#stats-loading-overlay .loading-content {
+  text-align: center;
+  color: #ffffff;
+}
+
+#stats-loading-overlay .loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-top: 3px solid #10b981;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 15px;
+}
+
+/* Responsive design for statistics modal */
+@media (max-width: 768px) {
+  .bill-modal#monthly-stats-modal .bill-modal-content {
+    width: 98%;
+    height: 95vh;
+    max-height: 95vh;
+  }
+
+  .stats-summary-grid {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin: 20px 0;
+  }
+
+  .stats-card {
+    padding: 15px;
+  }
+
+  .stats-card-value {
+    font-size: 20px;
+  }
+
+  .stats-controls {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 15px;
+  }
+
+  .stats-actions {
+    justify-content: center;
+  }
+
+  .chart-controls {
+    justify-content: center;
+  }
+
+  .chart-wrapper {
+    height: 280px;
+  }
+
+  /* List responsive */
+  .year-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  
+  .year-summary {
+    gap: 15px;
+  }
+  
+  .months-list {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding: 10px 15px 15px;
+  }
+  
+  .month-data {
+    gap: 10px;
+  }
+  
+  .amount-info, .consumption-info, .days-info {
+    font-size: 12px;
+    padding: 3px 6px;
+  }
+}
+
+@media (max-width: 480px) {
+  .stats-summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .chart-wrapper {
+    height: 250px;
+  }
+
+  /* List responsive */
+  .month-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .month-data {
+    width: 100%;
+    justify-content: flex-start;
+    gap: 8px;
+  }
+  
+  .year-summary {
+    gap: 10px;
+  }
+  
+  .year-summary-item {
+    font-size: 13px;
+  }
+}
+
+/* End Statistics Modal Styles */
