@@ -59,6 +59,9 @@ class ElectricityBillManager {
     await this.loadStoredData();
     this.updateCalendar();
 
+    // Auto-select day 1 of current month on first load
+    this.autoSelectDay1();
+
     this.initialized = true;
     console.log("Electricity Bill Manager ready!");
   }
@@ -207,14 +210,12 @@ class ElectricityBillManager {
       authStatus.className = "status-item authenticated";
 
       googleSigninBtn.style.display = "none";
-      signoutBtn.style.display = "flex";
     } else {
       authStatus.innerHTML =
         '<i class="fas fa-user"></i><span>Chưa đăng nhập</span>';
       authStatus.className = "status-item";
 
       googleSigninBtn.style.display = "flex";
-      signoutBtn.style.display = "none";
     }
 
     // Show sync queue status
@@ -351,9 +352,9 @@ class ElectricityBillManager {
                         type="number" 
                         class="form-input-glass" 
                         id="bill-amount"
-                        placeholder="Nhập số tiền điện tháng này"
+                        placeholder="Nhập số tiền điện tháng này (có thể có lẻ)"
                         min="0"
-                        step="1000"
+                        step="0.01"
                         required
                       >
                       <span class="input-unit">VND</span>
@@ -556,6 +557,33 @@ class ElectricityBillManager {
       checkbox.addEventListener("change", () => this.updateWorkingDays());
     });
 
+    // Add input formatting for bill amount
+    const billAmountInput = document.getElementById("bill-amount");
+    if (billAmountInput) {
+      // Format display while preserving actual numeric value
+      billAmountInput.addEventListener("blur", (e) => {
+        const value = parseFloat(e.target.value);
+        if (!isNaN(value)) {
+          // Keep the actual numeric value for calculations
+          e.target.value = value;
+          console.log("Bill amount set to:", value);
+        }
+      });
+
+      // Show helpful placeholder on focus
+      billAmountInput.addEventListener("focus", (e) => {
+        if (e.target.value === "") {
+          e.target.placeholder = "Ví dụ: 350000 hoặc 350000.50";
+        }
+      });
+
+      billAmountInput.addEventListener("blur", (e) => {
+        if (e.target.value === "") {
+          e.target.placeholder = "Nhập số tiền điện tháng này (có thể có lẻ)";
+        }
+      });
+    }
+
     // Export buttons
     document
       .getElementById("export-detailed")
@@ -657,39 +685,76 @@ class ElectricityBillManager {
           const month = parseInt(e.target.dataset.month);
           const year = parseInt(e.target.dataset.year);
 
-          this.selectMonth(year, month);
+          // User explicitly clicked on a specific day
+          this.selectDay(year, month, day);
         });
       });
   }
 
   /**
+   * SELECT SPECIFIC DAY
+   * Allow user to select any day, not just day 1
+   */
+  selectDay(year, month, day) {
+    // Set selectedDate to the clicked day
+    this.selectedDate = new Date(year, month, day);
+
+    // Update UI - Remove previous selections
+    document
+      .querySelectorAll(".calendar-day")
+      .forEach((el) => el.classList.remove("selected"));
+
+    // Select the clicked day
+    const clickedElement = document.querySelector(
+      `[data-month="${month}"][data-year="${year}"][data-day="${day}"]:not(.other-month)`
+    );
+
+    if (clickedElement) {
+      clickedElement.classList.add("selected");
+      console.log(`User selected day ${day} of month ${month + 1}/${year}`);
+    }
+
+    // Show selection info
+    this.updateSelectionInfo();
+
+    // Load existing bill data for this month
+    this.loadBillDataForMonth(year, month);
+  }
+
+  /**
    * MONTH SELECTION AND NAVIGATION
+   * Auto-select day 1 when navigating to a new month
    */
   selectMonth(year, month) {
-    // Always select the 1st day of the month to avoid date conflicts
+    // Always select the 1st day of the month when navigating
     this.selectedDate = new Date(year, month, 1);
 
     // Update UI - Remove previous selections
     document
       .querySelectorAll(".calendar-day")
       .forEach((el) => el.classList.remove("selected"));
-    
+
     // Select day 1 of the target month automatically
-    const day1Element = document
-      .querySelector(`[data-month="${month}"][data-year="${year}"][data-day="1"]:not(.other-month)`);
-    
+    const day1Element = document.querySelector(
+      `[data-month="${month}"][data-year="${year}"][data-day="1"]:not(.other-month)`
+    );
+
     if (day1Element) {
       day1Element.classList.add("selected");
       console.log(`Auto-selected day 1 of month ${month + 1}/${year}`);
     } else {
       // Fallback: select any day from the target month if day 1 not found
-      const anyDayInMonth = document
-        .querySelector(`[data-month="${month}"][data-year="${year}"]:not(.other-month)`);
+      const anyDayInMonth = document.querySelector(
+        `[data-month="${month}"][data-year="${year}"]:not(.other-month)`
+      );
       if (anyDayInMonth) {
         anyDayInMonth.classList.add("selected");
         // Update selectedDate to match the selected day
-        const dayNum = parseInt(anyDayInMonth.getAttribute('data-day')) || 1;
+        const dayNum = parseInt(anyDayInMonth.getAttribute("data-day")) || 1;
         this.selectedDate = new Date(year, month, dayNum);
+        console.log(
+          `Fallback: selected day ${dayNum} of month ${month + 1}/${year}`
+        );
       }
     }
 
@@ -699,7 +764,11 @@ class ElectricityBillManager {
     // Load existing bill data if available
     this.loadBillDataForMonth(year, month);
 
-    console.log(`Selected month: ${month + 1}/${year}, day: ${this.selectedDate.getDate()}`);
+    console.log(
+      `Navigated to month: ${
+        month + 1
+      }/${year}, selected day: ${this.selectedDate.getDate()}`
+    );
   }
 
   updateSelectionInfo() {
@@ -741,12 +810,56 @@ class ElectricityBillManager {
     this.currentDate.setFullYear(this.currentDate.getFullYear() + direction);
     this.updateCalendar();
     this.updateNavigationDisplay();
+
+    // Auto-select day 1 of the new year/month
+    this.autoSelectDay1();
   }
 
   navigateMonth(direction) {
     this.currentDate.setMonth(this.currentDate.getMonth() + direction);
     this.updateCalendar();
     this.updateNavigationDisplay();
+
+    // Auto-select day 1 of the new month
+    this.autoSelectDay1();
+  }
+
+  /**
+   * AUTO-SELECT DAY 1 OF CURRENT MONTH
+   * Automatically select day 1 when navigating months/years
+   */
+  autoSelectDay1() {
+    // Wait for calendar to be rendered
+    setTimeout(() => {
+      const year = this.currentDate.getFullYear();
+      const month = this.currentDate.getMonth();
+
+      // Set selectedDate to day 1 of current month
+      this.selectedDate = new Date(year, month, 1);
+
+      // Clear previous selections
+      document
+        .querySelectorAll(".calendar-day")
+        .forEach((el) => el.classList.remove("selected"));
+
+      // Find and select day 1 element
+      const day1Element = document.querySelector(
+        `[data-month="${month}"][data-year="${year}"][data-day="1"]:not(.other-month)`
+      );
+
+      if (day1Element) {
+        day1Element.classList.add("selected");
+        console.log(`Auto-selected day 1 of ${month + 1}/${year}`);
+
+        // Update selection info
+        this.updateSelectionInfo();
+
+        // Load bill data for this month
+        this.loadBillDataForMonth(year, month);
+      } else {
+        console.warn(`Could not find day 1 element for ${month + 1}/${year}`);
+      }
+    }, 150); // Increased delay to ensure calendar is fully rendered
   }
 
   updateNavigationDisplay() {
@@ -861,6 +974,10 @@ class ElectricityBillManager {
     return {
       year: this.selectedDate.getFullYear(),
       month: this.selectedDate.getMonth(),
+      // Firebase schema fields
+      amount: billAmount,
+      kwh: powerConsumption,
+      // Additional fields for local storage and UI
       billAmount,
       powerConsumption,
       hoursPerDay,
@@ -872,15 +989,31 @@ class ElectricityBillManager {
 
   async saveBillData(data) {
     const monthKey = this.getMonthKey(data.year, data.month);
+
+    // Store in local billData Map with full data structure
     this.billData.set(monthKey, {
       ...data,
       lastModified: Date.now(),
     });
 
     try {
-      // Save to Firebase (hybrid storage)
+      // Save to Firebase using the specialized single month method
       if (this.storageManager) {
-        await this.storageManager.saveBillData(this.billData);
+        // Use saveSingleMonthBill for better data structure mapping
+        const success = await this.storageManager.saveSingleMonthBill(
+          data.year,
+          data.month + 1, // Month is 0-indexed in JS, 1-indexed in storage
+          {
+            kwh: data.kwh,
+            amount: data.amount,
+            workingDays: data.workingDaysCount || data.workingDays?.length || 0,
+            notes: data.notes || "",
+          }
+        );
+
+        if (!success) {
+          throw new Error("Firebase save failed");
+        }
       } else {
         // Fallback to localStorage
         this.saveToStorage();
@@ -893,7 +1026,13 @@ class ElectricityBillManager {
       this.calculateComparison();
 
       this.showNotification("Đã lưu hóa đơn thành công!", "success");
-      console.log("Bill data saved:", data);
+      console.log("Bill data saved successfully:", {
+        monthKey,
+        kwh: data.kwh,
+        amount: data.amount,
+        month: data.month + 1,
+        year: data.year,
+      });
     } catch (error) {
       console.error("Save bill data error:", error);
       this.showNotification("Lỗi lưu dữ liệu - đã lưu cục bộ", "warning");
@@ -908,41 +1047,51 @@ class ElectricityBillManager {
     const data = this.billData.get(monthKey);
 
     if (data) {
+      // Support both old and new data structure
+      const billAmount = data.amount || data.billAmount || 0;
+      const powerConsumption = data.kwh || data.powerConsumption || 0;
+      const hoursPerDay = data.hoursPerDay || 8;
+      const workingDays = data.workingDays || [1, 2, 3, 4, 5];
+
       // Populate form with existing data
-      document.getElementById("bill-amount").value = data.billAmount;
-      document.getElementById("power-consumption").value =
-        data.powerConsumption;
-      document.getElementById("hours-per-day").value = data.hoursPerDay;
+      document.getElementById("bill-amount").value = billAmount;
+      document.getElementById("power-consumption").value = powerConsumption;
+      document.getElementById("hours-per-day").value = hoursPerDay;
 
       // Update working days checkboxes
       document.querySelectorAll(".day-checkbox input").forEach((checkbox) => {
-        checkbox.checked = data.workingDays.includes(parseInt(checkbox.value));
+        checkbox.checked = workingDays.includes(parseInt(checkbox.value));
       });
 
-      this.workingConfig.workingDays = data.workingDays;
+      this.workingConfig.workingDays = workingDays;
 
-      console.log("Loaded existing bill data:", data);
+      console.log("Loaded existing bill data:", {
+        monthKey,
+        amount: billAmount,
+        kwh: powerConsumption,
+        originalData: data,
+      });
     } else {
       // Only clear form if user hasn't entered any data
       // Check if form has any user-entered values
       const billAmount = document.getElementById("bill-amount").value.trim();
-      const powerConsumption = document.getElementById("power-consumption").value.trim();
-      
+      const powerConsumption = document
+        .getElementById("power-consumption")
+        .value.trim();
+
       if (!billAmount && !powerConsumption) {
         // Form is empty, safe to clear and set defaults
         this.clearForm();
       } else {
         // User has entered data, only reset working days to default
         console.log("Preserving user input - not clearing form");
-        
+
         // Still reset working days to default for new month
-        document
-          .querySelectorAll(".day-checkbox input")
-          .forEach((checkbox) => {
-            checkbox.checked = [1, 2, 3, 4, 5].includes(parseInt(checkbox.value));
-          });
+        document.querySelectorAll(".day-checkbox input").forEach((checkbox) => {
+          checkbox.checked = [1, 2, 3, 4, 5].includes(parseInt(checkbox.value));
+        });
         this.workingConfig.workingDays = [1, 2, 3, 4, 5];
-        
+
         // Set hours per day to default if not set
         if (!document.getElementById("hours-per-day").value) {
           document.getElementById("hours-per-day").value = 8;
@@ -1366,6 +1515,12 @@ class ElectricityBillManager {
             this.billData.size,
             "bills"
           );
+
+          // Log sample data for debugging
+          if (this.billData.size > 0) {
+            const firstEntry = this.billData.entries().next().value;
+            console.log("Sample Firebase data:", firstEntry);
+          }
         }
       } else {
         // Fallback to localStorage
@@ -1391,10 +1546,15 @@ class ElectricityBillManager {
    * UTILITY METHODS
    */
   formatCurrency(amount) {
+    // Round to 2 decimal places to handle floating point precision
+    const roundedAmount = Math.round(amount * 100) / 100;
+
     return new Intl.NumberFormat("vi-VN", {
       style: "currency",
       currency: "VND",
-    }).format(amount);
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2,
+    }).format(roundedAmount);
   }
 
   showNotification(message, type = "info") {
