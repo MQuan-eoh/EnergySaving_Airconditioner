@@ -399,11 +399,21 @@ class FirebaseStorageManager {
           for (const [month, monthData] of Object.entries(yearData)) {
             const monthKey = `${year}-${month}`;
             billMap.set(monthKey, {
+              // Firebase data fields
               kwh: monthData.kwh || 0,
               amount: monthData.amount || 0,
               workingDays: monthData.workingDays || 0,
               notes: monthData.notes || "",
               lastModified: monthData.lastModified || Date.now(),
+
+              // Essential fields for JavaScript processing
+              year: parseInt(year),
+              month: parseInt(month) - 1, // Convert from 1-indexed to 0-indexed for JS
+
+              // Alternative field names for compatibility
+              billAmount: monthData.amount || 0,
+              powerConsumption: monthData.kwh || 0,
+              workingDaysCount: monthData.workingDays || 0,
             });
           }
         }
