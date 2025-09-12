@@ -47,9 +47,7 @@ eraWidget.init({
     modeDry = configuration.actions[5];
     modeFan = configuration.actions[6];
     fanSpeedControl = configuration.actions[7];
-    console.log("Received configuration:", configuration);
-
-    // Expose global variables for energy efficiency manager
+    console.log("Received configuration:", configuration); // Expose global variables for energy efficiency manager
     window.eraWidget = eraWidget;
     window.tempControlAir1 = tempControlAir1;
 
@@ -72,14 +70,24 @@ eraWidget.init({
     powerAir1 = values[configPowerAir1.id].value;
     currentAir1_value = values[configCurrentAir1.id].value;
     voltageAir1_value = values[configVoltageAir1.id].value;
-    currentPowerConsumption_value = values[configPowerConsumption.id].value;
+
+    // Extract power consumption with safe fallback
+    if (configPowerConsumption && configPowerConsumption.id) {
+      currentPowerConsumption_value =
+        values[configPowerConsumption.id]?.value || 0;
+    } else {
+      currentPowerConsumption_value = 0;
+    }
 
     console.log("Received values from E-RA:", values);
     console.log("Target temp from device:", targetTempAir1);
     console.log("Current temp from device:", currentTempAir1);
     console.log("Current mode from device:", currentModeAir1);
     console.log("Fan speed from device:", fanSpeed);
-    console.log("Power consumption from device:", currentPowerConsumption_value);
+    console.log(
+      "Power consumption from device:",
+      currentPowerConsumption_value
+    );
 
     // Update global device data manager first
     if (window.globalDeviceDataManager) {
@@ -1614,7 +1622,7 @@ class TemperatureController {
         lastUpdated: new Date().toISOString(),
         current: this.current,
         voltage: this.voltage,
-        powerConsumption : this.powerConsumption, // in KWh
+        powerConsumption: this.powerConsumption, // in KWh
 
         // AC Configuration Properties - Integration với AC Configuration Manager
         hpCapacity: this.hpCapacity,

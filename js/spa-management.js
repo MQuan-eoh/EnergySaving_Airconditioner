@@ -508,7 +508,7 @@ class ACSpaManager {
         } else {
           currentPower = (acData.voltage || 220) * (acData.current || 5);
         }
-        
+
         const configStatus = this.getACConfigurationStatus(acId);
 
         // Use configured AC calculation if available, otherwise use legacy method
