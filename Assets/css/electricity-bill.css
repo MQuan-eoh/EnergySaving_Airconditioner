@@ -1,0 +1,1049 @@
+/**
+ * ELECTRICITY BILL MANAGEMENT - GLASS EFFECT CSS
+ * Design: Glassmorphism với Dark Mode
+ * Research: Inspired by modern calendar interfaces và glass UI patterns
+ */
+
+/* ========== PERFORMANCE OPTIMIZATION ========== */
+.electricity-bill-modal *,
+.electricity-bill-modal *::before,
+.electricity-bill-modal *::after {
+  box-sizing: border-box;
+}
+
+.electricity-bill-modal {
+  will-change: opacity, visibility;
+}
+
+.electricity-bill-content {
+  will-change: transform;
+}
+
+/* ========== CALENDAR GLASS VARIABLES ========== */
+:root {
+  /* Calendar Specific Glass Effects */
+  --calendar-glass-bg: rgba(255, 255, 255, 0.08);
+  --calendar-glass-border: rgba(255, 255, 255, 0.15);
+  --calendar-glass-shadow: 0 15px 45px rgba(0, 0, 0, 0.4);
+  --calendar-glass-blur: blur(25px);
+
+  /* Month Selection Colors */
+  --month-active-bg: linear-gradient(
+    135deg,
+    rgba(59, 130, 246, 0.3),
+    rgba(37, 99, 235, 0.2)
+  );
+  --month-active-border: rgba(59, 130, 246, 0.5);
+  --month-hover-bg: rgba(59, 130, 246, 0.1);
+
+  /* Calendar Grid Colors */
+  --calendar-cell-bg: rgba(255, 255, 255, 0.05);
+  --calendar-cell-hover: rgba(255, 255, 255, 0.12);
+  --calendar-cell-selected: linear-gradient(
+    135deg,
+    rgba(16, 185, 129, 0.4),
+    rgba(5, 150, 105, 0.3)
+  );
+  --calendar-cell-today: rgba(245, 158, 11, 0.2);
+
+  /* Bill Input Colors */
+  --bill-input-bg: rgba(255, 255, 255, 0.06);
+  --bill-input-border: rgba(255, 255, 255, 0.12);
+  --bill-input-focus: rgba(16, 185, 129, 0.3);
+
+  /* Comparison Colors */
+  --savings-positive: #10b981;
+  --savings-negative: #ef4444;
+  --savings-neutral: #6b7280;
+
+  /* Working Days Colors */
+  --workdays-bg: rgba(139, 92, 246, 0.1);
+  --workdays-border: rgba(139, 92, 246, 0.3);
+}
+
+/* ========== MAIN MODAL CONTAINER ========== */
+.electricity-bill-modal {
+  background: rgba(0, 0, 0, 0.85);
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+
+.electricity-bill-modal.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+.electricity-bill-content {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border-light);
+  border-radius: 24px;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7);
+  width: 95%;
+  max-width: 1400px;
+  max-height: 90vh;
+  overflow: hidden;
+  position: relative;
+  transform: scale(0.95);
+  transition: transform 0.2s ease;
+}
+
+.electricity-bill-modal.show .electricity-bill-content {
+  transform: scale(1);
+}
+
+/* Enhanced glass reflection effect */
+.electricity-bill-content::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.6),
+    rgba(16, 185, 129, 0.4),
+    rgba(255, 255, 255, 0.6),
+    transparent
+  );
+  animation: shimmer 3s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0%,
+  100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* ========== MODAL HEADER ========== */
+.bill-modal-header {
+  padding: 2rem 2.5rem 1.5rem;
+  border-bottom: 1px solid var(--glass-border);
+  background: linear-gradient(
+    135deg,
+    rgba(16, 185, 129, 0.05) 0%,
+    rgba(5, 150, 105, 0.02) 100%
+  );
+  position: relative;
+}
+
+.bill-modal-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.bill-modal-title i {
+  color: var(--accent-green);
+  font-size: 1.5rem;
+}
+
+.bill-modal-subtitle {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  margin-top: 0.5rem;
+  font-weight: 400;
+}
+
+.bill-modal-close {
+  position: absolute;
+  top: 1.5rem;
+  right: 2rem;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+
+.bill-modal-close:hover {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+  transform: rotate(90deg);
+}
+
+/* ========== MAIN CONTENT LAYOUT ========== */
+.bill-modal-body {
+  padding: 0;
+  overflow-y: auto;
+  max-height: calc(90vh - 140px);
+}
+
+.bill-content-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  min-height: 600px;
+}
+
+/* ========== LEFT PANEL - CALENDAR SECTION ========== */
+.bill-calendar-section {
+  padding: 2rem;
+  border-right: 1px solid var(--glass-border);
+  background: linear-gradient(
+    135deg,
+    rgba(59, 130, 246, 0.03) 0%,
+    rgba(37, 99, 235, 0.01) 100%
+  );
+}
+
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.calendar-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.calendar-title i {
+  color: var(--accent-blue);
+}
+
+/* ========== MONTH/YEAR PICKER ========== */
+.month-year-picker {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.month-year-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: var(--calendar-glass-bg);
+  border: 1px solid var(--calendar-glass-border);
+  border-radius: 16px;
+  padding: 0.75rem;
+  -webkit-backdrop-filter: var(--calendar-glass-blur);
+  backdrop-filter: var(--calendar-glass-blur);
+}
+
+/* Month Controls */
+.month-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Year Controls */
+.year-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.nav-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.85rem;
+}
+
+.nav-btn:hover {
+  background: var(--month-hover-bg);
+  color: var(--text-primary);
+  border-color: var(--month-active-border);
+}
+
+.current-month,
+.current-year {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  min-width: 80px;
+  text-align: center;
+  padding: 0.4rem 0.6rem;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.current-month-year:hover {
+  background: var(--month-hover-bg);
+}
+
+/* ========== GLASS CALENDAR GRID ========== */
+.glass-calendar {
+  background: var(--calendar-glass-bg);
+  border: 1px solid var(--calendar-glass-border);
+  border-radius: 20px;
+  padding: 1.5rem;
+  -webkit-backdrop-filter: var(--calendar-glass-blur);
+  backdrop-filter: var(--calendar-glass-blur);
+  box-shadow: var(--calendar-glass-shadow);
+  position: relative;
+  overflow: hidden;
+}
+
+.glass-calendar::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.1) 0%,
+    transparent 20%,
+    transparent 80%,
+    rgba(0, 0, 0, 0.05) 100%
+  );
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.5rem;
+  position: relative;
+  z-index: 1;
+}
+
+.calendar-day-header {
+  text-align: center;
+  font-weight: 600;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  padding: 0.75rem 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.calendar-day {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--calendar-cell-bg);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+  font-weight: 500;
+  position: relative;
+  overflow: hidden;
+}
+
+.calendar-day:hover {
+  background: var(--calendar-cell-hover);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.calendar-day.today {
+  background: var(--calendar-cell-today);
+  border-color: rgba(245, 158, 11, 0.4);
+  color: #f59e0b;
+  font-weight: 700;
+}
+
+.calendar-day.selected {
+  background: var(--calendar-cell-selected);
+  border-color: rgba(16, 185, 129, 0.6);
+  color: white;
+  box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+}
+
+.calendar-day.other-month {
+  color: var(--text-muted);
+  opacity: 0.4;
+}
+
+.calendar-day.disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+/* ========== SELECTION INFO ========== */
+.selection-info {
+  margin-top: 1.5rem;
+  padding: 1.25rem;
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-radius: 16px;
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+
+.selection-info h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--accent-green);
+  margin: 0 0 0.75rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.selected-month-info {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.info-item {
+  text-align: center;
+}
+
+.info-label {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.25rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.info-value {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* ========== RIGHT PANEL - BILL INPUT SECTION ========== */
+.bill-input-section {
+  padding: 2rem;
+  background: linear-gradient(
+    135deg,
+    rgba(16, 185, 129, 0.03) 0%,
+    rgba(5, 150, 105, 0.01) 100%
+  );
+}
+
+.input-section-header {
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.input-section-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 0.5rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.input-section-title i {
+  color: var(--accent-green);
+}
+
+.input-section-subtitle {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+/* ========== BILL INPUT FORM ========== */
+.bill-input-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.form-group-glass {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-label-glass {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.form-label-glass i {
+  color: var(--accent-green);
+  font-size: 0.8rem;
+}
+
+.form-input-glass {
+  background: var(--bill-input-bg);
+  border: 1px solid var(--bill-input-border);
+  border-radius: 12px;
+  padding: 0.9rem 1.2rem;
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+
+.form-input-glass:focus {
+  outline: none;
+  border-color: var(--bill-input-focus);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.form-input-glass::placeholder {
+  color: var(--text-muted);
+}
+
+.input-with-unit {
+  position: relative;
+}
+
+.input-unit {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  font-weight: 500;
+  pointer-events: none;
+}
+
+/* ========== WORKING CONFIGURATION ========== */
+.working-config {
+  background: var(--workdays-bg);
+  border: 1px solid var(--workdays-border);
+  border-radius: 16px;
+  padding: 1.5rem;
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+
+.working-config h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--accent-purple);
+  margin: 0 0 1rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.working-days-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.working-days-selector {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.25rem;
+  margin-top: 0.5rem;
+}
+
+.day-checkbox {
+  position: relative;
+}
+
+.day-checkbox input {
+  opacity: 0;
+  position: absolute;
+}
+
+.day-checkbox label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.day-checkbox input:checked + label {
+  background: var(--month-active-bg);
+  border-color: var(--month-active-border);
+  color: white;
+}
+
+.day-checkbox label:hover {
+  background: var(--month-hover-bg);
+  color: var(--text-primary);
+}
+
+/* ========== ACTION BUTTONS ========== */
+.bill-form-actions {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--glass-border);
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+}
+
+.btn-glass-primary {
+  background: linear-gradient(
+    135deg,
+    rgba(16, 185, 129, 0.8),
+    rgba(5, 150, 105, 0.7)
+  );
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  border-radius: 12px;
+  padding: 0.8rem 1.5rem;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+
+.btn-glass-primary:hover {
+  background: linear-gradient(
+    135deg,
+    rgba(16, 185, 129, 0.9),
+    rgba(5, 150, 105, 0.8)
+  );
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+}
+
+.btn-glass-secondary {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  padding: 0.8rem 1.5rem;
+  color: var(--text-secondary);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+
+.btn-glass-secondary:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--text-primary);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+/* ========== COMPARISON RESULTS SECTION ========== */
+.comparison-results {
+  grid-column: 1 / -1;
+  padding: 2rem;
+  background: linear-gradient(
+    135deg,
+    rgba(139, 92, 246, 0.05) 0%,
+    rgba(124, 58, 237, 0.02) 100%
+  );
+  border-top: 1px solid var(--glass-border);
+}
+
+.comparison-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.comparison-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 0.5rem 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.comparison-title i {
+  color: var(--accent-purple);
+}
+
+.comparison-subtitle {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+}
+
+.comparison-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.comparison-card {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  padding: 1.5rem;
+  -webkit-backdrop-filter: blur(15px);
+  backdrop-filter: blur(15px);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.comparison-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple));
+}
+
+.comparison-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.3);
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.card-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  color: white;
+}
+
+.card-icon.before {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+
+.card-icon.after {
+  background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.card-icon.savings {
+  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+}
+
+.card-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.card-metrics {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.metric-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.metric-label {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.metric-value {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.metric-value.positive {
+  color: var(--savings-positive);
+}
+
+.metric-value.negative {
+  color: var(--savings-negative);
+}
+
+.savings-percentage {
+  font-size: 1.5rem;
+  font-weight: 800;
+  text-align: center;
+  margin: 1rem 0;
+  padding: 1rem;
+  background: rgba(139, 92, 246, 0.1);
+  border-radius: 12px;
+  border: 1px solid rgba(139, 92, 246, 0.3);
+}
+
+.savings-percentage.positive {
+  color: var(--savings-positive);
+  background: rgba(16, 185, 129, 0.1);
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.savings-percentage.negative {
+  color: var(--savings-negative);
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+/* ========== EXPORT SECTION ========== */
+.export-section {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.export-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 1rem 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.export-description {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
+}
+
+.export-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.btn-export {
+  background: linear-gradient(
+    135deg,
+    rgba(34, 197, 94, 0.8),
+    rgba(22, 163, 74, 0.7)
+  );
+  border: 1px solid rgba(34, 197, 94, 0.4);
+  border-radius: 12px;
+  padding: 0.8rem 1.5rem;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+
+.btn-export:hover {
+  background: linear-gradient(
+    135deg,
+    rgba(34, 197, 94, 0.9),
+    rgba(22, 163, 74, 0.8)
+  );
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(34, 197, 94, 0.4);
+}
+
+/* ========== RESPONSIVE DESIGN ========== */
+@media (max-width: 1024px) {
+  .bill-content-layout {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .bill-calendar-section {
+    border-right: none;
+    border-bottom: 1px solid var(--glass-border);
+  }
+
+  .electricity-bill-content {
+    width: 98%;
+    max-width: none;
+  }
+
+  .comparison-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .bill-modal-header,
+  .bill-calendar-section,
+  .bill-input-section,
+  .comparison-results {
+    padding: 1.5rem;
+  }
+
+  .month-year-picker {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .calendar-grid {
+    gap: 0.25rem;
+  }
+
+  .bill-form-actions {
+    flex-direction: column;
+  }
+
+  .working-days-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .export-actions {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 480px) {
+  .electricity-bill-content {
+    width: 100%;
+    height: 100vh;
+    max-height: none;
+    border-radius: 0;
+  }
+
+  .calendar-day {
+    font-size: 0.8rem;
+  }
+
+  .working-days-selector {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.5rem;
+  }
+
+  .day-checkbox label {
+    width: 100%;
+    height: 36px;
+    font-size: 0.7rem;
+  }
+}
+
+/* ========== ACCESSIBILITY IMPROVEMENTS ========== */
+@media (prefers-reduced-motion: reduce) {
+  .electricity-bill-modal,
+  .electricity-bill-content,
+  .calendar-day,
+  .btn-glass-primary,
+  .btn-glass-secondary,
+  .comparison-card {
+    transition: none;
+  }
+
+  .electricity-bill-content::before {
+    animation: none;
+  }
+
+  .calendar-day::before {
+    transition: none;
+  }
+}
+
+/* Focus indicators for keyboard navigation */
+.calendar-day:focus,
+.form-input-glass:focus,
+.btn-glass-primary:focus,
+.btn-glass-secondary:focus {
+  outline: 2px solid var(--accent-blue);
+  outline-offset: 2px;
+}
+
+/* ========== LOADING STATES ========== */
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  -webkit-backdrop-filter: blur(5px);
+  backdrop-filter: blur(5px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+
+.loading-overlay.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(255, 255, 255, 0.1);
+  border-top: 3px solid var(--accent-green);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
