@@ -537,49 +537,37 @@ class ElectricityBillManager {
             <!-- Statistics Content -->
             <div class="stats-content-layout">
               <!-- Summary Cards -->
-              <div class="stats-summary-cards">
+              <div class="stats-summary-grid">
                 <div class="stats-card total-bills">
                   <div class="stats-card-icon">
                     <i class="fas fa-file-invoice-dollar"></i>
                   </div>
-                  <div class="stats-card-content">
-                    <h3>Tổng Hóa Đơn</h3>
-                    <div class="stats-card-value" id="total-bills-count">0</div>
-                    <div class="stats-card-label">tháng theo dõi</div>
-                  </div>
+                  <div class="stats-card-value" id="total-bills-count">0</div>
+                  <div class="stats-card-label">tháng theo dõi</div>
                 </div>
 
                 <div class="stats-card total-amount">
                   <div class="stats-card-icon">
                     <i class="fas fa-money-bill-wave"></i>
                   </div>
-                  <div class="stats-card-content">
-                    <h3>Tổng Chi Phí</h3>
-                    <div class="stats-card-value" id="total-amount-value">0 VND</div>
-                    <div class="stats-card-label">tổng tiền điện</div>
-                  </div>
+                  <div class="stats-card-value" id="total-amount-value">0 VND</div>
+                  <div class="stats-card-label">tổng tiền điện</div>
                 </div>
 
                 <div class="stats-card total-consumption">
                   <div class="stats-card-icon">
                     <i class="fas fa-bolt"></i>
                   </div>
-                  <div class="stats-card-content">
-                    <h3>Tổng Tiêu Thụ</h3>
-                    <div class="stats-card-value" id="total-consumption-value">0 kWh</div>
-                    <div class="stats-card-label">điện năng sử dụng</div>
-                  </div>
+                  <div class="stats-card-value" id="total-consumption-value">0 kWh</div>
+                  <div class="stats-card-label">điện năng sử dụng</div>
                 </div>
 
                 <div class="stats-card average-monthly">
                   <div class="stats-card-icon">
                     <i class="fas fa-chart-pie"></i>
                   </div>
-                  <div class="stats-card-content">
-                    <h3>Trung Bình/Tháng</h3>
-                    <div class="stats-card-value" id="average-monthly-value">0 VND</div>
-                    <div class="stats-card-label">chi phí trung bình</div>
-                  </div>
+                  <div class="stats-card-value" id="average-monthly-value">0 VND</div>
+                  <div class="stats-card-label">chi phí trung bình</div>
                 </div>
               </div>
 
@@ -664,12 +652,12 @@ class ElectricityBillManager {
     document
       .getElementById("google-signin")
       .addEventListener("click", () => this.handleGoogleSignIn());
-    
+
     // Monthly statistics button
     document
       .getElementById("view-monthly-stats")
       .addEventListener("click", () => this.showMonthlyStats());
-    
+
     // Stats modal controls
     document
       .getElementById("stats-modal-close")
@@ -1842,7 +1830,7 @@ class ElectricityBillManager {
       }
 
       const billDataArray = Array.from(this.billData.values());
-      
+
       if (billDataArray.length === 0) {
         this.showStatsEmptyState();
         return;
@@ -1857,7 +1845,9 @@ class ElectricityBillManager {
       // Create visualization chart
       this.createStatsChart(billDataArray);
 
-      console.log(`✅ Monthly statistics loaded: ${billDataArray.length} months`);
+      console.log(
+        `✅ Monthly statistics loaded: ${billDataArray.length} months`
+      );
     } catch (error) {
       console.error("Error loading monthly statistics:", error);
       this.showNotification("Lỗi tải thống kê tháng", "error");
@@ -1877,17 +1867,23 @@ class ElectricityBillManager {
 
     // Update DOM elements
     document.getElementById("total-bills-count").textContent = totalBills;
-    document.getElementById("total-amount-value").textContent = this.formatCurrency(totalAmount);
-    document.getElementById("total-consumption-value").textContent = `${totalConsumption.toFixed(1)} kWh`;
-    document.getElementById("average-monthly-value").textContent = this.formatCurrency(averageMonthly);
+    document.getElementById("total-amount-value").textContent =
+      this.formatCurrency(totalAmount);
+    document.getElementById(
+      "total-consumption-value"
+    ).textContent = `${totalConsumption.toFixed(1)} kWh`;
+    document.getElementById("average-monthly-value").textContent =
+      this.formatCurrency(averageMonthly);
   }
 
   populateMonthlyTable(billDataArray) {
     const container = document.getElementById("monthly-stats-list");
-    
+
+    console.log("📊 PopulateMonthlyTable called with data:", billDataArray);
+
     // Group data by year
     const dataByYear = {};
-    billDataArray.forEach(data => {
+    billDataArray.forEach((data) => {
       const year = data.year;
       if (!dataByYear[year]) {
         dataByYear[year] = [];
@@ -1895,15 +1891,24 @@ class ElectricityBillManager {
       dataByYear[year].push(data);
     });
 
+    console.log("📅 Data grouped by year:", dataByYear);
+
     // Sort years (newest first)
     const sortedYears = Object.keys(dataByYear).sort((a, b) => b - a);
-    
+
     let html = "";
-    
-    sortedYears.forEach(year => {
+
+    sortedYears.forEach((year) => {
       // Sort months within year
       const monthsData = dataByYear[year].sort((a, b) => a.month - b.month);
-      
+
+      console.log(`📊 Year ${year} months data:`, monthsData);
+      console.log(`📊 Year ${year} - calling getYearSummary with:`, monthsData);
+      console.log(
+        `📊 Year ${year} - calling generateMonthsList with:`,
+        monthsData
+      );
+
       html += `
         <div class="year-group">
           <div class="year-header">
@@ -1934,40 +1939,125 @@ class ElectricityBillManager {
       `;
     }
 
+    console.log("📝 Final HTML output:", html);
     container.innerHTML = html;
   }
 
   generateMonthsList(monthsData) {
+    console.log("🔍 generateMonthsList called with:", monthsData);
+
     const monthNames = [
-      "Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6",
-      "Tháng 7", "Tháng 8", "Tháng 9", "Tháng 10", "Tháng 11", "Tháng 12"
+      "Tháng 1",
+      "Tháng 2",
+      "Tháng 3",
+      "Tháng 4",
+      "Tháng 5",
+      "Tháng 6",
+      "Tháng 7",
+      "Tháng 8",
+      "Tháng 9",
+      "Tháng 10",
+      "Tháng 11",
+      "Tháng 12",
     ];
 
     let html = "";
-    
-    // Create array for all 12 months
-    const allMonths = Array.from({length: 12}, (_, i) => {
-      const existingData = monthsData.find(data => data.month === i);
-      return existingData || { month: i, hasData: false };
+
+    // Enhanced debug - inspect each month data structure
+    monthsData.forEach((data, idx) => {
+      console.log(`📊 Raw month data ${idx}:`, {
+        fullData: data,
+        month: data.month,
+        amount: data.amount,
+        billAmount: data.billAmount,
+        kwh: data.kwh,
+        powerConsumption: data.powerConsumption,
+      });
+    });
+
+    // Create array for all 12 months with proper data mapping
+    const allMonths = Array.from({ length: 12 }, (_, monthIndex) => {
+      const existingData = monthsData.find((data) => {
+        // Handle both 0-based and 1-based month indexing
+        const dataMonth = data.month !== undefined ? data.month : -1;
+        // Check both 0-based (monthIndex) and 1-based (monthIndex + 1) matching
+        const isMatch =
+          dataMonth === monthIndex || dataMonth === monthIndex + 1;
+
+        if (isMatch) {
+          console.log(
+            `✅ Found match for month ${monthIndex}: dataMonth=${dataMonth}, data=`,
+            data
+          );
+        }
+
+        return isMatch;
+      });
+
+      if (existingData) {
+        console.log(`✅ Month ${monthIndex} HAS DATA:`, existingData);
+        return {
+          ...existingData,
+          hasData: true,
+          month: monthIndex,
+        };
+      } else {
+        console.log(`❌ Month ${monthIndex} NO DATA`);
+        return {
+          month: monthIndex,
+          hasData: false,
+          amount: 0, // Default amount for no-data months
+          kwh: 0,
+          workingDays: 0,
+        };
+      }
+    });
+
+    console.log("🔍 Processing months data:", {
+      originalData: monthsData,
+      processedMonths: allMonths,
     });
 
     allMonths.forEach((data, index) => {
       const monthName = monthNames[index];
-      
+
+      console.log(`🔍 Processing month ${index} (${monthName}):`, {
+        hasData: data.hasData,
+        amount: data.amount,
+        kwh: data.kwh,
+        fullData: data,
+      });
+
       if (data.hasData === false) {
-        // No data for this month
+        // No data for this month - show 0 amount instead of "Chưa có dữ liệu"
         html += `
           <div class="month-item no-data">
             <span class="month-name">${monthName}:</span>
-            <span class="month-data">Chưa có dữ liệu</span>
+            <span class="month-data">
+              <span class="amount-info">
+                <i class="fas fa-money-bill-wave"></i>
+                ${this.formatCurrency(0)}
+              </span>
+            </span>
           </div>
         `;
       } else {
-        // Has data for this month
+        // Has data for this month - use flexible field mapping
         const amount = data.amount || data.billAmount || 0;
         const kwh = data.kwh || data.powerConsumption || 0;
-        const workingDays = data.workingDaysCount || data.workingDays?.length || 0;
-        
+        const workingDays =
+          data.workingDaysCount ||
+          (data.workingDays ? data.workingDays.length : 0) ||
+          data.totalWorkingDays ||
+          0;
+
+        console.log(`📊 Month ${index + 1} data generation:`, {
+          amount,
+          kwh,
+          workingDays,
+          rawData: data,
+        });
+
         html += `
           <div class="month-item has-data">
             <span class="month-name">${monthName}:</span>
@@ -1994,10 +2084,16 @@ class ElectricityBillManager {
   }
 
   getYearSummary(monthsData) {
-    const totalAmount = monthsData.reduce((sum, data) => sum + (data.amount || data.billAmount || 0), 0);
-    const totalKwh = monthsData.reduce((sum, data) => sum + (data.kwh || data.powerConsumption || 0), 0);
+    const totalAmount = monthsData.reduce(
+      (sum, data) => sum + (data.amount || data.billAmount || 0),
+      0
+    );
+    const totalKwh = monthsData.reduce(
+      (sum, data) => sum + (data.kwh || data.powerConsumption || 0),
+      0
+    );
     const monthsCount = monthsData.length;
-    
+
     return `
       <span class="year-summary-item">
         <i class="fas fa-chart-line"></i>
@@ -2030,114 +2126,118 @@ class ElectricityBillManager {
       return dateA - dateB;
     });
 
-    const labels = sortedData.map(data => 
-      `${(data.month + 1).toString().padStart(2, '0')}/${data.year}`
+    const labels = sortedData.map(
+      (data) => `${(data.month + 1).toString().padStart(2, "0")}/${data.year}`
     );
-    
-    const amountData = sortedData.map(data => data.amount || data.billAmount || 0);
-    const consumptionData = sortedData.map(data => data.kwh || data.powerConsumption || 0);
+
+    const amountData = sortedData.map(
+      (data) => data.amount || data.billAmount || 0
+    );
+    const consumptionData = sortedData.map(
+      (data) => data.kwh || data.powerConsumption || 0
+    );
 
     this.statsChart = new Chart(ctx, {
-      type: 'line',
+      type: "line",
       data: {
         labels: labels,
         datasets: [
           {
-            label: 'Tiền Điện (VND)',
+            label: "Tiền Điện (VND)",
             data: amountData,
-            borderColor: 'rgba(16, 185, 129, 1)',
-            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+            borderColor: "rgba(16, 185, 129, 1)",
+            backgroundColor: "rgba(16, 185, 129, 0.1)",
             borderWidth: 3,
             fill: true,
             tension: 0.4,
-            pointBackgroundColor: 'rgba(16, 185, 129, 1)',
-            pointBorderColor: '#ffffff',
+            pointBackgroundColor: "rgba(16, 185, 129, 1)",
+            pointBorderColor: "#ffffff",
             pointBorderWidth: 2,
             pointRadius: 6,
-            hidden: false
+            hidden: false,
           },
           {
-            label: 'Điện Năng (kWh)',
+            label: "Điện Năng (kWh)",
             data: consumptionData,
-            borderColor: 'rgba(59, 130, 246, 1)',
-            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+            borderColor: "rgba(59, 130, 246, 1)",
+            backgroundColor: "rgba(59, 130, 246, 0.1)",
             borderWidth: 3,
             fill: true,
             tension: 0.4,
-            pointBackgroundColor: 'rgba(59, 130, 246, 1)',
-            pointBorderColor: '#ffffff',
+            pointBackgroundColor: "rgba(59, 130, 246, 1)",
+            pointBorderColor: "#ffffff",
             pointBorderWidth: 2,
             pointRadius: 6,
             hidden: true,
-            yAxisID: 'y1'
-          }
-        ]
+            yAxisID: "y1",
+          },
+        ],
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
           legend: {
-            display: false // We use custom toggle buttons
+            display: false, // We use custom toggle buttons
           },
           tooltip: {
-            backgroundColor: 'rgba(0, 0, 0, 0.8)',
-            titleColor: '#ffffff',
-            bodyColor: '#ffffff',
-            borderColor: 'rgba(255, 255, 255, 0.1)',
+            backgroundColor: "rgba(0, 0, 0, 0.8)",
+            titleColor: "#ffffff",
+            bodyColor: "#ffffff",
+            borderColor: "rgba(255, 255, 255, 0.1)",
             borderWidth: 1,
             cornerRadius: 8,
-            displayColors: true
-          }
+            displayColors: true,
+          },
         },
         scales: {
           x: {
             grid: {
-              color: 'rgba(255, 255, 255, 0.1)',
-              borderColor: 'rgba(255, 255, 255, 0.2)'
+              color: "rgba(255, 255, 255, 0.1)",
+              borderColor: "rgba(255, 255, 255, 0.2)",
             },
             ticks: {
-              color: 'rgba(255, 255, 255, 0.7)',
+              color: "rgba(255, 255, 255, 0.7)",
               font: {
-                size: 12
-              }
-            }
+                size: 12,
+              },
+            },
           },
           y: {
             grid: {
-              color: 'rgba(255, 255, 255, 0.1)',
-              borderColor: 'rgba(255, 255, 255, 0.2)'
+              color: "rgba(255, 255, 255, 0.1)",
+              borderColor: "rgba(255, 255, 255, 0.2)",
             },
             ticks: {
-              color: 'rgba(255, 255, 255, 0.7)',
+              color: "rgba(255, 255, 255, 0.7)",
               font: {
-                size: 12
+                size: 12,
               },
-              callback: function(value) {
-                return new Intl.NumberFormat('vi-VN').format(value) + ' VND';
-              }
-            }
+              callback: function (value) {
+                return new Intl.NumberFormat("vi-VN").format(value) + " VND";
+              },
+            },
           },
           y1: {
-            type: 'linear',
+            type: "linear",
             display: false,
-            position: 'right',
+            position: "right",
             grid: {
               drawOnChartArea: false,
             },
             ticks: {
-              color: 'rgba(255, 255, 255, 0.7)',
-              callback: function(value) {
-                return value.toFixed(1) + ' kWh';
-              }
-            }
-          }
+              color: "rgba(255, 255, 255, 0.7)",
+              callback: function (value) {
+                return value.toFixed(1) + " kWh";
+              },
+            },
+          },
         },
         interaction: {
           intersect: false,
-          mode: 'index'
-        }
-      }
+          mode: "index",
+        },
+      },
     });
   }
 
@@ -2145,19 +2245,21 @@ class ElectricityBillManager {
     if (!this.statsChart) return;
 
     // Update button states
-    document.querySelectorAll(".chart-toggle-btn").forEach(btn => {
+    document.querySelectorAll(".chart-toggle-btn").forEach((btn) => {
       btn.classList.remove("active");
     });
-    document.querySelector(`[data-chart="${chartType}"]`).classList.add("active");
+    document
+      .querySelector(`[data-chart="${chartType}"]`)
+      .classList.add("active");
 
     // Toggle dataset visibility
-    if (chartType === 'amount') {
+    if (chartType === "amount") {
       this.statsChart.data.datasets[0].hidden = false; // Amount
-      this.statsChart.data.datasets[1].hidden = true;  // Consumption
+      this.statsChart.data.datasets[1].hidden = true; // Consumption
       this.statsChart.options.scales.y.display = true;
       this.statsChart.options.scales.y1.display = false;
-    } else if (chartType === 'consumption') {
-      this.statsChart.data.datasets[0].hidden = true;  // Amount
+    } else if (chartType === "consumption") {
+      this.statsChart.data.datasets[0].hidden = true; // Amount
       this.statsChart.data.datasets[1].hidden = false; // Consumption
       this.statsChart.options.scales.y.display = false;
       this.statsChart.options.scales.y1.display = true;
@@ -2195,10 +2297,10 @@ class ElectricityBillManager {
   async exportStatsToExcel() {
     try {
       this.showStatsLoading(true);
-      
+
       // Use existing export functionality
       await this.exportToExcel("detailed");
-      
+
       this.showNotification("Đã xuất thống kê Excel thành công!", "success");
     } catch (error) {
       console.error("Export stats error:", error);

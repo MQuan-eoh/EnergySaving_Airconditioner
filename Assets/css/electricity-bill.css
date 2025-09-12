@@ -1110,54 +1110,70 @@
 .bill-modal#monthly-stats-modal .bill-modal-header {
   background: linear-gradient(
     135deg,
-    rgba(16, 185, 129, 0.1),
-    rgba(59, 130, 246, 0.1)
+    rgba(17, 24, 39, 0.95),
+    rgba(31, 41, 55, 0.95)
   );
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 20px 25px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 18px 25px;
   border-radius: 20px 20px 0 0;
   position: relative;
+  -webkit-backdrop-filter: blur(25px);
+  backdrop-filter: blur(25px);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
 }
 
 .bill-modal#monthly-stats-modal .bill-modal-title {
   color: #ffffff;
-  font-size: 22px;
+  font-size: 18px;
   font-weight: 600;
   margin: 0;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
 .bill-modal#monthly-stats-modal .bill-modal-title i {
   color: #10b981;
-  font-size: 24px;
+  font-size: 18px;
 }
 
-/* Statistics summary cards */
+/* Statistics summary cards - Horizontal Compact Layout */
 .stats-summary-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 15px;
-  margin: 20px 0;
-  padding: 0 5px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin: 10px 0;
+  padding: 0;
+  flex-wrap: wrap;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.05),
+    rgba(255, 255, 255, 0.02)
+  );
+  border-radius: 12px;
+  padding: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .stats-card {
   background: linear-gradient(
     135deg,
-    rgba(255, 255, 255, 0.1),
-    rgba(255, 255, 255, 0.05)
+    rgba(255, 255, 255, 0.08),
+    rgba(255, 255, 255, 0.04)
   );
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  padding: 15px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  padding: 8px 12px;
   text-align: center;
   -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
+  flex: 1;
+  min-width: 120px;
+  max-width: 160px;
 }
 
 .stats-card::before {
@@ -1166,20 +1182,20 @@
   top: 0;
   left: 0;
   right: 0;
-  height: 3px;
+  height: 2px;
   background: linear-gradient(90deg, #10b981, #3b82f6);
-  border-radius: 12px 12px 0 0;
+  border-radius: 10px 10px 0 0;
 }
 
 .stats-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
-  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+  border-color: rgba(255, 255, 255, 0.25);
 }
 
 .stats-card-icon {
-  font-size: 22px;
-  margin-bottom: 8px;
+  font-size: 14px;
+  margin-bottom: 4px;
   display: block;
 }
 
@@ -1197,69 +1213,73 @@
 }
 
 .stats-card-value {
-  font-size: 18px;
+  font-size: 13px;
   font-weight: 700;
   color: #ffffff;
-  margin: 6px 0;
+  margin: 2px 0;
   display: block;
+  line-height: 1.1;
 }
 
 .stats-card-label {
-  font-size: 12px;
+  font-size: 9px;
   color: rgba(255, 255, 255, 0.7);
   font-weight: 500;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.2px;
+  line-height: 1;
 }
 
-/* Statistics controls */
+/* Statistics controls - improved spacing */
 .stats-controls {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin: 20px 0;
-  padding: 0 5px;
+  margin: 15px 0;
+  padding: 0;
   flex-wrap: wrap;
-  gap: 15px;
+  gap: 12px;
 }
 
 .stats-actions {
   display: flex;
-  gap: 12px;
+  gap: 10px;
   flex-wrap: wrap;
 }
 
 .stats-btn {
   background: linear-gradient(
     135deg,
-    rgba(16, 185, 129, 0.2),
-    rgba(16, 185, 129, 0.1)
+    rgba(16, 185, 129, 0.15),
+    rgba(16, 185, 129, 0.08)
   );
-  border: 1px solid rgba(16, 185, 129, 0.3);
+  border: 1px solid rgba(16, 185, 129, 0.25);
   color: #10b981;
-  border-radius: 10px;
-  padding: 10px 16px;
-  font-size: 14px;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 13px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.3s ease;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
 }
 
 .stats-btn:hover {
   background: linear-gradient(
     135deg,
-    rgba(16, 185, 129, 0.3),
-    rgba(16, 185, 129, 0.2)
+    rgba(16, 185, 129, 0.25),
+    rgba(16, 185, 129, 0.15)
   );
-  border-color: rgba(16, 185, 129, 0.5);
-  transform: translateY(-2px);
+  border-color: rgba(16, 185, 129, 0.4);
+  transform: translateY(-1px);
 }
 
 .stats-btn i {
-  font-size: 14px;
+  font-size: 12px;
 }
 
 /* Chart controls */
@@ -1327,14 +1347,22 @@
 /* Year group styling */
 .year-group {
   margin-bottom: 25px;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.04));
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.08),
+    rgba(255, 255, 255, 0.04)
+  );
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   overflow: hidden;
 }
 
 .year-header {
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(59, 130, 246, 0.15));
+  background: linear-gradient(
+    135deg,
+    rgba(16, 185, 129, 0.15),
+    rgba(59, 130, 246, 0.15)
+  );
   padding: 15px 20px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
@@ -1346,17 +1374,17 @@
 
 .year-title {
   color: #ffffff;
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 600;
   margin: 0;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
 .year-title i {
   color: #10b981;
-  font-size: 20px;
+  font-size: 16px;
 }
 
 .year-summary {
@@ -1379,52 +1407,61 @@
   font-size: 14px;
 }
 
-/* Months list styling */
+/* Months list styling - improved compact design */
 .months-list {
-  padding: 15px 20px 20px;
+  padding: 12px 15px 15px;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 8px;
 }
 
 .month-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 15px;
-  border-radius: 8px;
+  padding: 10px 12px;
+  border-radius: 6px;
   transition: all 0.2s ease;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.02);
 }
 
 .month-item.has-data {
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.05));
-  border-color: rgba(16, 185, 129, 0.2);
+  background: linear-gradient(
+    135deg,
+    rgba(16, 185, 129, 0.08),
+    rgba(16, 185, 129, 0.04)
+  );
+  border-color: rgba(16, 185, 129, 0.15);
 }
 
 .month-item.has-data:hover {
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(16, 185, 129, 0.08));
-  border-color: rgba(16, 185, 129, 0.3);
-  transform: translateX(3px);
+  background: linear-gradient(
+    135deg,
+    rgba(16, 185, 129, 0.12),
+    rgba(16, 185, 129, 0.06)
+  );
+  border-color: rgba(16, 185, 129, 0.25);
+  transform: translateX(2px);
 }
 
 .month-item.no-data {
-  background: rgba(255, 255, 255, 0.03);
-  border-color: rgba(255, 255, 255, 0.08);
-  opacity: 0.6;
+  background: rgba(255, 255, 255, 0.02);
+  border-color: rgba(255, 255, 255, 0.06);
+  opacity: 0.7;
 }
 
 .month-name {
   font-weight: 600;
   color: #ffffff;
-  min-width: 80px;
-  font-size: 14px;
+  min-width: 70px;
+  font-size: 13px;
 }
 
 .month-data {
   display: flex;
   align-items: center;
-  gap: 15px;
+  gap: 12px;
   flex-wrap: wrap;
   flex: 1;
   justify-content: flex-end;
@@ -1433,41 +1470,45 @@
 .month-item.no-data .month-data {
   color: rgba(255, 255, 255, 0.5);
   font-style: italic;
-  font-size: 13px;
+  font-size: 12px;
 }
 
-/* Month data info items */
-.amount-info, .consumption-info, .days-info {
+/* Month data info items - compact design */
+.amount-info,
+.consumption-info,
+.days-info {
   display: flex;
   align-items: center;
-  gap: 5px;
-  font-size: 13px;
+  gap: 4px;
+  font-size: 12px;
   font-weight: 500;
-  padding: 4px 8px;
-  border-radius: 6px;
+  padding: 3px 6px;
+  border-radius: 4px;
   white-space: nowrap;
 }
 
 .amount-info {
-  background: rgba(16, 185, 129, 0.2);
+  background: rgba(16, 185, 129, 0.15);
   color: #10b981;
-  border: 1px solid rgba(16, 185, 129, 0.3);
+  border: 1px solid rgba(16, 185, 129, 0.25);
 }
 
 .consumption-info {
-  background: rgba(59, 130, 246, 0.2);
+  background: rgba(59, 130, 246, 0.15);
   color: #3b82f6;
-  border: 1px solid rgba(59, 130, 246, 0.3);
+  border: 1px solid rgba(59, 130, 246, 0.25);
 }
 
 .days-info {
-  background: rgba(245, 158, 11, 0.2);
+  background: rgba(245, 158, 11, 0.15);
   color: #f59e0b;
-  border: 1px solid rgba(245, 158, 11, 0.3);
+  border: 1px solid rgba(245, 158, 11, 0.25);
 }
 
-.amount-info i, .consumption-info i, .days-info i {
-  font-size: 11px;
+.amount-info i,
+.consumption-info i,
+.days-info i {
+  font-size: 10px;
 }
 
 /* Responsive for list layout */
@@ -1477,22 +1518,24 @@
     align-items: flex-start;
     gap: 10px;
   }
-  
+
   .year-summary {
     gap: 15px;
   }
-  
+
   .months-list {
     grid-template-columns: 1fr;
     gap: 10px;
     padding: 10px 15px 15px;
   }
-  
+
   .month-data {
     gap: 10px;
   }
-  
-  .amount-info, .consumption-info, .days-info {
+
+  .amount-info,
+  .consumption-info,
+  .days-info {
     font-size: 12px;
     padding: 3px 6px;
   }
@@ -1504,17 +1547,17 @@
     align-items: flex-start;
     gap: 8px;
   }
-  
+
   .month-data {
     width: 100%;
     justify-content: flex-start;
     gap: 8px;
   }
-  
+
   .year-summary {
     gap: 10px;
   }
-  
+
   .year-summary-item {
     font-size: 13px;
   }
@@ -1617,23 +1660,48 @@
   }
 
   .stats-summary-grid {
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 15px;
-    margin: 20px 0;
+    flex-direction: column;
+    gap: 8px;
+    margin: 12px 0;
   }
 
   .stats-card {
-    padding: 15px;
+    max-width: none;
+    min-width: auto;
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    text-align: left;
+  }
+
+  .stats-card-icon {
+    font-size: 16px;
+    margin-bottom: 0;
+    margin-right: 10px;
+  }
+
+  .stats-card-content {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
   }
 
   .stats-card-value {
-    font-size: 20px;
+    font-size: 14px;
+    margin: 0;
+  }
+
+  .stats-card-label {
+    font-size: 10px;
+    margin-left: auto;
   }
 
   .stats-controls {
     flex-direction: column;
     align-items: stretch;
-    gap: 15px;
+    gap: 12px;
   }
 
   .stats-actions {
@@ -1654,22 +1722,24 @@
     align-items: flex-start;
     gap: 10px;
   }
-  
+
   .year-summary {
     gap: 15px;
   }
-  
+
   .months-list {
     grid-template-columns: 1fr;
     gap: 10px;
     padding: 10px 15px 15px;
   }
-  
+
   .month-data {
     gap: 10px;
   }
-  
-  .amount-info, .consumption-info, .days-info {
+
+  .amount-info,
+  .consumption-info,
+  .days-info {
     font-size: 12px;
     padding: 3px 6px;
   }
@@ -1677,7 +1747,28 @@
 
 @media (max-width: 480px) {
   .stats-summary-grid {
-    grid-template-columns: 1fr;
+    gap: 6px;
+    margin: 10px 0;
+  }
+
+  .stats-card {
+    padding: 8px 10px;
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .stats-card-icon {
+    margin-right: 0;
+    margin-bottom: 4px;
+  }
+
+  .stats-card-content {
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .stats-card-label {
+    margin-left: 0;
   }
 
   .chart-wrapper {
@@ -1690,17 +1781,17 @@
     align-items: flex-start;
     gap: 8px;
   }
-  
+
   .month-data {
     width: 100%;
     justify-content: flex-start;
     gap: 8px;
   }
-  
+
   .year-summary {
     gap: 10px;
   }
-  
+
   .year-summary-item {
     font-size: 13px;
   }

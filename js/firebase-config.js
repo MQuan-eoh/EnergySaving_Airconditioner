@@ -39,13 +39,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     );
 
     if (initSuccess) {
-      console.log("✅ Storage Manager initialized successfully!");
+      console.log("Storage Manager initialized successfully!");
 
       // Auto-create user (anonymous or device-based)
       // No manual sign-in required!
       const user = window.firebaseStorageManager.getCurrentUser();
       if (user) {
-        console.log("🎯 Auto-signed user:", user.displayName || user.uid);
+        console.log(" Auto-signed user:", user.displayName || user.uid);
       }
 
       // Subscribe to storage events
@@ -58,7 +58,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
       });
     } else {
-      console.log("⚠️ Running in offline mode only");
+      console.log(" Running in offline mode only");
     }
   } catch (error) {
     console.error("Storage setup error:", error);
