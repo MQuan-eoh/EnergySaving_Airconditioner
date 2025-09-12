@@ -17,6 +17,7 @@ class ACSpaManager {
         fanSpeed: 0,
         current: 5,
         voltage: 220,
+        powerConsumption: 0, // Add powerConsumption to default data
       },
     };
   }
@@ -59,6 +60,7 @@ class ACSpaManager {
           current: deviceData.current,
           voltage: deviceData.voltage,
           fanSpeed: deviceData.fanSpeed,
+          powerConsumption: deviceData.powerConsumption,
         };
         this.updateACDataRealtime("AC-001", acDataUpdate);
         console.log("Dashboard updated with real-time device data");
@@ -475,7 +477,14 @@ class ACSpaManager {
       // Update energy usage with efficiency indicator (7th column)
       const energyUsageCell = row.querySelector(".energy-usage-cell");
       if (energyUsageCell && acData.power && window.energyEfficiencyManager) {
-        const currentPower = (acData.voltage || 220) * (acData.current || 5);
+        // Use actual power consumption if available, otherwise calculate
+        let currentPower;
+        if (acData.powerConsumption && acData.powerConsumption > 0) {
+          currentPower = acData.powerConsumption;
+        } else {
+          currentPower = (acData.voltage || 220) * (acData.current || 5);
+        }
+
         const efficiencyData =
           window.energyEfficiencyManager.calculateEfficiency(
             acData.targetTemp,
@@ -492,7 +501,14 @@ class ACSpaManager {
       // Update efficiency badge in status column
       const statusColumn = row.querySelector("td:nth-child(3)");
       if (statusColumn && acData.power && window.energyEfficiencyManager) {
-        const currentPower = (acData.voltage || 220) * (acData.current || 5);
+        // Use actual power consumption if available, otherwise calculate
+        let currentPower;
+        if (acData.powerConsumption && acData.powerConsumption > 0) {
+          currentPower = acData.powerConsumption;
+        } else {
+          currentPower = (acData.voltage || 220) * (acData.current || 5);
+        }
+        
         const configStatus = this.getACConfigurationStatus(acId);
 
         // Use configured AC calculation if available, otherwise use legacy method
@@ -578,7 +594,13 @@ class ACSpaManager {
     let energyUsageWithIndicator = "1.2 kW";
 
     if (acData.power && window.energyEfficiencyManager) {
-      const currentPower = (acData.voltage || 220) * (acData.current || 5);
+      // Use actual power consumption if available, otherwise calculate
+      let currentPower;
+      if (acData.powerConsumption && acData.powerConsumption > 0) {
+        currentPower = acData.powerConsumption;
+      } else {
+        currentPower = (acData.voltage || 220) * (acData.current || 5);
+      }
 
       // Use configured AC calculation if available, otherwise use legacy method
       if (configStatus.configured) {

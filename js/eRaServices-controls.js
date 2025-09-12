@@ -21,6 +21,8 @@ let configTargetTempAir1 = null,
   fanSpeed = null,
   current = null,
   voltage = null,
+  configPowerConsumption = null,
+  currentPowerConsumption_value = null,
   currentAir1_value = null,
   voltageAir1_value = null,
   fanSpeedControl = null;
@@ -36,6 +38,7 @@ eraWidget.init({
     configPowerAir1 = configuration.realtime_configs[4];
     configCurrentAir1 = configuration.realtime_configs[5];
     configVoltageAir1 = configuration.realtime_configs[6];
+    configPowerConsumption = configuration.realtime_configs[7];
     onAirConditioner1 = configuration.actions[0];
     offAirConditioner1 = configuration.actions[1];
     tempControlAir1 = configuration.actions[2];
@@ -69,11 +72,14 @@ eraWidget.init({
     powerAir1 = values[configPowerAir1.id].value;
     currentAir1_value = values[configCurrentAir1.id].value;
     voltageAir1_value = values[configVoltageAir1.id].value;
+    currentPowerConsumption_value = values[configPowerConsumption.id].value;
+
     console.log("Received values from E-RA:", values);
     console.log("Target temp from device:", targetTempAir1);
     console.log("Current temp from device:", currentTempAir1);
     console.log("Current mode from device:", currentModeAir1);
     console.log("Fan speed from device:", fanSpeed);
+    console.log("Power consumption from device:", currentPowerConsumption_value);
 
     // Update global device data manager first
     if (window.globalDeviceDataManager) {
@@ -85,6 +91,7 @@ eraWidget.init({
         power: powerAir1,
         current: currentAir1_value,
         voltage: voltageAir1_value,
+        powerConsumption: currentPowerConsumption_value,
       };
 
       window.globalDeviceDataManager.updateDeviceData(deviceData);
@@ -99,7 +106,7 @@ eraWidget.init({
       window.tempController.updateFromDevice(currentTempAir1, currentModeAir1);
       window.tempController.current = currentAir1_value;
       window.tempController.voltage = voltageAir1_value;
-
+      window.tempController.powerConsumption = currentPowerConsumption_value;
       // Update power status from device power value
       window.tempController.isPowerOn = powerAir1;
 
@@ -110,7 +117,8 @@ eraWidget.init({
       window.tempController.updateFanSpeedFromDevice(fanSpeed);
       window.tempController.updateElectricalDisplay(
         currentAir1_value,
-        voltageAir1_value
+        voltageAir1_value,
+        currentPowerConsumption_value
       );
       window.tempController.updateACDataInManager();
 
@@ -130,6 +138,7 @@ eraWidget.init({
       timestamp: new Date().toISOString(),
       current: currentAir1_value,
       voltage: voltageAir1_value,
+      powerConsumption: currentPowerConsumption_value,
     };
   },
   onHistories: (histories) => {
@@ -231,6 +240,7 @@ class GlobalDeviceDataManager {
       power,
       current,
       voltage,
+      powerConsumption,
       // AC Configuration Properties
       hpCapacity,
       technology,
@@ -260,7 +270,7 @@ class GlobalDeviceDataManager {
       isPowerOn: power || false,
       current: current || 0,
       voltage: voltage || 0,
-
+      powerConsumption: powerConsumption || 0, // in KWh
       // AC Configuration Properties - integration với AC Configuration Manager
       hpCapacity: hpCapacity || "2HP",
       technology: technology || "inverter",
@@ -308,6 +318,7 @@ class GlobalDeviceDataManager {
         current: this.deviceData.current,
         voltage: this.deviceData.voltage,
         fanSpeed: this.deviceData.fanSpeed,
+        powerConsumption: this.deviceData.powerConsumption,
 
         // AC Configuration Properties - Integration với AC Configuration Manager
         hpCapacity: this.deviceData.hpCapacity,
@@ -783,7 +794,7 @@ class TemperatureController {
     this.fanSpeed = 0;
     this.current = 0;
     this.voltage = 0;
-
+    this.powerConsumption = 0; // in KWh
     // AC Configuration Properties - integration với AC Configuration Manager
     this.hpCapacity = "2HP";
     this.technology = "inverter";
@@ -853,7 +864,7 @@ class TemperatureController {
 
   /**
    * UPDATE AC CONFIGURATION
-   * Method để update configuration khi user thay đổi settings
+   * Method to update AC configuration properties and save to manager
    */
   updateACConfiguration(newConfig) {
     // Update properties
@@ -887,7 +898,11 @@ class TemperatureController {
     this.updateCurrentTempDisplay();
     this.updateTemperatureDisplay();
     this.updateFanSpeedDisplay();
-    this.updateElectricalDisplay(this.current, this.voltage);
+    this.updateElectricalDisplay(
+      this.current,
+      this.voltage,
+      this.powerConsumption
+    );
   }
 
   /**
@@ -1599,6 +1614,7 @@ class TemperatureController {
         lastUpdated: new Date().toISOString(),
         current: this.current,
         voltage: this.voltage,
+        powerConsumption : this.powerConsumption, // in KWh
 
         // AC Configuration Properties - Integration với AC Configuration Manager
         hpCapacity: this.hpCapacity,
@@ -1791,7 +1807,7 @@ class TemperatureController {
    * UPDATE ELECTRICAL DISPLAY
    * Update voltage, current and calculated power display
    */
-  updateElectricalDisplay(current, voltage) {
+  updateElectricalDisplay(current, voltage, powerConsumption) {
     // Update instance variables first
     if (current !== null && current !== undefined) {
       this.current = current;
@@ -1799,7 +1815,9 @@ class TemperatureController {
     if (voltage !== null && voltage !== undefined) {
       this.voltage = voltage;
     }
-
+    if (powerConsumption !== null && powerConsumption !== undefined) {
+      this.powerConsumption = powerConsumption;
+    }
     const voltageElement = document.getElementById("spa-voltage-value");
     const currentElement = document.getElementById("spa-current-value");
     const powerElement = document.getElementById("spa-power-value");
@@ -1814,16 +1832,12 @@ class TemperatureController {
       console.log(`Current display updated: ${current.toFixed(2)}A`);
     }
 
-    if (
-      powerElement &&
-      voltage !== null &&
-      current !== null &&
-      voltage !== undefined &&
-      current !== undefined
-    ) {
-      const power = (voltage * current).toFixed(0);
-      powerElement.textContent = power;
-      console.log(`Power display updated: ${power}W`);
+    if (powerElement) {
+      let displayPowerConsumption;
+      if (powerConsumption != null && powerConsumption != undefined) {
+        displayPowerConsumption = powerConsumption;
+        powerElement.textContent = displayPowerConsumption.toFixed(2);
+      }
     }
   }
 }
