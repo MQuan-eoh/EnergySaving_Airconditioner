@@ -2,7 +2,9 @@
 Project Name: Smart Air Conditioner.
 
 Core Goal: Develop a web-based interface for a smart air conditioner that uses AI to automatically adjust the temperature, optimizing for user comfort and energy savings.
-
+Please act as Tech lead thinking and implementation.
+Please coding with english comments and variable names.
+And when chatting with user, please use vietnamese.
 Primary Technologies: HTML, CSS, JavaScript. We will also use modern frameworks (like React or Vue.js components, if applicable) and libraries (like Chart.js for data visualization) to enhance the user interface. The final output must be compatible and runnable directly from an HTML file.
 
 2. Code Quality and Structure Rules 📜

@@ -161,7 +161,266 @@
   font-size: 0.85rem;
   color: var(--text-secondary);
   margin-top: 0.4rem;
+  margin-bottom: 1.2rem;
   font-weight: 400;
+}
+
+/* ========== FIREBASE STATUS PANEL - HORIZONTAL LAYOUT ========== */
+.firebase-status-panel {
+  background: linear-gradient(
+    135deg,
+    rgba(59, 130, 246, 0.08) 0%,
+    rgba(16, 185, 129, 0.06) 50%,
+    rgba(139, 92, 246, 0.08) 100%
+  );
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  padding: 12px 16px;
+  margin: 8px 0 16px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  -webkit-backdrop-filter: blur(15px);
+  backdrop-filter: blur(15px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease;
+  flex-wrap: wrap;
+}
+
+.firebase-status-panel:hover {
+  background: linear-gradient(
+    135deg,
+    rgba(59, 130, 246, 0.12) 0%,
+    rgba(16, 185, 129, 0.1) 50%,
+    rgba(139, 92, 246, 0.12) 100%
+  );
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.2);
+}
+
+/* Status Items Container */
+.firebase-status-panel .status-items {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex: 1;
+}
+
+/* Individual Status Item */
+.status-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.status-item i {
+  font-size: 14px;
+  width: 16px;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+/* Status Item States */
+.status-item.online i {
+  color: #10b981;
+  animation: pulse-green 2s infinite;
+}
+
+.status-item.offline i {
+  color: #ef4444;
+  animation: pulse-red 2s infinite;
+}
+
+.status-item.authenticated i {
+  color: #3b82f6;
+}
+
+/* Status Actions Container */
+.status-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Status Buttons Base Style */
+.btn-status {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.1) 0%,
+    rgba(255, 255, 255, 0.05) 100%
+  );
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.9);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  outline: none;
+}
+
+.btn-status i {
+  font-size: 13px;
+  transition: all 0.3s ease;
+}
+
+.btn-status:hover {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.15) 0%,
+    rgba(255, 255, 255, 0.08) 100%
+  );
+  border-color: rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Google Sign-in Button */
+.btn-status#google-signin {
+  background: linear-gradient(
+    135deg,
+    rgba(66, 133, 244, 0.15) 0%,
+    rgba(52, 120, 246, 0.1) 100%
+  );
+  border-color: rgba(66, 133, 244, 0.3);
+  color: #4285f4;
+}
+
+.btn-status#google-signin:hover {
+  background: linear-gradient(
+    135deg,
+    rgba(66, 133, 244, 0.25) 0%,
+    rgba(52, 120, 246, 0.15) 100%
+  );
+  border-color: rgba(66, 133, 244, 0.4);
+  color: #ffffff;
+  box-shadow: 0 4px 15px rgba(66, 133, 244, 0.3);
+}
+
+/* ENHANCED STATISTICS BUTTON - PROMINENT DESIGN */
+.btn-status-stats {
+  background: linear-gradient(
+    135deg,
+    rgba(16, 185, 129, 0.2) 0%,
+    rgba(5, 150, 105, 0.15) 50%,
+    rgba(6, 182, 212, 0.18) 100%
+  ) !important;
+  border: 2px solid rgba(16, 185, 129, 0.4) !important;
+  color: #10b981 !important;
+  font-weight: 700 !important;
+  font-size: 13px !important;
+  padding: 10px 16px !important;
+  border-radius: 10px !important;
+  letter-spacing: 0.8px !important;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.3) !important;
+}
+
+.btn-status-stats::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  transition: left 0.5s ease;
+}
+
+.btn-status-stats:hover::before {
+  left: 100%;
+}
+
+.btn-status-stats:hover {
+  background: linear-gradient(
+    135deg,
+    rgba(16, 185, 129, 0.35) 0%,
+    rgba(5, 150, 105, 0.25) 50%,
+    rgba(6, 182, 212, 0.3) 100%
+  ) !important;
+  border-color: rgba(16, 185, 129, 0.6) !important;
+  color: #ffffff !important;
+  transform: translateY(-2px) scale(1.05) !important;
+  box-shadow: 0 10px 30px rgba(16, 185, 129, 0.4) !important;
+}
+
+.btn-status-stats i {
+  color: inherit;
+  font-size: 14px;
+  animation: chart-pulse 2s infinite;
+}
+
+/* Sync Badge */
+.sync-badge {
+  background: #ef4444;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 50px;
+  margin-left: 6px;
+  animation: badge-pulse 2s infinite;
+}
+
+/* Animations */
+@keyframes pulse-green {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+@keyframes pulse-red {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes chart-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+@keyframes badge-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.15);
+  }
 }
 
 .bill-modal-close {
@@ -983,6 +1242,31 @@
 
   .export-actions {
     flex-direction: column;
+  }
+
+  /* Firebase Status Panel Responsive */
+  .firebase-status-panel {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    padding: 12px;
+  }
+
+  .firebase-status-panel .status-items {
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .status-actions {
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .btn-status-stats {
+    flex: 1;
+    justify-content: center;
+    min-width: 120px;
   }
 }
 

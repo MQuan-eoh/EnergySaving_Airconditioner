@@ -244,13 +244,15 @@ class ElectricityBillManager {
             
             <!-- Firebase Status Panel -->
             <div class="firebase-status-panel" id="firebase-status-panel">
-              <div class="status-item" id="connection-status">
-                <i class="fas fa-wifi"></i>
-                <span>Đang kết nối...</span>
-              </div>
-              <div class="status-item" id="auth-status">
-                <i class="fas fa-user"></i>
-                <span>Đăng nhập...</span>
+              <div class="status-items">
+                <div class="status-item" id="connection-status">
+                  <i class="fas fa-wifi"></i>
+                  <span>Đang kết nối...</span>
+                </div>
+                <div class="status-item" id="auth-status">
+                  <i class="fas fa-user"></i>
+                  <span>Đăng nhập...</span>
+                </div>
               </div>
               <div class="status-actions">
                 <button class="btn-status" id="google-signin" style="display: none;">
