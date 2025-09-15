@@ -575,24 +575,23 @@ class ElectricityBillManager {
 
               <!-- Monthly Data Table -->
               <div class="monthly-data-table-container">
-                <div class="table-header">
-                  <h3>
-                    <i class="fas fa-table"></i>
-                    Chi Tiết Theo Tháng
-                  </h3>
-                  <div class="table-actions">
-                    <button class="btn-glass-secondary" id="refresh-stats">
-                      <i class="fas fa-sync-alt"></i>
-                      Làm Mới
-                    </button>
-                    <button class="btn-glass-primary" id="export-stats">
-                      <i class="fas fa-download"></i>
-                      Xuất Excel
-                    </button>
-                  </div>
-                </div>
-
                 <div class="stats-list-wrapper">
+                  <div class="table-header">
+                    <h3>
+                      <i class="fas fa-table"></i>
+                      Chi Tiết Theo Tháng
+                    </h3>
+                    <div class="table-actions">
+                      <button class="btn-glass-secondary" id="refresh-stats">
+                        <i class="fas fa-sync-alt"></i>
+                        Làm Mới
+                      </button>
+                      <button class="btn-glass-primary" id="export-stats">
+                        <i class="fas fa-download"></i>
+                        Xuất Excel
+                      </button>
+                    </div>
+                  </div>
                   <div id="monthly-stats-list" class="monthly-stats-list">
                     <!-- Dynamic content populated by JavaScript -->
                   </div>
