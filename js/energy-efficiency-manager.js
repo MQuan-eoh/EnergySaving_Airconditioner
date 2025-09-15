@@ -53,44 +53,266 @@ class EnergyEfficiencyManager {
     this.weatherUpdateInterval = null;
     this.defaultLocation = "Vạn Phúc City, Thủ Đức, Hồ Chí Minh, Vietnam";
 
+    // NEW: Reinforcement Learning Integration
+    this.rlMonitoringTimers = {}; // Stores monitoring timers for each AC
+    this.lastRLRecommendation = {}; // Stores last RL recommendation for feedback
+    this.rlInitialized = false;
+
     // Auto-start weather updates after 5 seconds (give time for page to load)
     setTimeout(() => {
       this.startAutoWeatherUpdates();
       this.initializeWeatherPanel();
     }, 5000);
+
+    // Initialize RL components after 3 seconds
+    setTimeout(() => {
+      this.initializeReinforcementLearning();
+    }, 3000);
+  }
+
+  /**
+   * Initialize Reinforcement Learning components
+   */
+  async initializeReinforcementLearning() {
+    try {
+      console.log("🤖 Initializing Reinforcement Learning components...");
+
+      // Wait for RL components to load
+      const maxWaitTime = 10000; // 10 seconds
+      const checkInterval = 500; // 0.5 seconds
+      let waitTime = 0;
+
+      const waitForRLComponents = () => {
+        return new Promise((resolve, reject) => {
+          const checkComponents = () => {
+            if (waitTime >= maxWaitTime) {
+              reject(new Error("Timeout waiting for RL components"));
+              return;
+            }
+
+            const rlReady =
+              window.temperatureRL && window.temperatureRL.isInitialized();
+            const loggerReady =
+              window.temperatureActivityLogger &&
+              window.temperatureActivityLogger.isInitialized();
+            const uiReady =
+              window.tempActivityLogUI &&
+              window.tempActivityLogUI.isInitialized();
+
+            if (rlReady && loggerReady && uiReady) {
+              resolve(true);
+            } else {
+              waitTime += checkInterval;
+              setTimeout(checkComponents, checkInterval);
+            }
+          };
+
+          checkComponents();
+        });
+      };
+
+      try {
+        await waitForRLComponents();
+        console.log("✅ All RL components loaded successfully");
+
+        // Initialize RL for all configured ACs
+        for (const acId in this.acConfigurations) {
+          this.initializeRLIntegration(acId);
+        }
+
+        this.rlInitialized = true;
+
+        // Emit event for other components
+        if (window.acEventSystem) {
+          window.acEventSystem.emit("rl-system-ready", {
+            timestamp: new Date().toISOString(),
+            components: [
+              "temperatureRL",
+              "temperatureActivityLogger",
+              "tempActivityLogUI",
+            ],
+          });
+        }
+
+        console.log(
+          "🎯 Reinforcement Learning system ready for temperature optimization"
+        );
+      } catch (error) {
+        console.warn("⚠️ Some RL components not available:", error.message);
+        console.log("📝 Manual initialization required for missing components");
+      }
+    } catch (error) {
+      console.error("❌ Error initializing Reinforcement Learning:", error);
+    }
   }
 
   /**
    * Create Vietnamese temperature recommendation widget with detail view button
+   * ENHANCED WITH REINFORCEMENT LEARNING ALGORITHM
    */
   createTemperatureRecommendationWidgetVN(acData) {
     if (!acData.power) {
       return '<div class="temp-recommendation hidden">Máy lạnh đang tắt</div>';
     }
+
     let vnPower = (acData.voltage || 220) * (acData.current || 5);
     let effVN = this.calculateEfficiency(
       acData.targetTemp,
       vnPower,
       this.outdoorTemp
     );
-    let html = `<div class="temp-recommendation-vn">
+
+    // NEW: Get Reinforcement Learning recommendation
+    let rlRecommendation = null;
+    let rlConfidence = 0;
+    let showRLWidget = false;
+
+    if (window.temperatureRL && window.temperatureRL.isInitialized()) {
+      try {
+        // Get context for RL algorithm
+        const context = {
+          outdoor_temp: this.getCurrentOutdoorTemp(),
+          target_temp: acData.targetTemp,
+          room_type:
+            this.acConfigurations[acData.id]?.roomType || "living-room",
+          ac_type: this.acConfigurations[acData.id]?.type || "1.5HP",
+          time_of_day: new Date().getHours(),
+          current_power: vnPower,
+        };
+
+        // Get RL recommendation
+        const rlResult = window.temperatureRL.getTemperatureRecommendation(
+          acData.id,
+          context
+        );
+
+        if (rlResult && rlResult.recommendedTemp !== acData.targetTemp) {
+          rlRecommendation = rlResult;
+          rlConfidence = rlResult.confidence || 0;
+          showRLWidget = rlConfidence > 0.3; // Only show if confidence > 30%
+        }
+      } catch (error) {
+        console.warn("Error getting RL recommendation:", error);
+      }
+    }
+
+    // Build the widget HTML
+    let html = `<div class="temp-recommendation-vn" id="temp-rec-widget-${
+      acData.id
+    }">
       <div class="recommendation-header">
         <strong>Hiệu suất năng lượng: ${effVN.score}%</strong>
         <span style="margin-left:8px; color:#10b981; font-weight:500;">${
           this.getEfficiencyIndicator(effVN).text
         }</span>
-      </div>
-      <div class="recommendation-message">
+      </div>`;
+
+    // Add RL recommendation section if available
+    if (showRLWidget && rlRecommendation) {
+      const tempChange = rlRecommendation.recommendedTemp - acData.targetTemp;
+      const changeDirection = tempChange > 0 ? "tăng" : "giảm";
+      const changeIcon = tempChange > 0 ? "↑" : "↓";
+      const estimatedSavings = this.calculateSavingsForACTemp(
+        this.acConfigurations[acData.id],
+        acData.targetTemp,
+        rlRecommendation.recommendedTemp,
+        this.getCurrentOutdoorTemp()
+      );
+
+      html += `
+        <div class="rl-recommendation-section" style="margin-top: 12px; padding: 12px; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 8px;">
+          <div class="rl-recommendation-header" style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+            <i class="fas fa-robot" style="color: #10b981; font-size: 14px;"></i>
+            <strong style="color: #10b981; font-size: 13px;">Gợi ý thông minh</strong>
+            <span class="rl-confidence-badge" style="background: rgba(16, 185, 129, 0.2); color: #10b981; padding: 2px 6px; border-radius: 10px; font-size: 10px; font-weight: 600;">
+              ${Math.round(rlConfidence * 100)}% tin cậy
+            </span>
+          </div>
+          <div class="rl-recommendation-message" style="color: #fff; font-size: 13px; line-height: 1.4; margin-bottom: 10px;">
+            AI khuyên ${changeDirection} nhiệt độ lên <strong>${
+        rlRecommendation.recommendedTemp
+      }°C</strong> ${changeIcon}
+            <br><small style="color: #94a3b8;">Tiết kiệm khoảng ${estimatedSavings}% điện năng dựa trên học tập từ thói quen của bạn</small>
+          </div>
+          <div class="rl-recommendation-actions" style="display: flex; gap: 8px;">
+            <button class="btn-apply-rl-recommendation" 
+                    onclick="window.energyEfficiencyManager.applyRLRecommendation('${
+                      acData.id
+                    }', ${rlRecommendation.recommendedTemp}, ${rlConfidence})"
+                    style="flex: 1; padding: 6px 12px; background: linear-gradient(135deg, #10b981, #059669); border: none; border-radius: 5px; color: white; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
+              <i class="fas fa-check" style="margin-right: 4px;"></i>
+              Áp dụng (${rlRecommendation.recommendedTemp}°C)
+            </button>
+            <button class="btn-reject-rl-recommendation" 
+                    onclick="window.energyEfficiencyManager.rejectRLRecommendation('${
+                      acData.id
+                    }', ${rlRecommendation.recommendedTemp})"
+                    style="padding: 6px 8px; background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 5px; color: #ef4444; font-size: 11px; cursor: pointer; transition: all 0.3s ease;">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    // Add efficiency recommendation section with set temperature button
+    html += `
+      <div class="efficiency-recommendation-message" style="margin-top: 8px;">
         ${
           effVN.recommendations.length === 0
             ? `Nhiệt độ hiện tại (${acData.targetTemp}°C) đang tối ưu cho tiết kiệm điện.`
             : effVN.recommendations[0].message
         }
+      </div>`;
+
+    // Add temperature set button if there's a recommendation
+    if (
+      effVN.recommendations.length > 0 &&
+      effVN.recommendations[0].suggestedTemp
+    ) {
+      const suggestedTemp = effVN.recommendations[0].suggestedTemp;
+      const estimatedSavings = effVN.recommendations[0].estimatedSavings || 0;
+
+      html += `
+        <div class="efficiency-temp-suggestion" style="margin-top: 10px; padding: 10px; background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 6px;">
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div style="color: #3b82f6; font-size: 12px;">
+              <i class="fas fa-thermometer-half" style="margin-right: 6px;"></i>
+              Nhiệt độ đề xuất: <strong>${suggestedTemp}°C</strong>
+              <small style="color: #94a3b8; margin-left: 8px;">Tiết kiệm ${estimatedSavings}%</small>
+            </div>
+            <button class="btn-set-suggested-temp" 
+                    onclick="window.energyEfficiencyManager.setSuggestedTemperature('${acData.id}', ${suggestedTemp})"
+                    style="padding: 4px 8px; background: linear-gradient(135deg, #3b82f6, #2563eb); border: none; border-radius: 4px; color: white; font-size: 10px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
+              <i class="fas fa-arrow-right" style="margin-right: 3px;"></i>
+              Đặt ${suggestedTemp}°C
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    html += `
+      <div class="recommendation-actions" style="margin-top: 12px; display: flex; gap: 8px;">
+        <button class="btn-xem-chi-tiet" onclick="window.energyEfficiencyManager.showDetailModalVN('${acData.id}')" style="flex: 1; padding: 8px 12px; background: rgba(59, 130, 246, 0.2); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 5px; color: #3b82f6; font-size: 12px; cursor: pointer;">
+          <i class="fas fa-chart-line" style="margin-right: 4px;"></i>
+          Xem chi tiết
+        </button>`;
+
+    // Add activity log button if available
+    if (window.tempActivityLogUI && window.tempActivityLogUI.isInitialized()) {
+      html += `
+        <button class="btn-activity-log" onclick="window.tempActivityLogUI.openModal()" style="padding: 8px 12px; background: rgba(168, 85, 247, 0.2); border: 1px solid rgba(168, 85, 247, 0.3); border-radius: 5px; color: #a855f7; font-size: 12px; cursor: pointer;">
+          <i class="fas fa-history" style="margin-right: 4px;"></i>
+          Lịch sử
+        </button>
+      `;
+    }
+
+    html += `
       </div>
-      <button class="btn-xem-chi-tiet" onclick="window.energyEfficiencyManager.showDetailModalVN('${
-        acData.id
-      }')">Xem chi tiết</button>
     </div>`;
+
     return html;
   }
 
@@ -236,14 +458,14 @@ class EnergyEfficiencyManager {
       // Add click outside to close
       modalDiv.addEventListener("click", (e) => {
         if (e.target === modalDiv) {
-          this.closeDetailModalVN();
+          window.energyEfficiencyManager.closeDetailModalVN();
         }
       });
 
       // Add escape key to close
       document.addEventListener("keydown", (e) => {
         if (e.key === "Escape" && modalDiv.style.display === "flex") {
-          this.closeDetailModalVN();
+          window.energyEfficiencyManager.closeDetailModalVN();
         }
       });
     }
@@ -271,6 +493,514 @@ class EnergyEfficiencyManager {
       setTimeout(() => {
         modalDiv.style.display = "none";
       }, 300);
+    }
+  }
+
+  /**
+   * Close Vietnamese detail modal
+   */
+  closeDetailModalVN() {
+    const modalDiv = document.getElementById("spa-detail-modal-vn");
+    if (modalDiv) {
+      modalDiv.style.transition = "opacity 0.3s ease";
+      modalDiv.style.opacity = "0";
+
+      setTimeout(() => {
+        modalDiv.style.display = "none";
+      }, 300);
+    }
+  }
+
+  /**
+   * Set suggested temperature from efficiency recommendation
+   */
+  async setSuggestedTemperature(acId, suggestedTemp) {
+    try {
+      // Get current AC data
+      const acData = window.acSpaManager.getACData(acId);
+      if (!acData) {
+        console.error(`AC ${acId} not found`);
+        return;
+      }
+
+      const originalTemp = acData.targetTemp;
+
+      // Apply the temperature change
+      const success = await this.changeACTemperature(acId, suggestedTemp);
+
+      if (success) {
+        // Log the efficiency recommendation application
+        if (window.temperatureActivityLogger) {
+          await window.temperatureActivityLogger.logRecommendationApplication({
+            acId: acId,
+            originalTemp: originalTemp,
+            currentTemp: originalTemp,
+            recommendedTemp: suggestedTemp,
+            appliedTemp: suggestedTemp,
+            confidence: 0.9, // High confidence for efficiency-based recommendation
+            appliedBy: "user",
+            energySavings: this.calculateEnergySavingsPercentage(
+              originalTemp,
+              suggestedTemp
+            ),
+            context: {
+              outdoor_temp: this.getCurrentOutdoorTemp(),
+              target_temp: originalTemp,
+              room_type: this.acConfigurations[acId]?.roomType || "living-room",
+              recommendation_type: "efficiency_based",
+            },
+          });
+        }
+
+        // Show success feedback
+        this.showTemperatureFeedback(
+          "success",
+          `Áp dụng đề xuất tiết kiệm: ${originalTemp}°C → ${suggestedTemp}°C`
+        );
+
+        // Refresh the widget
+        this.refreshTemperatureWidget(acId);
+      } else {
+        this.showTemperatureFeedback(
+          "error",
+          " Không thể áp dụng đề xuất. Vui lòng thử lại."
+        );
+      }
+    } catch (error) {
+      console.error("Error setting suggested temperature:", error);
+      this.showTemperatureFeedback("error", "Lỗi khi áp dụng đề xuất nhiệt độ");
+    }
+  }
+
+  /**
+   * REINFORCEMENT LEARNING INTEGRATION METHODS
+   */
+
+  /**
+   * Apply RL recommendation and log the activity
+   */
+  async applyRLRecommendation(acId, recommendedTemp, confidence) {
+    try {
+      // Get current AC data
+      const acData = window.acSpaManager.getACData(acId);
+      if (!acData) {
+        console.error(`AC ${acId} not found`);
+        return;
+      }
+
+      const originalTemp = acData.targetTemp;
+
+      // Apply the temperature change
+      const success = await this.changeACTemperature(acId, recommendedTemp);
+
+      if (success) {
+        // Log the recommendation application
+        if (window.temperatureActivityLogger) {
+          await window.temperatureActivityLogger.logRecommendationApplication({
+            acId: acId,
+            originalTemp: originalTemp,
+            currentTemp: originalTemp,
+            recommendedTemp: recommendedTemp,
+            appliedTemp: recommendedTemp,
+            confidence: confidence,
+            appliedBy: "user", // Applied by user
+            energySavings: this.calculateEnergySavingsPercentage(
+              originalTemp,
+              recommendedTemp
+            ),
+            context: {
+              outdoor_temp: this.getCurrentOutdoorTemp(),
+              target_temp: originalTemp,
+              room_type: this.acConfigurations[acId]?.roomType || "living-room",
+              recommendation_type: "reinforcement_learning",
+            },
+          });
+        }
+
+        // Start monitoring for success/failure feedback
+        this.startRLMonitoring(acId, recommendedTemp, originalTemp);
+
+        // Show success feedback
+        this.showTemperatureFeedback(
+          "success",
+          `✅ Áp dụng gợi ý AI: ${originalTemp}°C → ${recommendedTemp}°C`
+        );
+
+        // Refresh the widget to remove RL recommendation
+        this.refreshTemperatureWidget(acId);
+      } else {
+        this.showTemperatureFeedback(
+          "error",
+          "❌ Không thể áp dụng gợi ý AI. Vui lòng thử lại."
+        );
+      }
+    } catch (error) {
+      console.error("Error applying RL recommendation:", error);
+      this.showTemperatureFeedback("error", "❌ Lỗi khi áp dụng gợi ý AI");
+    }
+  }
+
+  /**
+   * Reject RL recommendation and provide negative feedback
+   */
+  async rejectRLRecommendation(acId, recommendedTemp) {
+    try {
+      // Get current AC data
+      const acData = window.acSpaManager.getACData(acId);
+      if (!acData) {
+        console.error(`AC ${acId} not found`);
+        return;
+      }
+
+      // Provide negative feedback to RL algorithm
+      if (window.temperatureRL) {
+        const context = {
+          outdoor_temp: this.getCurrentOutdoorTemp(),
+          target_temp: acData.targetTemp,
+          room_type: this.acConfigurations[acId]?.roomType || "living-room",
+          ac_type: this.acConfigurations[acId]?.type || "1.5HP",
+          time_of_day: new Date().getHours(),
+          current_power: (acData.voltage || 220) * (acData.current || 5),
+        };
+
+        window.temperatureRL.updateReward(
+          acId,
+          context,
+          recommendedTemp,
+          -0.5,
+          "rejected_by_user"
+        );
+        console.log(
+          `Negative feedback given for AC ${acId} recommendation: ${recommendedTemp}°C`
+        );
+      }
+
+      // Show feedback
+      this.showTemperatureFeedback(
+        "info",
+        `ℹ️ Đã từ chối gợi ý AI. Hệ thống sẽ học từ lựa chọn của bạn.`
+      );
+
+      // Refresh the widget to remove RL recommendation
+      this.refreshTemperatureWidget(acId);
+    } catch (error) {
+      console.error("Error rejecting RL recommendation:", error);
+    }
+  }
+
+  /**
+   * Start monitoring for RL recommendation success/failure
+   */
+  startRLMonitoring(acId, appliedTemp, originalTemp) {
+    // Clear any existing monitoring for this AC
+    if (this.rlMonitoringTimers && this.rlMonitoringTimers[acId]) {
+      clearTimeout(this.rlMonitoringTimers[acId]);
+    }
+
+    if (!this.rlMonitoringTimers) {
+      this.rlMonitoringTimers = {};
+    }
+
+    // Monitor for 1 hour to check if user changes temperature again
+    this.rlMonitoringTimers[acId] = setTimeout(async () => {
+      try {
+        const currentData = window.acSpaManager.getACData(acId);
+        if (!currentData) return;
+
+        // Check if temperature was sustained for the hour
+        if (Math.abs(currentData.targetTemp - appliedTemp) <= 0.5) {
+          // Success - temperature was maintained
+          if (window.temperatureRL) {
+            const context = {
+              outdoor_temp: this.getCurrentOutdoorTemp(),
+              target_temp: originalTemp,
+              room_type: this.acConfigurations[acId]?.roomType || "living-room",
+              ac_type: this.acConfigurations[acId]?.type || "1.5HP",
+              time_of_day: new Date().getHours(),
+              current_power:
+                (currentData.voltage || 220) * (currentData.current || 5),
+            };
+
+            window.temperatureRL.updateReward(
+              acId,
+              context,
+              appliedTemp,
+              1.0,
+              "sustained_1_hour"
+            );
+            console.log(
+              `✅ RL Success: AC ${acId} sustained temperature ${appliedTemp}°C for 1 hour`
+            );
+          }
+
+          // Log successful recommendation
+          if (window.temperatureActivityLogger) {
+            await window.temperatureActivityLogger.logSuccessfulRecommendation(
+              acId,
+              appliedTemp,
+              60 * 60 * 1000, // 1 hour in milliseconds
+              {
+                originalTemp: originalTemp,
+                sustained: true,
+                monitoringType: "automatic",
+              }
+            );
+          }
+        } else {
+          // User changed temperature again - partial success
+          if (window.temperatureRL) {
+            const context = {
+              outdoor_temp: this.getCurrentOutdoorTemp(),
+              target_temp: originalTemp,
+              room_type: this.acConfigurations[acId]?.roomType || "living-room",
+              ac_type: this.acConfigurations[acId]?.type || "1.5HP",
+              time_of_day: new Date().getHours(),
+              current_power:
+                (currentData.voltage || 220) * (currentData.current || 5),
+            };
+
+            window.temperatureRL.updateReward(
+              acId,
+              context,
+              appliedTemp,
+              0.2,
+              "changed_within_hour"
+            );
+            console.log(
+              `⚠️ RL Partial Success: AC ${acId} temperature changed from ${appliedTemp}°C to ${currentData.targetTemp}°C within 1 hour`
+            );
+          }
+        }
+      } catch (error) {
+        console.error("Error in RL monitoring:", error);
+      }
+
+      // Clean up timer
+      delete this.rlMonitoringTimers[acId];
+    }, 60 * 60 * 1000); // 1 hour
+  }
+
+  /**
+   * Change AC temperature using eraWidget.triggerAction
+   */
+  async changeACTemperature(acId, newTemp) {
+    try {
+      // Validate temperature range (16-30°C)
+      if (newTemp < 16 || newTemp > 30) {
+        console.error(`Temperature ${newTemp}°C is out of range (16-30°C)`);
+        return false;
+      }
+
+      // Check if eraWidget and tempControlAir1 are available
+      if (!window.eraWidget || !window.tempControlAir1) {
+        console.error("eraWidget or tempControlAir1 not available");
+        return false;
+      }
+
+      // Send temperature command to device using eraWidget
+      window.eraWidget.triggerAction(window.tempControlAir1.action, null, {
+        value: newTemp,
+      });
+
+      console.log(
+        `Sending temperature ${newTemp}°C to device via eraWidget...`
+      );
+
+      // Update temperature controller if available
+      if (window.tempController) {
+        window.tempController.targetTemp = newTemp;
+        window.tempController.updateTemperatureDisplay();
+        window.tempController.updateACDataInManager();
+      }
+
+      // Update AC SPA Manager data
+      if (window.acSpaManager) {
+        window.acSpaManager.updateACDataRealtime(acId, {
+          targetTemp: newTemp,
+          lastUpdated: new Date().toISOString(),
+        });
+      }
+
+      return true;
+    } catch (error) {
+      console.error("Error changing AC temperature via eraWidget:", error);
+      return false;
+    }
+  }
+
+  /**
+   * Refresh temperature widget for specific AC
+   */
+  refreshTemperatureWidget(acId) {
+    try {
+      const widget = document.getElementById(`temp-rec-widget-${acId}`);
+      if (widget && window.acSpaManager) {
+        const acData = window.acSpaManager.getACData(acId);
+        if (acData) {
+          widget.outerHTML =
+            this.createTemperatureRecommendationWidgetVN(acData);
+        }
+      }
+    } catch (error) {
+      console.error("Error refreshing temperature widget:", error);
+    }
+  }
+
+  /**
+   * Calculate energy savings percentage based on temperature change
+   */
+  calculateEnergySavingsPercentage(originalTemp, newTemp) {
+    try {
+      // Energy consumption increases exponentially with temperature difference
+      // Each degree of cooling typically uses 6-8% more energy
+      const energyPerDegree = 7; // 7% per degree on average
+
+      // Calculate temperature difference (cooling effect)
+      const tempDifference = originalTemp - newTemp;
+
+      // If temperature is increased (less cooling), it saves energy
+      if (tempDifference < 0) {
+        // Increased temperature = energy savings
+        const energySavings = Math.abs(tempDifference) * energyPerDegree;
+        return Math.min(Math.round(energySavings), 50); // Cap at 50% max savings
+      } else if (tempDifference > 0) {
+        // Decreased temperature = energy increase (negative savings)
+        const energyIncrease = tempDifference * energyPerDegree;
+        return -Math.round(energyIncrease); // Negative value indicates energy increase
+      }
+
+      return 0; // No change in temperature
+    } catch (error) {
+      console.error("Error calculating energy savings:", error);
+      return 0;
+    }
+  }
+
+  /**
+   * Show temperature feedback message
+   */
+  showTemperatureFeedback(type, message, duration = 3000) {
+    try {
+      // Create or update feedback element
+      let feedbackEl = document.getElementById("temp-feedback-message");
+
+      if (!feedbackEl) {
+        feedbackEl = document.createElement("div");
+        feedbackEl.id = "temp-feedback-message";
+        feedbackEl.style.cssText = `
+          position: fixed;
+          top: 20px;
+          right: 20px;
+          z-index: 10000;
+          padding: 12px 16px;
+          border-radius: 8px;
+          color: white;
+          font-weight: 600;
+          font-size: 14px;
+          min-width: 300px;
+          backdrop-filter: blur(10px);
+          border: 1px solid rgba(255, 255, 255, 0.2);
+          opacity: 0;
+          transform: translateX(100%);
+          transition: all 0.3s ease;
+        `;
+        document.body.appendChild(feedbackEl);
+      }
+
+      // Set style based on type
+      const typeStyles = {
+        success:
+          "background: linear-gradient(135deg, rgba(16, 185, 129, 0.9), rgba(5, 150, 105, 0.9));",
+        error:
+          "background: linear-gradient(135deg, rgba(239, 68, 68, 0.9), rgba(220, 38, 38, 0.9));",
+        info: "background: linear-gradient(135deg, rgba(59, 130, 246, 0.9), rgba(37, 99, 235, 0.9));",
+        warning:
+          "background: linear-gradient(135deg, rgba(245, 158, 11, 0.9), rgba(217, 119, 6, 0.9));",
+      };
+
+      feedbackEl.style.background = typeStyles[type] || typeStyles.info;
+      feedbackEl.textContent = message;
+
+      // Show animation
+      setTimeout(() => {
+        feedbackEl.style.opacity = "1";
+        feedbackEl.style.transform = "translateX(0)";
+      }, 100);
+
+      // Auto hide
+      setTimeout(() => {
+        feedbackEl.style.opacity = "0";
+        feedbackEl.style.transform = "translateX(100%)";
+
+        setTimeout(() => {
+          if (feedbackEl.parentNode) {
+            feedbackEl.parentNode.removeChild(feedbackEl);
+          }
+        }, 300);
+      }, duration);
+    } catch (error) {
+      console.error("Error showing temperature feedback:", error);
+    }
+  }
+
+  /**
+   * Initialize RL integration when AC data changes
+   */
+  initializeRLIntegration(acId) {
+    try {
+      // Listen for manual temperature changes to provide RL feedback
+      if (window.acEventSystem) {
+        window.acEventSystem.on("temperature-changed", async (data) => {
+          if (data.acId === acId && data.changedBy === "user") {
+            // Log manual adjustment
+            if (window.temperatureActivityLogger) {
+              await window.temperatureActivityLogger.logManualAdjustment(
+                acId,
+                data.previousTemp,
+                data.newTemp,
+                "user",
+                Date.now() - (data.timestamp || Date.now()),
+                {
+                  outdoor_temp: this.getCurrentOutdoorTemp(),
+                  trigger: "manual_user_adjustment",
+                }
+              );
+            }
+
+            // Check if this was a rejection of previous RL recommendation
+            if (this.lastRLRecommendation && this.lastRLRecommendation[acId]) {
+              const timeSinceRec =
+                Date.now() - this.lastRLRecommendation[acId].timestamp;
+
+              // If manual change within 10 minutes of RL recommendation
+              if (timeSinceRec < 10 * 60 * 1000) {
+                const recTemp = this.lastRLRecommendation[acId].recommendedTemp;
+
+                // If user moved away from RL recommendation
+                if (Math.abs(data.newTemp - recTemp) > 0.5) {
+                  if (window.temperatureRL) {
+                    const context = this.lastRLRecommendation[acId].context;
+                    window.temperatureRL.updateReward(
+                      acId,
+                      context,
+                      recTemp,
+                      -0.3,
+                      "manual_override"
+                    );
+                    console.log(
+                      `RL Negative feedback: User overrode recommendation ${recTemp}°C with ${data.newTemp}°C`
+                    );
+                  }
+                }
+              }
+            }
+          }
+        });
+      }
+
+      console.log(`RL integration initialized for AC ${acId}`);
+    } catch (error) {
+      console.error("Error initializing RL integration:", error);
     }
   }
 

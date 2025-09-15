@@ -82,7 +82,7 @@ class FirebaseStorageManager {
 
       this.initialized = true;
       console.log(
-        "✅ Storage Manager ready! Mode:",
+        " Storage Manager ready! Mode:",
         this.database ? "Firebase + Local" : "Local only"
       );
       return true;

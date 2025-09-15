@@ -1,0 +1,844 @@
+/* 
+ * TEMPERATURE ACTIVITY LOG UI STYLES
+ * Glass effect modal and components for viewing temperature adjustment activity logs
+ * Integrates with existing glass-effect design system
+ */
+
+/* Activity Log Button in Header */
+.activity-log-btn {
+  background: rgba(255, 255, 255, 0.08);
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  padding: 10px 16px;
+  color: #ffffff;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.activity-log-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.25);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  color: #ffffff;
+  text-decoration: none;
+}
+
+.activity-log-btn:active {
+  transform: translateY(0);
+}
+
+.activity-log-btn i {
+  font-size: 16px;
+  opacity: 0.9;
+}
+
+.activity-log-btn .btn-text {
+  font-weight: 500;
+}
+
+/* Badge for new activities */
+.activity-log-btn .activity-badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  background: #ef4444;
+  color: white;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  font-size: 10px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: pulse-badge 2s infinite;
+}
+
+@keyframes pulse-badge {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+}
+
+/* Activity Log Modal */
+.activity-log-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+
+.activity-log-modal.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+.activity-log-modal-content {
+  background: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.1),
+    rgba(255, 255, 255, 0.05)
+  );
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  width: 90%;
+  max-width: 1200px;
+  max-height: 90vh;
+  overflow: hidden;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+  transform: scale(0.9);
+  transition: transform 0.3s ease;
+}
+
+.activity-log-modal.show .activity-log-modal-content {
+  transform: scale(1);
+}
+
+/* Modal Header */
+.activity-log-header {
+  background: rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.activity-log-title {
+  color: #ffffff;
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.activity-log-title i {
+  color: #10b981;
+  font-size: 24px;
+}
+
+.activity-log-close {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  color: #ffffff;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.activity-log-close:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: rotate(90deg);
+}
+
+/* Modal Body */
+.activity-log-body {
+  padding: 24px;
+  max-height: calc(90vh - 140px);
+  overflow-y: auto;
+}
+
+/* Controls Section */
+.activity-log-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 24px;
+  align-items: center;
+}
+
+.activity-log-filter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.activity-log-filter label {
+  color: #e5e7eb;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.activity-log-select {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  color: #ffffff;
+  padding: 8px 12px;
+  font-size: 14px;
+  min-width: 150px;
+}
+
+.activity-log-select option {
+  background: #1f2937;
+  color: #ffffff;
+}
+
+.activity-log-date-range {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.activity-log-date-input {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  color: #ffffff;
+  padding: 8px 12px;
+  font-size: 14px;
+}
+
+.activity-log-date-input::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+}
+
+/* Action Buttons */
+.activity-log-actions {
+  display: flex;
+  gap: 12px;
+  margin-left: auto;
+}
+
+.activity-log-btn-action {
+  background: rgba(16, 185, 129, 0.2);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  border-radius: 8px;
+  color: #10b981;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.activity-log-btn-action:hover {
+  background: rgba(16, 185, 129, 0.3);
+  border-color: rgba(16, 185, 129, 0.5);
+  transform: translateY(-1px);
+}
+
+.activity-log-btn-action.export {
+  background: rgba(59, 130, 246, 0.2);
+  border-color: rgba(59, 130, 246, 0.3);
+  color: #3b82f6;
+}
+
+.activity-log-btn-action.export:hover {
+  background: rgba(59, 130, 246, 0.3);
+  border-color: rgba(59, 130, 246, 0.5);
+}
+
+.activity-log-btn-action.clear {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+}
+
+.activity-log-btn-action.clear:hover {
+  background: rgba(239, 68, 68, 0.3);
+  border-color: rgba(239, 68, 68, 0.5);
+}
+
+/* Statistics Cards */
+.activity-log-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.activity-log-stat-card {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 16px;
+  text-align: center;
+  transition: all 0.2s ease;
+}
+
+.activity-log-stat-card:hover {
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateY(-2px);
+}
+
+.activity-log-stat-number {
+  font-size: 24px;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 4px;
+}
+
+.activity-log-stat-label {
+  font-size: 14px;
+  color: #9ca3af;
+  font-weight: 500;
+}
+
+.activity-log-stat-card.recommendations .activity-log-stat-number {
+  color: #10b981;
+}
+
+.activity-log-stat-card.adjustments .activity-log-stat-number {
+  color: #f59e0b;
+}
+
+.activity-log-stat-card.success-rate .activity-log-stat-number {
+  color: #8b5cf6;
+}
+
+.activity-log-stat-card.energy-saved .activity-log-stat-number {
+  color: #06b6d4;
+}
+
+/* Activity Log Table */
+.activity-log-table-container {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.activity-log-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.activity-log-table th {
+  background: rgba(255, 255, 255, 0.08);
+  color: #e5e7eb;
+  font-weight: 600;
+  font-size: 14px;
+  padding: 16px 12px;
+  text-align: left;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.activity-log-table td {
+  color: #ffffff;
+  font-size: 14px;
+  padding: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  vertical-align: middle;
+}
+
+.activity-log-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.activity-log-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Activity Type Badges */
+.activity-type-badge {
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.activity-type-badge.recommendation-applied {
+  background: rgba(16, 185, 129, 0.2);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.activity-type-badge.manual-adjustment {
+  background: rgba(245, 158, 11, 0.2);
+  color: #f59e0b;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.activity-type-badge.successful-recommendation {
+  background: rgba(139, 92, 246, 0.2);
+  color: #8b5cf6;
+  border: 1px solid rgba(139, 92, 246, 0.3);
+}
+
+/* Temperature Display */
+.temp-display {
+  font-family: "JetBrains Mono", "Courier New", monospace;
+  font-weight: 600;
+  padding: 2px 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  font-size: 13px;
+}
+
+.temp-change {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.temp-change .arrow {
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.temp-change.increase .arrow {
+  color: #ef4444;
+}
+
+.temp-change.decrease .arrow {
+  color: #10b981;
+}
+
+.temp-change.maintain .arrow {
+  color: #6b7280;
+}
+
+/* Confidence Indicator */
+.confidence-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.confidence-bar {
+  width: 40px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.confidence-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.confidence-fill.high {
+  background: #10b981;
+}
+
+.confidence-fill.medium {
+  background: #f59e0b;
+}
+
+.confidence-fill.low {
+  background: #ef4444;
+}
+
+.confidence-text {
+  font-size: 12px;
+  font-weight: 500;
+  color: #9ca3af;
+}
+
+/* Context Details */
+.context-details {
+  font-size: 12px;
+  color: #9ca3af;
+  line-height: 1.4;
+}
+
+.context-item {
+  display: inline-block;
+  margin-right: 8px;
+}
+
+/* Timeline View */
+.activity-log-timeline {
+  position: relative;
+  padding-left: 30px;
+}
+
+.activity-log-timeline::before {
+  content: "";
+  position: absolute;
+  left: 15px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: linear-gradient(to bottom, #10b981, #3b82f6, #8b5cf6);
+  opacity: 0.3;
+}
+
+.timeline-item {
+  position: relative;
+  margin-bottom: 24px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.timeline-item::before {
+  content: "";
+  position: absolute;
+  left: -22px;
+  top: 16px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #10b981;
+  border: 2px solid #0f172a;
+}
+
+.timeline-item.adjustment::before {
+  background: #f59e0b;
+}
+
+.timeline-item.success::before {
+  background: #8b5cf6;
+}
+
+.timeline-header {
+  display: flex;
+  justify-content: between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.timeline-time {
+  font-size: 12px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.timeline-content {
+  color: #e5e7eb;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Loading States */
+.activity-log-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  color: #9ca3af;
+}
+
+.activity-log-spinner {
+  width: 24px;
+  height: 24px;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-top: 2px solid #10b981;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-right: 12px;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Empty State */
+.activity-log-empty {
+  text-align: center;
+  padding: 40px;
+  color: #6b7280;
+}
+
+.activity-log-empty i {
+  font-size: 48px;
+  opacity: 0.5;
+  margin-bottom: 16px;
+}
+
+.activity-log-empty h3 {
+  color: #9ca3af;
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.activity-log-empty p {
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Pagination */
+.activity-log-pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin-top: 24px;
+}
+
+.pagination-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  color: #ffffff;
+  padding: 8px 12px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pagination-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.pagination-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pagination-info {
+  color: #9ca3af;
+  font-size: 14px;
+  margin: 0 16px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .activity-log-modal-content {
+    width: 95%;
+    margin: 10px;
+  }
+
+  .activity-log-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .activity-log-actions {
+    margin-left: 0;
+    margin-top: 16px;
+  }
+
+  .activity-log-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .activity-log-table-container {
+    overflow-x: auto;
+  }
+
+  .activity-log-table {
+    min-width: 600px;
+  }
+
+  .activity-log-header {
+    padding: 16px;
+  }
+
+  .activity-log-body {
+    padding: 16px;
+  }
+
+  .activity-log-title {
+    font-size: 18px;
+  }
+
+  /* Hide some columns on mobile */
+  .activity-log-table .hide-mobile {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .activity-log-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .activity-log-btn {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+
+  .activity-log-btn .btn-text {
+    display: none;
+  }
+}
+
+/* Custom Scrollbar */
+.activity-log-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.activity-log-body::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 3px;
+}
+
+.activity-log-body::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+}
+
+.activity-log-body::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Animation for new entries */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.activity-log-table tbody tr.new-entry {
+  animation: fadeInUp 0.5s ease;
+}
+
+/* Success/Error Messages */
+.activity-log-message {
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.activity-log-message.success {
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  color: #10b981;
+}
+
+.activity-log-message.error {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+}
+
+.activity-log-message.info {
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  color: #3b82f6;
+}
+
+/* Export Progress */
+.export-progress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: 8px;
+  color: #3b82f6;
+  font-size: 14px;
+  margin-bottom: 16px;
+}
+
+.export-progress .spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(59, 130, 246, 0.2);
+  border-top: 2px solid #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* View Toggle Buttons */
+.view-toggle {
+  display: flex;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 4px;
+  gap: 4px;
+}
+
+.view-toggle-btn {
+  background: transparent;
+  border: none;
+  color: #9ca3af;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.view-toggle-btn.active {
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+}
+
+.view-toggle-btn:hover {
+  color: #ffffff;
+}
+
+/* Tooltips */
+.tooltip {
+  position: relative;
+  cursor: help;
+}
+
+.tooltip::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.9);
+  color: #ffffff;
+  padding: 6px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s ease;
+  z-index: 1000;
+}
+
+.tooltip:hover::after {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(-4px);
+}
