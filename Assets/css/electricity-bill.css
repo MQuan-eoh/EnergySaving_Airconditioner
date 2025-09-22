@@ -649,7 +649,6 @@
 
 /* ========== GLASS CALENDAR GRID ========== */
 .glass-calendar {
-  background: var(--calendar-glass-bg);
   border: 1px solid var(--calendar-glass-border);
   border-radius: 16px;
   padding: 1.25rem;
@@ -750,87 +749,343 @@
   transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
 }
 
-/* ========== COMPACT VIEW STYLES ========== */
+/* ========== ENHANCED COMPACT VIEW STYLES ========== */
 .calendar-compact-view {
-  padding: 1.5rem;
-  border-radius: 16px;
+  padding: 0;
+  border-radius: 20px;
   background: var(--calendar-glass-bg);
   border: 1px solid var(--calendar-glass-border);
   -webkit-backdrop-filter: var(--calendar-glass-blur);
   backdrop-filter: var(--calendar-glass-blur);
   box-shadow: var(--calendar-glass-shadow);
-  /* Ensure minimum height to maintain scroll behavior */
   min-height: 200px;
-  display: flex;
-  align-items: center;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Enhanced glass reflection effect for compact view */
+.calendar-compact-view::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.4),
+    rgba(16, 185, 129, 0.6),
+    rgba(59, 130, 246, 0.4),
+    rgba(255, 255, 255, 0.4),
+    transparent
+  );
+  animation: shimmer-compact 4s ease-in-out infinite;
+}
+
+@keyframes shimmer-compact {
+  0%,
+  100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
 }
 
 .compact-month-display {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
+  flex-direction: column;
+  gap: 0;
   width: 100%;
-  /* Ensure proper spacing within the flex container */
+  height: 100%;
+  min-height: 200px;
 }
 
-.compact-month-info {
+/* ========== MAIN MONTH/YEAR SECTION ========== */
+.compact-main-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem 2rem;
+  background: rgba(0, 0, 0, 0.15);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  position: relative;
+}
+
+.compact-date-container {
   flex: 1;
-  text-align: center;
 }
 
 .compact-month-name {
-  font-size: 1.8rem;
-  font-weight: 700;
+  font-size: 2.2rem;
+  font-weight: 800;
   color: var(--text-primary);
   margin-bottom: 0.25rem;
-  background: linear-gradient(135deg, var(--accent-blue), var(--accent-green));
+  background: linear-gradient(135deg, #3b82f6, #10b981, #8b5cf6);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  line-height: 1.1;
+  letter-spacing: -0.5px;
 }
 
 .compact-year-name {
-  font-size: 1.1rem;
-  font-weight: 500;
+  font-size: 1rem;
+  font-weight: 600;
   color: var(--text-secondary);
-  letter-spacing: 1px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  opacity: 0.8;
+}
+
+/* ========== CURRENT DAY HIGHLIGHT ========== */
+.compact-current-day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 70px;
+  height: 70px;
+  background: linear-gradient(
+    135deg,
+    rgba(16, 185, 129, 0.2),
+    rgba(5, 150, 105, 0.15)
+  );
+  border: 2px solid rgba(16, 185, 129, 0.3);
+  border-radius: 18px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.compact-current-day::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    45deg,
+    transparent,
+    rgba(255, 255, 255, 0.1),
+    transparent
+  );
+  transform: translateX(-100%);
+  animation: day-shimmer 3s ease-in-out infinite;
+}
+
+@keyframes day-shimmer {
+  0%,
+  100% {
+    transform: translateX(-100%);
+  }
+  50% {
+    transform: translateX(100%);
+  }
+}
+
+.current-day-number {
+  font-size: 1.8rem;
+  font-weight: 900;
+  color: var(--accent-green);
+  line-height: 1;
+  margin-bottom: 2px;
+}
+
+.current-day-label {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--accent-green);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  opacity: 0.9;
+}
+
+/* ========== INFO PANEL SECTION ========== */
+.compact-info-panel {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: 1.5rem 2rem 2rem;
+  gap: 1.5rem;
+}
+
+.compact-status-section {
+  flex: 1;
+}
+
+.status-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-header i {
+  color: var(--accent-blue);
+  font-size: 0.9rem;
 }
 
 .compact-status-indicators {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  min-width: 120px;
+  gap: 0;
 }
 
 .compact-status-item {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 0.75rem;
-  border-radius: 8px;
-  font-size: 0.85rem;
-  font-weight: 500;
-  transition: all 0.2s ease;
+  gap: 1rem;
+  padding: 1rem;
+  border-radius: 14px;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
 }
 
-.compact-status-item i {
-  font-size: 0.9rem;
+.compact-status-item::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  transition: all 0.3s ease;
 }
 
-#compact-has-data {
-  background: rgba(16, 185, 129, 0.15);
-  color: var(--accent-green);
+.compact-status-item:hover {
+  transform: translateX(4px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* Status Icon Wrapper */
+.status-icon-wrapper {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.status-icon-wrapper::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    45deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  transform: translateX(-100%);
+  transition: transform 0.6s ease;
+}
+
+.compact-status-item:hover .status-icon-wrapper::before {
+  transform: translateX(100%);
+}
+
+.status-icon-wrapper.success {
+  background: linear-gradient(
+    135deg,
+    rgba(16, 185, 129, 0.2),
+    rgba(5, 150, 105, 0.15)
+  );
   border: 1px solid rgba(16, 185, 129, 0.3);
 }
 
-#compact-no-data {
-  background: rgba(245, 158, 11, 0.15);
-  color: #f59e0b;
+.status-icon-wrapper.success i {
+  color: var(--accent-green);
+  font-size: 1.1rem;
+  font-weight: 900;
+}
+
+.status-icon-wrapper.warning {
+  background: linear-gradient(
+    135deg,
+    rgba(245, 158, 11, 0.2),
+    rgba(217, 119, 6, 0.15)
+  );
   border: 1px solid rgba(245, 158, 11, 0.3);
 }
 
+.status-icon-wrapper.warning i {
+  color: #f59e0b;
+  font-size: 1.1rem;
+  font-weight: 900;
+}
+
+/* Status Text */
+.status-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1;
+}
+
+.status-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.status-subtitle {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  opacity: 0.8;
+  line-height: 1.3;
+}
+
+/* Success State */
+#compact-has-data {
+  background: linear-gradient(
+    135deg,
+    rgba(16, 185, 129, 0.08),
+    rgba(5, 150, 105, 0.04)
+  );
+  border: 1px solid rgba(16, 185, 129, 0.15);
+}
+
+#compact-has-data::before {
+  background: var(--accent-green);
+}
+
+#compact-has-data .status-title {
+  color: var(--accent-green);
+}
+
+/* Warning State */
+#compact-no-data {
+  background: linear-gradient(
+    135deg,
+    rgba(245, 158, 11, 0.08),
+    rgba(217, 119, 6, 0.04)
+  );
+  border: 1px solid rgba(245, 158, 11, 0.15);
+}
+
+#compact-no-data::before {
+  background: #f59e0b;
+}
+
+#compact-no-data .status-title {
+  color: #f59e0b;
+}
 /* ========== EXPANDED VIEW STYLES ========== */
 .calendar-expanded-view {
   /* Full calendar grid view - inherits glass calendar styling */
@@ -2448,3 +2703,130 @@
 }
 
 /* End Statistics Modal Styles */
+
+/* ========== CALENDAR EXPAND/COLLAPSE BUTTON ========== */
+.calendar-expand-btn {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: rgba(45, 206, 137, 0.2);
+  border: 2px solid rgba(45, 206, 137, 0.3);
+  border-radius: 50%;
+  width: 45px;
+  height: 45px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #2dce89;
+  font-size: 18px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  z-index: 10;
+}
+
+.calendar-expand-btn:hover {
+  background: rgba(45, 206, 137, 0.3);
+  border-color: rgba(45, 206, 137, 0.5);
+  color: #ffffff;
+  transform: scale(1.1);
+  box-shadow: 0 8px 25px rgba(45, 206, 137, 0.3);
+}
+
+/* ========== MOBILE RESPONSIVE DESIGN ========== */
+@media screen and (max-width: 768px) {
+  .calendar-compact-view {
+    padding: 15px;
+    margin-bottom: 15px;
+  }
+
+  .compact-main-section {
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .compact-header-section {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .compact-month-name {
+    font-size: 22px;
+  }
+
+  .compact-year-name {
+    font-size: 14px;
+  }
+
+  .compact-current-day {
+    width: 70px;
+    height: 70px;
+  }
+
+  .current-day-number {
+    font-size: 24px;
+  }
+
+  .compact-info-panel {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+
+  .compact-action-buttons {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .compact-action-btn {
+    width: 100%;
+    min-width: auto;
+  }
+
+  .calendar-expand-btn {
+    width: 40px;
+    height: 40px;
+    font-size: 16px;
+    top: 10px;
+    right: 10px;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .calendar-compact-view {
+    padding: 12px;
+    margin-bottom: 12px;
+  }
+
+  .compact-month-name {
+    font-size: 20px;
+  }
+
+  .compact-current-day {
+    width: 60px;
+    height: 60px;
+  }
+
+  .current-day-number {
+    font-size: 20px;
+  }
+
+  .current-day-label {
+    font-size: 10px;
+  }
+
+  .compact-status-item {
+    padding: 12px;
+    gap: 8px;
+  }
+
+  .status-icon {
+    width: 35px;
+    height: 35px;
+    font-size: 14px;
+  }
+
+  .status-text {
+    font-size: 12px;
+  }
+}

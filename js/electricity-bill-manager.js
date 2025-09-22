@@ -320,26 +320,56 @@ class ElectricityBillManager {
 
                 <!-- Glass Calendar -->
                 <div class="glass-calendar" id="glass-calendar">
-                  <!-- Compact View: Only Month/Year Display -->
+                  <!-- Compact View: Enhanced Modern Design -->
                   <div class="calendar-compact-view" id="calendar-compact-view" style="display: none;">
                     <div class="compact-month-display">
-                      <div class="compact-month-info">
-                        <div class="compact-month-name" id="compact-month-name">
-                          Tháng ${this.currentDate.getMonth() + 1}
+                      <!-- Main Month/Year Section -->
+                      <div class="compact-main-section">
+                        <div class="compact-date-container">
+                          <div class="compact-month-name" id="compact-month-name">
+                            Tháng ${this.currentDate.getMonth() + 1}
+                          </div>
+                          <div class="compact-year-name" id="compact-year-name">
+                            ${this.currentDate.getFullYear()}
+                          </div>
                         </div>
-                        <div class="compact-year-name" id="compact-year-name">
-                          ${this.currentDate.getFullYear()}
+                        
+                        <!-- Current Day Highlight -->
+                        <div class="compact-current-day" id="compact-current-day">
+                          <div class="current-day-number">${new Date().getDate()}</div>
+                          <div class="current-day-label">Hôm nay</div>
                         </div>
                       </div>
-                      <div class="compact-status-indicators">
-                        <div class="compact-status-item" id="compact-has-data" style="display: none;">
-                          <i class="fas fa-check-circle"></i>
-                          <span>Có dữ liệu</span>
+                      
+                      <!-- Status & Info Panel -->
+                      <div class="compact-info-panel">
+                        <div class="compact-status-section">
+                          <div class="status-header">
+                            <i class="fas fa-database"></i>
+                            <span>Trạng Thái Dữ Liệu</span>
+                          </div>
+                          <div class="compact-status-indicators">
+                            <div class="compact-status-item" id="compact-has-data" style="display: none;">
+                              <div class="status-icon-wrapper success">
+                                <i class="fas fa-check"></i>
+                              </div>
+                              <div class="status-text">
+                                <span class="status-title">Đã có dữ liệu</span>
+                                <span class="status-subtitle">Tháng này có hóa đơn</span>
+                              </div>
+                            </div>
+                            <div class="compact-status-item" id="compact-no-data" style="display: none;">
+                              <div class="status-icon-wrapper warning">
+                                <i class="fas fa-plus"></i>
+                              </div>
+                              <div class="status-text">
+                                <span class="status-title">Chưa có dữ liệu</span>
+                                <span class="status-subtitle">Thêm hóa đơn mới</span>
+                              </div>
+                            </div>
+                          </div>
                         </div>
-                        <div class="compact-status-item" id="compact-no-data" style="display: none;">
-                          <i class="fas fa-exclamation-circle"></i>
-                          <span>Chưa có dữ liệu</span>
-                        </div>
+                        
                       </div>
                     </div>
                   </div>
@@ -1170,12 +1200,29 @@ class ElectricityBillManager {
   updateCompactViewContent() {
     const compactMonthName = document.getElementById("compact-month-name");
     const compactYearName = document.getElementById("compact-year-name");
+    const compactCurrentDay = document.getElementById("compact-current-day");
     const compactHasData = document.getElementById("compact-has-data");
     const compactNoData = document.getElementById("compact-no-data");
 
     if (compactMonthName && compactYearName) {
       compactMonthName.textContent = `Tháng ${this.currentDate.getMonth() + 1}`;
       compactYearName.textContent = this.currentDate.getFullYear();
+    }
+
+    // Update current day display
+    if (compactCurrentDay) {
+      const today = new Date();
+      const currentDayNumber = compactCurrentDay.querySelector(
+        ".current-day-number"
+      );
+      if (currentDayNumber) {
+        // Show current day if we're viewing current month, otherwise show day 1
+        const isCurrentMonth =
+          this.currentDate.getMonth() === today.getMonth() &&
+          this.currentDate.getFullYear() === today.getFullYear();
+
+        currentDayNumber.textContent = isCurrentMonth ? today.getDate() : "1";
+      }
     }
 
     // Check if current month has data
@@ -1193,6 +1240,39 @@ class ElectricityBillManager {
         compactHasData.style.display = "none";
         compactNoData.style.display = "flex";
       }
+    }
+
+    // Bind action buttons
+    this.bindCompactActionButtons();
+  }
+
+  bindCompactActionButtons() {
+    const addBillBtn = document.getElementById("compact-add-bill");
+    const viewStatsBtn = document.getElementById("compact-view-stats");
+
+    if (addBillBtn) {
+      addBillBtn.onclick = () => {
+        console.log("Quick add bill for current month");
+        // Auto-expand calendar and focus on form
+        if (!this.calendarExpanded) {
+          this.toggleCalendarExpansion();
+        }
+
+        // Focus on bill amount input after a short delay
+        setTimeout(() => {
+          const billAmountInput = document.getElementById("bill-amount");
+          if (billAmountInput) {
+            billAmountInput.focus();
+          }
+        }, 350);
+      };
+    }
+
+    if (viewStatsBtn) {
+      viewStatsBtn.onclick = () => {
+        console.log("Quick view stats for current month");
+        this.showMonthlyStats();
+      };
     }
   }
 
@@ -1231,6 +1311,48 @@ class ElectricityBillManager {
         console.log("Scroll behavior refreshed after calendar view change");
       });
     }
+  }
+
+  showMonthlyStats() {
+    const monthKey = this.getMonthKey(
+      this.currentDate.getFullYear(),
+      this.currentDate.getMonth()
+    );
+    const monthlyData = this.billData.get(monthKey);
+
+    if (!monthlyData || monthlyData.length === 0) {
+      alert("Không có dữ liệu cho tháng này để hiển thị thống kê.");
+      return;
+    }
+
+    // Calculate stats
+    const totalBills = monthlyData.length;
+    const totalAmount = monthlyData.reduce(
+      (sum, bill) => sum + parseFloat(bill.amount || 0),
+      0
+    );
+    const avgAmount = totalAmount / totalBills;
+    const maxBill = Math.max(
+      ...monthlyData.map((bill) => parseFloat(bill.amount || 0))
+    );
+    const minBill = Math.min(
+      ...monthlyData.map((bill) => parseFloat(bill.amount || 0))
+    );
+
+    // Format and display stats
+    const statsMessage = `
+📊 THỐNG KÊ THÁNG ${
+      this.currentDate.getMonth() + 1
+    }/${this.currentDate.getFullYear()}
+
+💰 Tổng số hóa đơn: ${totalBills}
+💸 Tổng tiền điện: ${totalAmount.toLocaleString("vi-VN")} VNĐ
+📈 Trung bình/hóa đơn: ${avgAmount.toLocaleString("vi-VN")} VNĐ
+🔺 Cao nhất: ${maxBill.toLocaleString("vi-VN")} VNĐ
+🔻 Thấp nhất: ${minBill.toLocaleString("vi-VN")} VNĐ
+    `;
+
+    alert(statsMessage);
   }
 
   getMonthKey(year, month) {
@@ -2550,7 +2672,7 @@ document.addEventListener("DOMContentLoaded", () => {
   window.electricityBillManager = new ElectricityBillManager();
   window.electricityBillManager.init();
 
-  console.log("✅ Electricity Bill Manager initialized and ready!");
+  console.log("Electricity Bill Manager initialized and ready!");
 });
 
 // Export for module systems
