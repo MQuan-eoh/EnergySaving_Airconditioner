@@ -1160,6 +1160,9 @@ class ElectricityBillManager {
         showElement.style.transition = "";
         hideElement.style.transform = "";
         showElement.style.transform = "";
+
+        // Refresh scroll behavior after transition
+        this.refreshScrollBehavior();
       }, this.expandAnimationDuration);
     }, this.expandAnimationDuration / 2);
   }
@@ -1208,6 +1211,25 @@ class ElectricityBillManager {
         this.updateCompactViewContent();
       }
       this.updateCalendarDisplayMode();
+    }
+  }
+
+  refreshScrollBehavior() {
+    // Force scroll recalculation after calendar view change
+    const modalBody = document.querySelector(".bill-modal-body");
+    if (modalBody) {
+      // Temporarily trigger reflow to recalculate scroll
+      const originalOverflow = modalBody.style.overflow;
+      modalBody.style.overflow = "hidden";
+
+      requestAnimationFrame(() => {
+        modalBody.style.overflow = originalOverflow || "auto";
+
+        // Ensure scroll position is maintained and scrollable area is correct
+        modalBody.scrollTop = modalBody.scrollTop;
+
+        console.log("Scroll behavior refreshed after calendar view change");
+      });
     }
   }
 

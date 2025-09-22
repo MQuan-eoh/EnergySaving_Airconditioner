@@ -453,9 +453,32 @@
 .bill-modal-body {
   padding: 0;
   overflow-y: auto;
-  max-height: calc(85vh - 120px);
+  max-height: calc(85vh - 80px);
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+  /* Ensure consistent scroll behavior */
+  height: calc(85vh - 150px);
+  position: relative;
+}
+
+/* Ensure scroll functionality is preserved when content changes */
+.bill-modal-body::after {
+  content: "";
+  display: block;
+  height: 1px;
+  width: 100%;
+  clear: both;
+}
+
+/* Force scroll behavior class - can be toggled via JavaScript */
+.force-scroll {
+  overflow-y: scroll !important;
+}
+
+/* Ensure calendar sections maintain minimum height for scroll */
+.bill-calendar-section,
+.bill-input-section {
+  min-height: 300px;
 }
 
 /* Custom scrollbar for webkit browsers */
@@ -481,7 +504,11 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 0;
-  min-height: 500px;
+  min-height: calc(85vh - 80px);
+  /* Ensure content always fills available space for proper scrolling */
+  height: auto;
+  /* Force minimum content height to enable scrolling */
+  padding-bottom: 2rem;
 }
 
 /* ========== LEFT PANEL - CALENDAR SECTION ========== */
@@ -531,6 +558,7 @@
   transition: all 0.3s ease;
   color: var(--text-secondary);
   margin-left: auto;
+  margin-right: 15px;
 }
 
 .calendar-expand-toggle:hover {
@@ -731,6 +759,10 @@
   -webkit-backdrop-filter: var(--calendar-glass-blur);
   backdrop-filter: var(--calendar-glass-blur);
   box-shadow: var(--calendar-glass-shadow);
+  /* Ensure minimum height to maintain scroll behavior */
+  min-height: 200px;
+  display: flex;
+  align-items: center;
 }
 
 .compact-month-display {
@@ -738,6 +770,8 @@
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
+  width: 100%;
+  /* Ensure proper spacing within the flex container */
 }
 
 .compact-month-info {
@@ -802,6 +836,8 @@
   /* Full calendar grid view - inherits glass calendar styling */
   position: relative;
   opacity: 1;
+  /* Ensure minimum height to maintain consistent layout */
+  min-height: 200px;
 }
 
 /* ========== RESPONSIVE COMPACT VIEW ========== */
