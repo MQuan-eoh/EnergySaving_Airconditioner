@@ -517,6 +517,38 @@
   color: var(--accent-blue);
 }
 
+/* ========== CALENDAR EXPAND/COLLAPSE TOGGLE ========== */
+.calendar-expand-toggle {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: var(--text-secondary);
+  margin-left: auto;
+}
+
+.calendar-expand-toggle:hover {
+  background: rgba(59, 130, 246, 0.15);
+  border-color: rgba(59, 130, 246, 0.3);
+  color: var(--accent-blue);
+  transform: scale(1.05);
+}
+
+.calendar-expand-toggle:active {
+  transform: scale(0.95);
+}
+
+.calendar-expand-toggle i {
+  font-size: 0.9rem;
+  transition: transform 0.2s ease;
+}
+
 /* ========== MONTH/YEAR PICKER ========== */
 .month-year-picker {
   display: flex;
@@ -680,6 +712,114 @@
   opacity: 0.3;
   cursor: not-allowed;
   background: rgba(255, 255, 255, 0.02);
+}
+
+/* ========== CALENDAR COMPACT AND EXPANDED VIEWS ========== */
+.calendar-compact-view,
+.calendar-expanded-view {
+  opacity: 1;
+  transform: scale(1);
+  transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+}
+
+/* ========== COMPACT VIEW STYLES ========== */
+.calendar-compact-view {
+  padding: 1.5rem;
+  border-radius: 16px;
+  background: var(--calendar-glass-bg);
+  border: 1px solid var(--calendar-glass-border);
+  -webkit-backdrop-filter: var(--calendar-glass-blur);
+  backdrop-filter: var(--calendar-glass-blur);
+  box-shadow: var(--calendar-glass-shadow);
+}
+
+.compact-month-display {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.compact-month-info {
+  flex: 1;
+  text-align: center;
+}
+
+.compact-month-name {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.25rem;
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-green));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.compact-year-name {
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  letter-spacing: 1px;
+}
+
+.compact-status-indicators {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 120px;
+}
+
+.compact-status-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.compact-status-item i {
+  font-size: 0.9rem;
+}
+
+#compact-has-data {
+  background: rgba(16, 185, 129, 0.15);
+  color: var(--accent-green);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+#compact-no-data {
+  background: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+/* ========== EXPANDED VIEW STYLES ========== */
+.calendar-expanded-view {
+  /* Full calendar grid view - inherits glass calendar styling */
+  position: relative;
+  opacity: 1;
+}
+
+/* ========== RESPONSIVE COMPACT VIEW ========== */
+@media (max-width: 768px) {
+  .compact-month-display {
+    flex-direction: column;
+    text-align: center;
+    gap: 1rem;
+  }
+
+  .compact-month-name {
+    font-size: 1.5rem;
+  }
+
+  .compact-status-indicators {
+    min-width: auto;
+    align-items: center;
+  }
 }
 
 /* ========== SELECTION INFO ========== */

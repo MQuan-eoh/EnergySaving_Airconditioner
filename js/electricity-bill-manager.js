@@ -39,6 +39,10 @@ class ElectricityBillManager {
     this.updateTimeout = null; // For debouncing
     this.storageManager = null; // Firebase storage manager
 
+    // Calendar expand/collapse state
+    this.calendarExpanded = true; // Default expanded to show full calendar
+    this.expandAnimationDuration = 300; // Animation duration in milliseconds
+
     ElectricityBillManager.instance = this;
     console.log("Electricity Bill Manager initialized");
   }
@@ -279,6 +283,9 @@ class ElectricityBillManager {
                   <div class="calendar-title">
                     <i class="fas fa-calendar-alt"></i>
                     Chọn Tháng/Năm
+                    <button class="calendar-expand-toggle" id="calendar-expand-toggle" title="Thu gọn/Mở rộng lịch">
+                      <i class="fas fa-compress-alt"></i>
+                    </button>
                   </div>
                   <div class="month-year-picker">
                     <div class="month-year-controls">
@@ -312,9 +319,36 @@ class ElectricityBillManager {
                 </div>
 
                 <!-- Glass Calendar -->
-                <div class="glass-calendar">
-                  <div class="calendar-grid" id="calendar-grid">
-                    ${this.generateCalendarHTML()}
+                <div class="glass-calendar" id="glass-calendar">
+                  <!-- Compact View: Only Month/Year Display -->
+                  <div class="calendar-compact-view" id="calendar-compact-view" style="display: none;">
+                    <div class="compact-month-display">
+                      <div class="compact-month-info">
+                        <div class="compact-month-name" id="compact-month-name">
+                          Tháng ${this.currentDate.getMonth() + 1}
+                        </div>
+                        <div class="compact-year-name" id="compact-year-name">
+                          ${this.currentDate.getFullYear()}
+                        </div>
+                      </div>
+                      <div class="compact-status-indicators">
+                        <div class="compact-status-item" id="compact-has-data" style="display: none;">
+                          <i class="fas fa-check-circle"></i>
+                          <span>Có dữ liệu</span>
+                        </div>
+                        <div class="compact-status-item" id="compact-no-data" style="display: none;">
+                          <i class="fas fa-exclamation-circle"></i>
+                          <span>Chưa có dữ liệu</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <!-- Expanded View: Full Calendar Grid -->
+                  <div class="calendar-expanded-view" id="calendar-expanded-view">
+                    <div class="calendar-grid" id="calendar-grid">
+                      ${this.generateCalendarHTML()}
+                    </div>
                   </div>
                 </div>
 
@@ -682,6 +716,11 @@ class ElectricityBillManager {
       .getElementById("next-year")
       .addEventListener("click", () => this.navigateYear(1));
 
+    // Calendar expand/collapse toggle
+    document
+      .getElementById("calendar-expand-toggle")
+      .addEventListener("click", () => this.toggleCalendarExpansion());
+
     // Form submission
     document
       .getElementById("bill-input-form")
@@ -823,6 +862,11 @@ class ElectricityBillManager {
 
         // Update navigation display
         this.updateNavigationDisplay();
+
+        // Update compact view content if in compact mode
+        if (!this.calendarExpanded) {
+          this.updateCompactViewContent();
+        }
 
         // Bind calendar day events
         this.bindCalendarEvents();
@@ -1047,6 +1091,124 @@ class ElectricityBillManager {
     return `${
       monthNames[this.currentDate.getMonth()]
     } ${this.currentDate.getFullYear()}`;
+  }
+
+  /**
+   * CALENDAR EXPANSION/COLLAPSE METHODS
+   * Handle compact and expanded calendar view modes
+   */
+  toggleCalendarExpansion() {
+    this.calendarExpanded = !this.calendarExpanded;
+    this.updateCalendarDisplayMode();
+    console.log(`Calendar ${this.calendarExpanded ? "expanded" : "collapsed"}`);
+  }
+
+  updateCalendarDisplayMode() {
+    const compactView = document.getElementById("calendar-compact-view");
+    const expandedView = document.getElementById("calendar-expanded-view");
+    const toggleButton = document.getElementById("calendar-expand-toggle");
+    const toggleIcon = toggleButton?.querySelector("i");
+
+    if (!compactView || !expandedView || !toggleButton || !toggleIcon) {
+      console.warn("Calendar view elements not found");
+      return;
+    }
+
+    if (this.calendarExpanded) {
+      // Show expanded view (full calendar grid)
+      this.animateViewTransition(compactView, expandedView, false);
+      toggleIcon.className = "fas fa-compress-alt";
+      toggleButton.title = "Thu gọn lịch";
+    } else {
+      // Show compact view (month/year only)
+      this.animateViewTransition(expandedView, compactView, true);
+      toggleIcon.className = "fas fa-expand-alt";
+      toggleButton.title = "Mở rộng lịch";
+      this.updateCompactViewContent();
+    }
+  }
+
+  animateViewTransition(hideElement, showElement, isCompactMode) {
+    // Add transition classes
+    hideElement.style.transition = `opacity ${this.expandAnimationDuration}ms ease-in-out, transform ${this.expandAnimationDuration}ms ease-in-out`;
+    showElement.style.transition = `opacity ${this.expandAnimationDuration}ms ease-in-out, transform ${this.expandAnimationDuration}ms ease-in-out`;
+
+    // Start hide animation
+    hideElement.style.opacity = "0";
+    hideElement.style.transform = isCompactMode ? "scale(1.1)" : "scale(0.95)";
+
+    setTimeout(() => {
+      // Hide the old view and show the new one
+      hideElement.style.display = "none";
+      showElement.style.display = "block";
+
+      // Reset transform for show animation
+      showElement.style.opacity = "0";
+      showElement.style.transform = isCompactMode
+        ? "scale(0.95)"
+        : "scale(1.1)";
+
+      // Trigger show animation
+      requestAnimationFrame(() => {
+        showElement.style.opacity = "1";
+        showElement.style.transform = "scale(1)";
+      });
+
+      // Clean up transition styles after animation
+      setTimeout(() => {
+        hideElement.style.transition = "";
+        showElement.style.transition = "";
+        hideElement.style.transform = "";
+        showElement.style.transform = "";
+      }, this.expandAnimationDuration);
+    }, this.expandAnimationDuration / 2);
+  }
+
+  updateCompactViewContent() {
+    const compactMonthName = document.getElementById("compact-month-name");
+    const compactYearName = document.getElementById("compact-year-name");
+    const compactHasData = document.getElementById("compact-has-data");
+    const compactNoData = document.getElementById("compact-no-data");
+
+    if (compactMonthName && compactYearName) {
+      compactMonthName.textContent = `Tháng ${this.currentDate.getMonth() + 1}`;
+      compactYearName.textContent = this.currentDate.getFullYear();
+    }
+
+    // Check if current month has data
+    const monthKey = this.getMonthKey(
+      this.currentDate.getFullYear(),
+      this.currentDate.getMonth()
+    );
+    const hasData = this.billData.has(monthKey);
+
+    if (compactHasData && compactNoData) {
+      if (hasData) {
+        compactHasData.style.display = "flex";
+        compactNoData.style.display = "none";
+      } else {
+        compactHasData.style.display = "none";
+        compactNoData.style.display = "flex";
+      }
+    }
+  }
+
+  initializeCalendarDisplayMode() {
+    // Set initial state based on calendarExpanded property
+    const compactView = document.getElementById("calendar-compact-view");
+    const expandedView = document.getElementById("calendar-expanded-view");
+
+    if (compactView && expandedView) {
+      if (this.calendarExpanded) {
+        compactView.style.display = "none";
+        expandedView.style.display = "block";
+      } else {
+        compactView.style.display = "block";
+        expandedView.style.display = "none";
+        this.updateCompactViewContent();
+      }
+      this.updateCalendarDisplayMode();
+    }
   }
 
   getMonthKey(year, month) {
@@ -2331,6 +2493,8 @@ class ElectricityBillManager {
     // Update Firebase status UI when modal opens
     setTimeout(() => {
       this.updateFirebaseStatusUI();
+      // Initialize calendar display mode after modal is shown
+      this.initializeCalendarDisplayMode();
     }, 100);
   }
 
