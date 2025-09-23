@@ -3287,7 +3287,10 @@ class EnergyEfficiencyManager {
 
     // Method 1: Use existing temperature controller workflow
     if (window.tempController) {
-      const success = window.tempController.setTargetTemp(suggestedTemp);
+      const success = window.tempController.setTargetTemp(
+        suggestedTemp,
+        "ai_recommendation"
+      );
       if (success) {
         // Send command to actual device using E-RA
         window.tempController.sendTemperatureToDevice();

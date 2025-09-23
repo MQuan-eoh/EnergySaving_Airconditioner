@@ -1350,6 +1350,17 @@
             </p>
           </div>
           <div class="header-right">
+            <!-- Activity Log Button -->
+            <button
+              class="activity-log-btn glass-effect"
+              id="activity-log-btn"
+              title="Temperature Activity Log"
+              onclick="if(window.tempActivityLogUI) window.tempActivityLogUI.openModal()"
+            >
+              <i class="fas fa-chart-line"></i>
+              <span class="btn-text">Activity Log</span>
+              <span class="activity-badge" id="activity-badge" style="display: none;">0</span>
+            </button>
             <!-- AC Settings Button -->
             <button
               class="fullscreen-toggle-btn glass-effect"
@@ -1439,7 +1450,7 @@
                             >24</span
                           >
                           <span class="temp-unit"></span>
-                          <div class="temp-label">Current</div>
+                          <div class="temp-label">Environment</div>
                         </div>
                       </div>
 

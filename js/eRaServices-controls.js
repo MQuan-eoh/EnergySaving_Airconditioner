@@ -1327,6 +1327,9 @@ class TemperatureController {
   handleTempIncrease() {
     console.log("Temperature increase requested");
 
+    // Store previous temperature for logging
+    const previousTemp = this.targetTemp;
+
     // 1. Calculate new temperature
     const newTemp = this.targetTemp + 1;
 
@@ -1344,16 +1347,20 @@ class TemperatureController {
     this.targetTemp = newTemp;
 
     console.log(`Target temperature updated: ${this.targetTemp}°C`);
-    // 4. Update UI immediately (responsive feel)
+
+    // 4. Log manual adjustment to activity logger
+    this.logManualTemperatureAdjustment(previousTemp, this.targetTemp);
+
+    // 5. Update UI immediately (responsive feel)
     this.updateTemperatureDisplay();
 
-    // 5. Add visual feedback
+    // 6. Add visual feedback
     this.addButtonAnimation("spa-temp-up", "success");
 
-    // 6. Update AC data in manager
+    // 7. Update AC data in manager
     this.updateACDataInManager();
 
-    // 7. Debounced API call
+    // 8. Debounced API call
     this.debounceAPICall();
   }
 
@@ -1362,13 +1369,23 @@ class TemperatureController {
    */
   handleTempDecrease() {
     console.log("Temperature decrease");
+
+    // Store previous temperature for logging
+    const previousTemp = this.targetTemp;
+
     const newTemp = this.targetTemp - 1;
     if (!this.validateTemperatureRange(newTemp)) {
       this.addButtonAnimation("spa-temp-down", "shake");
+      return;
     }
+
     this.showFeedback("info", "Decreased temperature");
     this.targetTemp = newTemp;
     console.log(`Target temperature updated: ${this.targetTemp}°C`);
+
+    // Log manual adjustment to activity logger
+    this.logManualTemperatureAdjustment(previousTemp, this.targetTemp);
+
     this.updateTemperatureDisplay();
     this.addButtonAnimation("spa-temp-down", "success");
 
@@ -1377,6 +1394,98 @@ class TemperatureController {
 
     this.debounceAPICall();
   }
+
+  /**
+   * LOG MANUAL TEMPERATURE ADJUSTMENT
+   * Log manual temperature changes to activity logger
+   */
+  async logManualTemperatureAdjustment(
+    previousTemp,
+    newTemp,
+    source = "manual_control"
+  ) {
+    try {
+      // Check if activity logger is available
+      if (!window.temperatureActivityLogger) {
+        console.warn(
+          "Temperature Activity Logger not available for logging manual adjustment"
+        );
+        return;
+      }
+
+      // Skip logging if temperatures are the same
+      if (previousTemp === newTemp) {
+        return;
+      }
+
+      // Determine adjustment type and source details
+      let adjustmentType = "manual_control";
+      let changedBy = "user";
+
+      if (source === "external") {
+        adjustmentType = "external_control";
+        changedBy = "external_system";
+      } else if (source === "ai_recommendation") {
+        adjustmentType = "ai_recommendation_applied";
+        changedBy = "ai_system";
+      }
+
+      // Prepare log data
+      const logData = {
+        acId: this.acId,
+        previousTemp: previousTemp,
+        newTemp: newTemp,
+        adjustedTemp: newTemp, // alias for compatibility
+        adjustmentTime: 0, // Immediate adjustment
+        changedBy: changedBy,
+        relatedRecommendationId: null, // No related recommendation for manual adjustment
+        context: {
+          currentTemp: this.currentTemp,
+          currentMode: this.currentMode,
+          powerStatus: this.isPowerOn,
+          fanSpeed: this.fanSpeed,
+          adjustmentType: adjustmentType,
+          source: source,
+          timestamp: new Date().toISOString(),
+        },
+        timestamp: Date.now(),
+      };
+
+      // Log the adjustment
+      const logId = await window.temperatureActivityLogger.logManualAdjustment(
+        logData
+      );
+
+      if (logId) {
+        console.log(
+          `✅ Temperature adjustment logged: ${previousTemp}°C → ${newTemp}°C (Source: ${source}, ID: ${logId})`
+        );
+
+        // Emit event for other components
+        if (window.acEventSystem) {
+          window.acEventSystem.emit("temperature-adjustment", {
+            acId: this.acId,
+            previousTemp: previousTemp,
+            newTemp: newTemp,
+            source: source,
+            adjustmentType: adjustmentType,
+            timestamp: Date.now(),
+            logId: logId,
+          });
+        }
+
+        // Update badge if UI is available
+        if (window.tempActivityLogUI && window.tempActivityLogUI.updateBadge) {
+          await window.tempActivityLogUI.updateBadge();
+        }
+      } else {
+        console.warn("Failed to log temperature adjustment");
+      }
+    } catch (error) {
+      console.error("Error logging temperature adjustment:", error);
+    }
+  }
+
   handleModeAir() {
     this.currentMode = currentModeAir1;
     console.log(`Current mode retrieved: ${this.currentMode}`);
@@ -1590,10 +1699,16 @@ class TemperatureController {
     return this.targetTemp;
   }
 
-  setTargetTemp(temp) {
+  setTargetTemp(temp, source = "external") {
     if (this.validateTemperatureRange(temp)) {
+      const previousTemp = this.targetTemp;
       this.targetTemp = temp;
       this.updateTemperatureDisplay();
+
+      // Log the temperature change if it's different and from manual/external source
+      if (previousTemp !== temp && source !== "device_sync") {
+        this.logManualTemperatureAdjustment(previousTemp, temp, source);
+      }
 
       // Also send command to device
       this.sendTemperatureToDevice();

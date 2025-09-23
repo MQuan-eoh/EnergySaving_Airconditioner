@@ -74,39 +74,24 @@ class TemperatureActivityLogUI {
 
   /**
    * CREATE HEADER BUTTON
-   * Add activity log button to top header
+   * Setup existing activity log button in header
    */
   createHeaderButton() {
     try {
-      // Find header user profile section or header right section
-      const headerRight =
-        document.querySelector(".header-right") ||
-        document.querySelector(".user-profile") ||
-        document.querySelector(".dashboard-header-actions");
+      // Find existing button
+      const button = document.getElementById("activity-log-btn");
 
-      if (!headerRight) {
-        console.warn("Header section not found for activity log button");
+      if (!button) {
+        console.warn("Activity log button not found in header");
         return;
       }
 
-      // Create button
-      const button = document.createElement("button");
-      button.className = "activity-log-btn";
-      button.id = "activity-log-btn";
+      // Ensure proper onclick handler
       button.onclick = () => this.openModal();
 
-      button.innerHTML = `
-        <i class="fas fa-chart-line"></i>
-        <span class="btn-text">Activity Log</span>
-        <span class="activity-badge" id="activity-badge" style="display: none;">0</span>
-      `;
-
-      // Insert button
-      headerRight.appendChild(button);
-
-      console.log("Activity log button added to header");
+      console.log("Activity log button configured");
     } catch (error) {
-      console.error("Error creating header button:", error);
+      console.error("Error configuring header button:", error);
     }
   }
 
@@ -208,6 +193,11 @@ class TemperatureActivityLogUI {
             
             <!-- Messages Section -->
             <div id="activity-messages"></div>
+            
+            <!-- Energy Consumption Statistics Section -->
+            <div class="activity-energy-stats-section" id="activity-energy-stats">
+              <!-- Energy consumption statistics table will be populated here -->
+            </div>
             
             <!-- Content Section -->
             <div id="activity-content">
@@ -514,6 +504,7 @@ class TemperatureActivityLogUI {
 
       // Render content
       await this.renderStatistics();
+      await this.renderEnergyConsumptionStats();
       await this.renderContent();
       this.updatePagination(logsResult);
 
@@ -535,9 +526,455 @@ class TemperatureActivityLogUI {
   }
 
   /**
-   * RENDER STATISTICS
-   * Render statistics cards
+   * RENDER ENERGY CONSUMPTION STATISTICS
+   * Render daily energy consumption statistics table
    */
+  async renderEnergyConsumptionStats() {
+    try {
+      const statsContainer = document.getElementById("activity-energy-stats");
+      if (!statsContainer) return;
+
+      // Get daily energy consumption data
+      const dailyEnergyData = await this.generateDailyEnergyStats();
+
+      if (dailyEnergyData.length === 0) {
+        statsContainer.innerHTML = `
+          <div class="energy-stats-empty">
+            <i class="fas fa-chart-bar"></i>
+            <p>No energy consumption data available for the selected period</p>
+          </div>
+        `;
+        return;
+      }
+
+      const tableHTML = `
+        <div class="energy-stats-container">
+          <div class="energy-stats-header">
+            <h3 class="energy-stats-title">
+              <i class="fas fa-chart-bar"></i>
+              Daily Energy Consumption Analysis
+            </h3>
+            <div class="energy-stats-legend">
+              <span class="legend-item recommended">
+                <i class="fas fa-circle"></i> AI Recommended
+              </span>
+              <span class="legend-item manual">
+                <i class="fas fa-circle"></i> Manual Control
+              </span>
+            </div>
+          </div>
+          
+          <div class="energy-stats-table-container">
+            <table class="energy-stats-table">
+              <thead>
+                <tr>
+                  <th class="col-date">Date</th>
+                  <th class="col-temp">Temperature Levels</th>
+                  <th class="col-hours">Operating Hours</th>
+                  <th class="col-kwh">Total kWh</th>
+                  <th class="col-mode">Usage Mode</th>
+                  <th class="col-savings">Energy Savings</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${dailyEnergyData
+                  .map((day) => this.renderEnergyStatsRow(day))
+                  .join("")}
+              </tbody>
+            </table>
+          </div>
+          
+          <div class="energy-stats-summary">
+            <div class="summary-item">
+              <span class="summary-label">Average Daily Consumption:</span>
+              <span class="summary-value">${this.calculateAverageConsumption(
+                dailyEnergyData
+              )} kWh</span>
+            </div>
+            <div class="summary-item">
+              <span class="summary-label">Total Energy Saved:</span>
+              <span class="summary-value savings-positive">${this.calculateTotalSavings(
+                dailyEnergyData
+              )}%</span>
+            </div>
+            <div class="summary-item">
+              <span class="summary-label">AI Recommendation Usage:</span>
+              <span class="summary-value">${this.calculateRecommendationUsage(
+                dailyEnergyData
+              )}%</span>
+            </div>
+          </div>
+        </div>
+      `;
+
+      statsContainer.innerHTML = tableHTML;
+    } catch (error) {
+      console.error("Error rendering energy consumption statistics:", error);
+    }
+  }
+
+  /**
+   * GENERATE DAILY ENERGY STATS
+   * Process activity logs to generate daily energy consumption statistics
+   */
+  async generateDailyEnergyStats() {
+    try {
+      if (!this.cachedLogs || this.cachedLogs.length === 0) {
+        return [];
+      }
+
+      // Group logs by date
+      const dailyGroups = {};
+
+      for (const log of this.cachedLogs) {
+        const date = new Date(log.timestamp);
+        const dateKey = date.toISOString().split("T")[0]; // YYYY-MM-DD format
+
+        if (!dailyGroups[dateKey]) {
+          dailyGroups[dateKey] = {
+            date: dateKey,
+            logs: [],
+            temperatureLevels: new Set(),
+            hasRecommendations: false,
+            operatingHours: 0,
+            totalKwh: 0,
+            energySavings: 0,
+            recommendations: 0,
+            adjustments: 0,
+          };
+        }
+
+        dailyGroups[dateKey].logs.push(log);
+
+        // Track temperature levels used
+        if (log.originalTemp)
+          dailyGroups[dateKey].temperatureLevels.add(log.originalTemp);
+        if (log.recommendedTemp)
+          dailyGroups[dateKey].temperatureLevels.add(log.recommendedTemp);
+        if (log.newTemp)
+          dailyGroups[dateKey].temperatureLevels.add(log.newTemp);
+        if (log.sustainedTemp)
+          dailyGroups[dateKey].temperatureLevels.add(log.sustainedTemp);
+
+        // Track recommendation usage
+        if (log.type === "recommendation_applied") {
+          dailyGroups[dateKey].hasRecommendations = true;
+          dailyGroups[dateKey].recommendations++;
+          dailyGroups[dateKey].energySavings += log.energySavings || 0;
+        }
+
+        if (log.type === "manual_adjustment") {
+          dailyGroups[dateKey].adjustments++;
+        }
+      }
+
+      // Calculate detailed statistics for each day
+      const dailyStats = [];
+
+      for (const [dateKey, dayData] of Object.entries(dailyGroups)) {
+        const stats = await this.calculateDayEnergyStats(dayData);
+        dailyStats.push(stats);
+      }
+
+      // Sort by date (newest first)
+      return dailyStats.sort((a, b) => new Date(b.date) - new Date(a.date));
+    } catch (error) {
+      console.error("Error generating daily energy stats:", error);
+      return [];
+    }
+  }
+
+  /**
+   * CALCULATE DAY ENERGY STATS
+   * Calculate comprehensive energy statistics for a single day
+   */
+  async calculateDayEnergyStats(dayData) {
+    try {
+      // Get AC configuration for power calculations
+      const acConfig = await this.getACConfiguration(this.currentFilters.acId);
+
+      // Calculate operating hours (estimate based on log frequency)
+      const operatingHours = this.estimateOperatingHours(dayData.logs);
+
+      // Calculate total kWh based on temperature levels and AC specifications
+      const totalKwh = this.calculateDailyKwh(
+        dayData.temperatureLevels,
+        operatingHours,
+        acConfig
+      );
+
+      // Calculate baseline kWh (what would be consumed without AI recommendations)
+      const baselineKwh = this.calculateBaselineKwh(
+        dayData.temperatureLevels,
+        operatingHours,
+        acConfig
+      );
+
+      // Calculate energy savings percentage
+      const energySavingsPercent =
+        baselineKwh > 0
+          ? Math.round(((baselineKwh - totalKwh) / baselineKwh) * 100)
+          : 0;
+
+      // Determine usage mode
+      const usageMode = dayData.hasRecommendations
+        ? "ai-recommended"
+        : "manual-control";
+
+      return {
+        date: dayData.date,
+        temperatureLevels: Array.from(dayData.temperatureLevels).sort(
+          (a, b) => a - b
+        ),
+        operatingHours: Math.round(operatingHours * 10) / 10, // Round to 1 decimal
+        totalKwh: Math.round(totalKwh * 100) / 100, // Round to 2 decimals
+        baselineKwh: Math.round(baselineKwh * 100) / 100,
+        energySavingsPercent: energySavingsPercent,
+        usageMode: usageMode,
+        hasRecommendations: dayData.hasRecommendations,
+        recommendations: dayData.recommendations,
+        adjustments: dayData.adjustments,
+        rawEnergyVN: dayData.energySavings || 0,
+      };
+    } catch (error) {
+      console.error("Error calculating day energy stats:", error);
+      return {
+        date: dayData.date,
+        temperatureLevels: [],
+        operatingHours: 0,
+        totalKwh: 0,
+        energySavingsPercent: 0,
+        usageMode: "unknown",
+        hasRecommendations: false,
+      };
+    }
+  }
+
+  /**
+   * GET AC CONFIGURATION
+   * Get AC unit configuration for power calculations
+   */
+  async getACConfiguration(acId) {
+    try {
+      // Try to get from AC Configuration Manager
+      if (window.acConfigManager && window.acConfigManager.getACConfiguration) {
+        const config = window.acConfigManager.getACConfiguration(acId);
+        if (config) return config;
+      }
+
+      // Try to get from Energy Efficiency Manager
+      if (
+        window.energyEfficiencyManager &&
+        window.energyEfficiencyManager.acConfigurations
+      ) {
+        const config = window.energyEfficiencyManager.acConfigurations[acId];
+        if (config) return config;
+      }
+
+      // Return default configuration if not found
+      return {
+        type: "1.5HP",
+        technology: "inverter",
+        roomType: "medium",
+        nominalPower: 1200, // Watts
+        maxPower: 1500,
+        minPower: 300,
+      };
+    } catch (error) {
+      console.error("Error getting AC configuration:", error);
+      return {
+        type: "1.5HP",
+        technology: "inverter",
+        roomType: "medium",
+        nominalPower: 1200,
+        maxPower: 1500,
+        minPower: 300,
+      };
+    }
+  }
+
+  /**
+   * ESTIMATE OPERATING HOURS
+   * Estimate daily operating hours based on activity logs
+   */
+  estimateOperatingHours(logs) {
+    if (logs.length === 0) return 0;
+
+    // Sort logs by timestamp
+    const sortedLogs = logs.sort((a, b) => a.timestamp - b.timestamp);
+
+    // Estimate operating period from first to last log + buffer
+    const firstLog = sortedLogs[0].timestamp;
+    const lastLog = sortedLogs[sortedLogs.length - 1].timestamp;
+    const operatingPeriod = (lastLog - firstLog) / (1000 * 60 * 60); // Convert to hours
+
+    // Add minimum operating time for each log event (estimate 2 hours per event)
+    const minimumHours = logs.length * 2;
+
+    // Return the maximum of calculated period and minimum hours, capped at 24 hours
+    return Math.min(Math.max(operatingPeriod, minimumHours), 24);
+  }
+
+  /**
+   * CALCULATE DAILY KWH
+   * Calculate actual kWh consumption based on temperature levels and AC specs
+   */
+  calculateDailyKwh(temperatureLevels, operatingHours, acConfig) {
+    if (temperatureLevels.length === 0 || operatingHours === 0) return 0;
+
+    // Get average temperature used
+    const avgTemp =
+      Array.from(temperatureLevels).reduce((sum, temp) => sum + temp, 0) /
+      temperatureLevels.length;
+
+    // Calculate power consumption based on temperature efficiency
+    // Lower temperatures = higher power consumption
+    const outdoorTemp = 30; // Estimate - in real app, get from weather API
+    const tempDifference = Math.abs(outdoorTemp - avgTemp);
+
+    // Base power consumption (from AC specs)
+    const basePower = acConfig.nominalPower || 1200; // Watts
+
+    // Power factor based on temperature difference
+    // More cooling needed = higher power consumption
+    const powerFactor = 0.5 + tempDifference / 20; // Range: 0.5 to 1.0+
+
+    // Technology efficiency factor
+    const techFactors = {
+      "non-inverter": 1.0,
+      inverter: 0.85,
+      "dual-inverter": 0.75,
+    };
+    const techFactor = techFactors[acConfig.technology] || 0.85;
+
+    // Calculate power consumption (Watts)
+    const actualPower = basePower * powerFactor * techFactor;
+
+    // Convert to kWh (Watts * Hours / 1000)
+    const kwhConsumed = (actualPower * operatingHours) / 1000;
+
+    return kwhConsumed;
+  }
+
+  /**
+   * CALCULATE BASELINE KWH
+   * Calculate what kWh would be consumed without AI optimization
+   */
+  calculateBaselineKwh(temperatureLevels, operatingHours, acConfig) {
+    if (temperatureLevels.length === 0 || operatingHours === 0) return 0;
+
+    // Assume baseline would use less optimal temperatures (typically 2-3 degrees lower)
+    const avgTemp =
+      Array.from(temperatureLevels).reduce((sum, temp) => sum + temp, 0) /
+      temperatureLevels.length;
+    const baselineTemp = avgTemp - 2.5; // Less efficient baseline
+
+    const outdoorTemp = 30;
+    const tempDifference = Math.abs(outdoorTemp - baselineTemp);
+
+    const basePower = acConfig.nominalPower || 1200;
+    const powerFactor = 0.5 + tempDifference / 20;
+
+    // Baseline assumes less efficient operation (no smart optimization)
+    const baselineEfficiency = 1.0; // No optimization
+    const actualPower = basePower * powerFactor * baselineEfficiency;
+
+    return (actualPower * operatingHours) / 1000;
+  }
+
+  /**
+   * RENDER ENERGY STATS ROW
+   * Render a single row in the energy statistics table
+   */
+  renderEnergyStatsRow(dayStats) {
+    try {
+      const date = new Date(dayStats.date);
+      const formattedDate = date.toLocaleDateString("vi-VN");
+
+      const tempLevelsDisplay =
+        dayStats.temperatureLevels.length > 0
+          ? dayStats.temperatureLevels.map((temp) => `${temp}°C`).join(", ")
+          : "No data";
+
+      const modeClass =
+        dayStats.usageMode === "ai-recommended" ? "recommended" : "manual";
+      const modeText =
+        dayStats.usageMode === "ai-recommended"
+          ? "AI Recommended"
+          : "Manual Control";
+      const modeIcon =
+        dayStats.usageMode === "ai-recommended"
+          ? "fas fa-robot"
+          : "fas fa-user";
+
+      const savingsClass =
+        dayStats.energySavingsPercent > 0
+          ? "savings-positive"
+          : dayStats.energySavingsPercent < 0
+          ? "savings-negative"
+          : "savings-neutral";
+
+      return `
+        <tr class="energy-stats-row ${modeClass}">
+          <td class="col-date">${formattedDate}</td>
+          <td class="col-temp">
+            <div class="temp-levels-display">
+              ${tempLevelsDisplay}
+            </div>
+          </td>
+          <td class="col-hours">${dayStats.operatingHours}h</td>
+          <td class="col-kwh">
+            <div class="kwh-display">
+              <span class="kwh-value">${dayStats.totalKwh}</span>
+              <span class="kwh-unit">kWh</span>
+            </div>
+          </td>
+          <td class="col-mode">
+            <span class="usage-mode-badge ${modeClass}">
+              <i class="${modeIcon}"></i>
+              ${modeText}
+            </span>
+          </td>
+          <td class="col-savings">
+            <span class="savings-value ${savingsClass}">
+              ${dayStats.energySavingsPercent >= 0 ? "+" : ""}${
+        dayStats.energySavingsPercent
+      }%
+            </span>
+          </td>
+        </tr>
+      `;
+    } catch (error) {
+      console.error("Error rendering energy stats row:", error);
+      return '<tr><td colspan="6">Error rendering data</td></tr>';
+    }
+  }
+
+  /**
+   * UTILITY METHODS FOR ENERGY STATISTICS
+   */
+
+  calculateAverageConsumption(dailyData) {
+    if (dailyData.length === 0) return "0.0";
+    const totalKwh = dailyData.reduce((sum, day) => sum + day.totalKwh, 0);
+    return (totalKwh / dailyData.length).toFixed(1);
+  }
+
+  calculateTotalSavings(dailyData) {
+    if (dailyData.length === 0) return "0.0";
+    const avgSavings =
+      dailyData.reduce((sum, day) => sum + day.energySavingsPercent, 0) /
+      dailyData.length;
+    return avgSavings.toFixed(1);
+  }
+
+  calculateRecommendationUsage(dailyData) {
+    if (dailyData.length === 0) return "0";
+    const recommendedDays = dailyData.filter(
+      (day) => day.hasRecommendations
+    ).length;
+    return Math.round((recommendedDays / dailyData.length) * 100);
+  }
   async renderStatistics() {
     try {
       const statsContainer = document.getElementById("activity-stats");

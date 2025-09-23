@@ -9,7 +9,6 @@
   background: rgba(255, 255, 255, 0.08);
   -webkit-backdrop-filter: blur(20px);
   backdrop-filter: blur(20px);
-
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 12px;
   padding: 10px 16px;
@@ -24,6 +23,10 @@
   cursor: pointer;
   position: relative;
   overflow: hidden;
+  width: 42px;
+  height: 42px;
+  justify-content: center;
+  margin-right: 10px;
 }
 
 .activity-log-btn:hover {
@@ -33,6 +36,8 @@
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
   color: #ffffff;
   text-decoration: none;
+  width: auto;
+  padding: 10px 16px;
 }
 
 .activity-log-btn:active {
@@ -42,10 +47,22 @@
 .activity-log-btn i {
   font-size: 16px;
   opacity: 0.9;
+  color: #10b981;
 }
 
 .activity-log-btn .btn-text {
   font-weight: 500;
+  opacity: 0;
+  width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  transition: all 0.3s ease;
+}
+
+.activity-log-btn:hover .btn-text {
+  opacity: 1;
+  width: auto;
+  margin-left: 8px;
 }
 
 /* Badge for new activities */
@@ -64,6 +81,7 @@
   align-items: center;
   justify-content: center;
   animation: pulse-badge 2s infinite;
+  z-index: 10;
 }
 
 @keyframes pulse-badge {
@@ -86,8 +104,8 @@
   width: 100%;
   height: 100%;
   background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -108,8 +126,8 @@
     rgba(255, 255, 255, 0.1),
     rgba(255, 255, 255, 0.05)
   );
-  backdrop-filter: blur(30px);
   -webkit-backdrop-filter: blur(30px);
+  backdrop-filter: blur(30px);
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 20px;
   width: 90%;
@@ -281,7 +299,365 @@
   border-color: rgba(239, 68, 68, 0.5);
 }
 
-/* Statistics Cards */
+/* Energy Consumption Statistics Section */
+.activity-energy-stats-section {
+  margin-bottom: 32px;
+}
+
+.energy-stats-container {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  overflow: hidden;
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+}
+
+.energy-stats-header {
+  background: rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 20px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.energy-stats-title {
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.energy-stats-title i {
+  color: #06b6d4;
+  font-size: 20px;
+}
+
+.energy-stats-legend {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.legend-item.recommended {
+  color: #10b981;
+}
+
+.legend-item.recommended i {
+  color: #10b981;
+  font-size: 8px;
+}
+
+.legend-item.manual {
+  color: #f59e0b;
+}
+
+.legend-item.manual i {
+  color: #f59e0b;
+  font-size: 8px;
+}
+
+/* Energy Statistics Table */
+.energy-stats-table-container {
+  overflow-x: auto;
+}
+
+.energy-stats-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.energy-stats-table th {
+  background: rgba(255, 255, 255, 0.06);
+  color: #e5e7eb;
+  font-weight: 600;
+  font-size: 13px;
+  padding: 16px 12px;
+  text-align: left;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.energy-stats-table td {
+  color: #ffffff;
+  padding: 16px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  vertical-align: middle;
+}
+
+.energy-stats-table tbody tr {
+  transition: all 0.2s ease;
+}
+
+.energy-stats-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.energy-stats-table tbody tr.recommended {
+  border-left: 3px solid #10b981;
+}
+
+.energy-stats-table tbody tr.manual {
+  border-left: 3px solid #f59e0b;
+}
+
+.energy-stats-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Column Specific Styling */
+.col-date {
+  font-family: "JetBrains Mono", "Courier New", monospace;
+  font-weight: 600;
+  color: #cbd5e1;
+  min-width: 100px;
+}
+
+.col-temp {
+  min-width: 140px;
+}
+
+.temp-levels-display {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.col-hours {
+  font-family: "JetBrains Mono", "Courier New", monospace;
+  font-weight: 600;
+  color: #60a5fa;
+  text-align: right;
+  min-width: 80px;
+}
+
+.col-kwh {
+  min-width: 80px;
+}
+
+.kwh-display {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  justify-content: flex-end;
+}
+
+.kwh-value {
+  font-family: "JetBrains Mono", "Courier New", monospace;
+  font-weight: 700;
+  font-size: 15px;
+  color: #ffffff;
+}
+
+.kwh-unit {
+  font-size: 12px;
+  color: #9ca3af;
+  font-weight: 500;
+}
+
+.col-mode {
+  min-width: 140px;
+}
+
+.usage-mode-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.usage-mode-badge.recommended {
+  background: rgba(16, 185, 129, 0.2);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.usage-mode-badge.manual {
+  background: rgba(245, 158, 11, 0.2);
+  color: #f59e0b;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.usage-mode-badge i {
+  font-size: 12px;
+}
+
+.col-savings {
+  text-align: right;
+  min-width: 100px;
+}
+
+.savings-value {
+  font-family: "JetBrains Mono", "Courier New", monospace;
+  font-weight: 700;
+  font-size: 14px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  display: inline-block;
+  min-width: 60px;
+  text-align: center;
+}
+
+.savings-value.savings-positive {
+  background: rgba(16, 185, 129, 0.2);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.savings-value.savings-negative {
+  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.savings-value.savings-neutral {
+  background: rgba(156, 163, 175, 0.2);
+  color: #9ca3af;
+  border: 1px solid rgba(156, 163, 175, 0.3);
+}
+
+/* Energy Statistics Summary */
+.energy-stats-summary {
+  background: rgba(255, 255, 255, 0.06);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 20px 24px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.summary-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  transition: all 0.2s ease;
+}
+
+.summary-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateY(-1px);
+}
+
+.summary-label {
+  color: #e5e7eb;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.summary-value {
+  font-family: "JetBrains Mono", "Courier New", monospace;
+  font-weight: 700;
+  font-size: 16px;
+  color: #ffffff;
+}
+
+.summary-value.savings-positive {
+  color: #10b981;
+}
+
+/* Empty State for Energy Stats */
+.energy-stats-empty {
+  text-align: center;
+  padding: 40px;
+  color: #6b7280;
+}
+
+.energy-stats-empty i {
+  font-size: 48px;
+  opacity: 0.4;
+  margin-bottom: 16px;
+  color: #06b6d4;
+}
+
+.energy-stats-empty p {
+  font-size: 14px;
+  color: #9ca3af;
+  margin: 0;
+}
+
+/* Responsive Design for Energy Stats */
+@media (max-width: 1024px) {
+  .energy-stats-header {
+    flex-direction: column;
+    gap: 16px;
+    align-items: flex-start;
+  }
+
+  .energy-stats-legend {
+    gap: 16px;
+  }
+
+  .energy-stats-summary {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .energy-stats-table-container {
+    overflow-x: scroll;
+  }
+
+  .energy-stats-table {
+    min-width: 700px;
+  }
+
+  .energy-stats-header {
+    padding: 16px;
+  }
+
+  .energy-stats-summary {
+    padding: 16px;
+  }
+
+  .col-temp,
+  .col-mode {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .energy-stats-title {
+    font-size: 16px;
+  }
+
+  .legend-item {
+    font-size: 12px;
+  }
+
+  .energy-stats-table th,
+  .energy-stats-table td {
+    padding: 12px 8px;
+  }
+
+  .summary-item {
+    flex-direction: column;
+    text-align: center;
+    gap: 8px;
+  }
+}
 .activity-log-stats {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -404,7 +780,6 @@
   font-family: "JetBrains Mono", "Courier New", monospace;
   font-weight: 600;
   padding: 2px 6px;
-  background: rgba(255, 255, 255, 0.1);
   border-radius: 4px;
   font-size: 13px;
 }
