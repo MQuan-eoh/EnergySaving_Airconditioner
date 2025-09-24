@@ -102,6 +102,9 @@ class TemperatureAdjustmentStorage {
       // Load cached data
       this.loadFromLocalStorage();
 
+      // Load sync queue from localStorage
+      this.loadSyncQueue();
+
       // Setup network listeners
       this.setupNetworkListeners();
 
@@ -174,6 +177,15 @@ class TemperatureAdjustmentStorage {
       console.log(
         `Temperature adjustment logged: ${enrichedData.previousTemp}°C -> ${enrichedData.targetTemp}°C (${enrichedData.adjustmentType})`
       );
+
+      // Debug Firebase sync status
+      console.log("Firebase sync status:", {
+        shouldSync: this.shouldSyncToFirebase(),
+        syncResult: this.shouldSyncToFirebase()
+          ? "Attempted"
+          : "Skipped - added to queue",
+      });
+
       return timestampId;
     } catch (error) {
       console.error("Error logging temperature adjustment:", error);
@@ -479,7 +491,16 @@ class TemperatureAdjustmentStorage {
    */
   async syncToFirebase(year, month, timestampId, adjustmentData) {
     try {
-      if (!this.shouldSyncToFirebase()) return false;
+      if (!this.shouldSyncToFirebase()) {
+        console.warn("Cannot sync to Firebase: Not authenticated or offline");
+        console.log("Debug sync status:", {
+          isOnline: this.isOnline,
+          hasUser: !!this.currentUser,
+          hasDatabase: !!this.database,
+          userId: this.currentUser?.uid || "None",
+        });
+        return false;
+      }
 
       const adjustmentRef = this.database.ref(
         `Air_Conditioner/${
@@ -501,10 +522,18 @@ class TemperatureAdjustmentStorage {
       console.log(
         `Temperature adjustment synced to Firebase: ${year}/${month}/${timestampId}`
       );
+      console.log("Firebase path:", adjustmentRef.toString());
 
       return true;
     } catch (error) {
       console.error("Firebase sync failed:", error);
+      console.error("Sync details:", {
+        year,
+        month,
+        timestampId,
+        userId: this.currentUser?.uid,
+        hasDatabase: !!this.database,
+      });
       return false;
     }
   }
@@ -564,7 +593,18 @@ class TemperatureAdjustmentStorage {
   }
 
   shouldSyncToFirebase() {
-    return this.isOnline && this.currentUser && this.database;
+    const canSync = this.isOnline && this.currentUser && this.database;
+
+    if (!canSync) {
+      console.log("Cannot sync to Firebase - Debug info:", {
+        isOnline: this.isOnline,
+        hasCurrentUser: !!this.currentUser,
+        hasDatabase: !!this.database,
+        userId: this.currentUser?.uid || "No user",
+      });
+    }
+
+    return canSync;
   }
 
   /**
@@ -1025,20 +1065,28 @@ class TemperatureAdjustmentStorage {
         this.currentUser = this.database
           ? window.firebaseStorageManager.getCurrentUser()
           : null;
+        console.log(
+          "Temperature Storage: User signed in, processing sync queue..."
+        );
         this.processSyncQueue();
         break;
 
       case "user_signed_out":
         this.currentUser = null;
+        console.log("Temperature Storage: User signed out");
         break;
 
       case "network_online":
         this.isOnline = true;
+        console.log(
+          "Temperature Storage: Network online, processing sync queue..."
+        );
         this.processSyncQueue();
         break;
 
       case "network_offline":
         this.isOnline = false;
+        console.log("Temperature Storage: Network offline");
         break;
     }
   }
@@ -1076,6 +1124,23 @@ class TemperatureAdjustmentStorage {
   }
 
   /**
+   * MANUAL SYNC TRIGGER
+   * Force sync all queued data to Firebase
+   */
+  async forceSync() {
+    console.log("Force syncing temperature adjustments to Firebase...");
+
+    if (!this.shouldSyncToFirebase()) {
+      console.warn("Cannot force sync - Firebase not available");
+      return false;
+    }
+
+    await this.processSyncQueue();
+    console.log("Force sync completed");
+    return true;
+  }
+
+  /**
    * PUBLIC API
    */
   isInitialized() {
@@ -1088,10 +1153,39 @@ class TemperatureAdjustmentStorage {
       online: this.isOnline,
       firebase: !!this.database,
       user: !!this.currentUser,
+      userId: this.currentUser?.uid || "None",
       localDataSize: this.adjustmentData.size,
       syncQueueSize: this.syncQueue.length,
       sessionId: this.sessionId,
+      firebaseStorageManager: !!window.firebaseStorageManager,
+      canSyncToFirebase: this.shouldSyncToFirebase(),
     };
+  }
+
+  /**
+   * TEST TEMPERATURE ADJUSTMENT
+   * Test method for development and debugging
+   */
+  async testTemperatureAdjustment() {
+    console.log("Testing temperature adjustment logging...");
+
+    const testData = {
+      targetTemp: 24,
+      previousTemp: 26,
+      adjustmentType: "manual",
+      adjustedBy: "test_user",
+      notes: "Test temperature adjustment from development console",
+    };
+
+    const result = await this.logTemperatureAdjustment(testData);
+
+    console.log("Test result:", {
+      timestampId: result,
+      status: this.getStatus(),
+      syncQueue: this.syncQueue.length,
+    });
+
+    return result;
   }
 
   async clearOldData(daysToKeep = 90) {
@@ -1128,10 +1222,48 @@ class TemperatureAdjustmentStorage {
   }
 }
 
-// Initialize global instance
-document.addEventListener("DOMContentLoaded", () => {
+// Initialize global instance and AUTO-INIT when DOM ready
+document.addEventListener("DOMContentLoaded", async () => {
   window.temperatureAdjustmentStorage = new TemperatureAdjustmentStorage();
-  console.log("Temperature Adjustment Storage global instance created");
+
+  // Wait for Firebase Storage Manager to be ready
+  const waitForFirebaseManager = () => {
+    return new Promise((resolve) => {
+      const checkInterval = setInterval(() => {
+        if (
+          window.firebaseStorageManager &&
+          window.firebaseStorageManager.initialized
+        ) {
+          clearInterval(checkInterval);
+          resolve(true);
+        }
+      }, 100);
+
+      // Timeout after 10 seconds
+      setTimeout(() => {
+        clearInterval(checkInterval);
+        resolve(false);
+      }, 10000);
+    });
+  };
+
+  // Wait for Firebase Storage Manager then initialize
+  const firebaseReady = await waitForFirebaseManager();
+  if (firebaseReady) {
+    console.log(
+      "Firebase Storage Manager detected, initializing Temperature Adjustment Storage..."
+    );
+    await window.temperatureAdjustmentStorage.init();
+  } else {
+    console.log(
+      "Firebase Storage Manager not ready, initializing Temperature Adjustment Storage in offline mode..."
+    );
+    await window.temperatureAdjustmentStorage.init();
+  }
+
+  console.log(
+    "Temperature Adjustment Storage global instance created and initialized"
+  );
 });
 
 // Export for module systems
