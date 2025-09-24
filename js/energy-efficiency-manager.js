@@ -113,7 +113,7 @@ class EnergyEfficiencyManager {
 
       try {
         await waitForRLComponents();
-        console.log("✅ All RL components loaded successfully");
+        console.log("All RL components loaded successfully");
 
         // Initialize RL for all configured ACs
         for (const acId in this.acConfigurations) {
@@ -138,7 +138,7 @@ class EnergyEfficiencyManager {
           "🎯 Reinforcement Learning system ready for temperature optimization"
         );
       } catch (error) {
-        console.warn("⚠️ Some RL components not available:", error.message);
+        console.warn("Some RL components not available:", error.message);
         console.log("📝 Manual initialization required for missing components");
       }
     } catch (error) {
@@ -623,7 +623,7 @@ class EnergyEfficiencyManager {
         // Show success feedback
         this.showTemperatureFeedback(
           "success",
-          `✅ Áp dụng gợi ý AI: ${originalTemp}°C → ${recommendedTemp}°C`
+          `Ap dung goi y AI: ${originalTemp}°C -> ${recommendedTemp}°C`
         );
 
         // Refresh the widget to remove RL recommendation
@@ -729,7 +729,7 @@ class EnergyEfficiencyManager {
               "sustained_1_hour"
             );
             console.log(
-              `✅ RL Success: AC ${acId} sustained temperature ${appliedTemp}°C for 1 hour`
+              `RL Success: AC ${acId} sustained temperature ${appliedTemp}°C for 1 hour`
             );
           }
 
@@ -767,7 +767,7 @@ class EnergyEfficiencyManager {
               "changed_within_hour"
             );
             console.log(
-              `⚠️ RL Partial Success: AC ${acId} temperature changed from ${appliedTemp}°C to ${currentData.targetTemp}°C within 1 hour`
+              `RL Partial Success: AC ${acId} temperature changed from ${appliedTemp}°C to ${currentData.targetTemp}°C within 1 hour`
             );
           }
         }
@@ -2017,7 +2017,7 @@ class EnergyEfficiencyManager {
     location = "Van Phuc City, Thu Duc, Ho Chi Minh City, Vietnam"
   ) {
     try {
-      console.log(`🌤️ Đang lấy dữ liệu thời tiết cho ${location}...`);
+      console.log(`Đang lấy dữ liệu thời tiết cho ${location}...`);
 
       // Show loading indicator
       this.showWeatherLoadingIndicator(true);
@@ -2031,7 +2031,7 @@ class EnergyEfficiencyManager {
         !isNaN(weatherData.temperature)
       ) {
         console.log(
-          `✅ Đã lấy được nhiệt độ từ ${weatherData.source}: ${weatherData.temperature}°C`
+          `Đã lấy được nhiệt độ từ ${weatherData.source}: ${weatherData.temperature}°C`
         );
 
         // Update outdoor temperature with weather API data
@@ -2060,7 +2060,7 @@ class EnergyEfficiencyManager {
         // Show success feedback with weather details
         this.showTemperatureFeedback(
           "success",
-          `✅ Thời tiết cập nhật: ${weatherData.temperature}°C - ${
+          `Thời tiết cập nhật: ${weatherData.temperature}°C - ${
             weatherData.description || "Thời tiết tốt"
           } (${weatherData.source})`
         );
@@ -2071,7 +2071,7 @@ class EnergyEfficiencyManager {
         throw new Error("Không thể lấy dữ liệu thời tiết từ bất kỳ API nào");
       }
     } catch (error) {
-      console.error("❌ Lỗi khi lấy dữ liệu thời tiết:", error);
+      console.error(" Lỗi khi lấy dữ liệu thời tiết:", error);
       this.showWeatherLoadingIndicator(false);
 
       // Enhanced intelligent fallback with Vietnam-specific logic
@@ -2099,7 +2099,7 @@ class EnergyEfficiencyManager {
       if (error.message.includes("API key")) {
         this.showTemperatureFeedback(
           "warning",
-          `⚠️ Cấu hình API key để có thời tiết chính xác. Dùng dự phóng: ${fallbackTemp}°C`
+          `Cau hinh API key de co thoi tiet chinh xac. Dung du phong: ${fallbackTemp}°C`
         );
       } else {
         this.showTemperatureFeedback(
@@ -2255,7 +2255,7 @@ class EnergyEfficiencyManager {
 
         if (data && data.temperature && !isNaN(data.temperature)) {
           console.log(
-            `✅ Successfully got weather from ${service.name}: ${data.temperature}°C`
+            `Successfully got weather from ${service.name}: ${data.temperature}°C`
           );
           return { ...data, source: service.name, priority: service.priority };
         }
@@ -2918,7 +2918,7 @@ class EnergyEfficiencyManager {
         }
       }, 50);
     } else {
-      console.log("⚠️ Weather panel not found for update, creating new one");
+      console.log("Weather panel not found for update, creating new one");
       this.initializeWeatherPanel();
     }
   }
@@ -3838,7 +3838,7 @@ window.testAllWeatherSources = async () => {
     const owm = await window.energyEfficiencyManager.fetchFromOpenWeatherMap(
       location
     );
-    console.log("✅ OpenWeatherMap:", owm);
+    console.log("OpenWeatherMap:", owm);
   } catch (error) {
     console.error("❌ OpenWeatherMap failed:", error.message);
   }
@@ -3846,7 +3846,7 @@ window.testAllWeatherSources = async () => {
   // Test Wttr.in
   try {
     const wttr = await window.energyEfficiencyManager.fetchFromWttr(location);
-    console.log("✅ Wttr.in:", wttr);
+    console.log("Wttr.in:", wttr);
   } catch (error) {
     console.error("❌ Wttr.in failed:", error.message);
   }
@@ -3856,7 +3856,7 @@ window.testAllWeatherSources = async () => {
     const wapi = await window.energyEfficiencyManager.fetchFromWeatherAPI(
       location
     );
-    console.log("✅ WeatherAPI:", wapi);
+    console.log("WeatherAPI:", wapi);
   } catch (error) {
     console.error("❌ WeatherAPI failed:", error.message);
   }

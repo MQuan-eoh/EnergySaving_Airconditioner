@@ -63,7 +63,7 @@ class TemperatureActivityLogUI {
       await this.loadInitialData();
 
       this.initialized = true;
-      console.log("✅ Temperature Activity Log UI ready");
+      console.log("Temperature Activity Log UI ready");
 
       return true;
     } catch (error) {

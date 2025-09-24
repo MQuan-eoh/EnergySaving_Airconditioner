@@ -134,7 +134,7 @@ class RLSystemTest {
         );
 
         if (allReady) {
-          console.log("✅ All components ready:", components);
+          console.log("All components ready:", components);
           resolve(components);
         } else {
           console.log(
@@ -333,7 +333,7 @@ class RLSystemTest {
    * TEST ACTIVITY LOGGER
    */
   async testActivityLogger() {
-    console.log("📊 Testing Activity Logger...");
+    console.log("Testing Activity Logger...");
 
     if (!window.temperatureActivityLogger) {
       this.addTestResult(
@@ -746,7 +746,7 @@ class RLSystemTest {
       timestamp: Date.now(),
     });
 
-    const status = passed ? "✅" : "❌";
+    const status = passed ? "PASS" : "FAIL";
     console.log(`${status} ${testName}: ${description}`);
   }
 
@@ -765,7 +765,7 @@ class RLSystemTest {
     console.log("🧪 REINFORCEMENT LEARNING SYSTEM TEST REPORT");
     console.log("=".repeat(60));
     console.log(`Total Tests: ${totalTests}`);
-    console.log(`✅ Passed: ${passedTests}`);
+    console.log(`Passed: ${passedTests}`);
     console.log(`❌ Failed: ${failedTests}`);
     console.log(`⏱️ Total Time: ${totalTime}ms`);
     console.log(
@@ -781,7 +781,7 @@ class RLSystemTest {
         });
     }
 
-    console.log("\n📊 DETAILED RESULTS:");
+    console.log("\nDETAILED RESULTS:");
     console.table(
       this.testResults.map((r) => ({
         Test: r.name,
@@ -795,7 +795,7 @@ class RLSystemTest {
       failedTests === 0
         ? "🎉 ALL TESTS PASSED!"
         : passedTests > failedTests
-        ? "⚠️ PARTIAL SUCCESS"
+        ? "PARTIAL SUCCESS"
         : "💥 SYSTEM NOT READY";
 
     console.log("\n" + "=".repeat(60));
@@ -843,11 +843,11 @@ class RLSystemTest {
 
     console.log("Health Check Results:");
     Object.entries(checks).forEach(([key, value]) => {
-      console.log(`${value ? "✅" : "❌"} ${key}`);
+      console.log(`${value ? "PASS" : "FAIL"} ${key}`);
     });
 
     console.log(
-      `\n📊 Health Score: ${passedChecks}/${totalChecks} (${(
+      `\nHealth Score: ${passedChecks}/${totalChecks} (${(
         (passedChecks / totalChecks) *
         100
       ).toFixed(1)}%)`
@@ -928,7 +928,7 @@ class RLSystemTest {
 
       // Simulate user response
       if (scenario.user_accepts) {
-        console.log("✅ User accepts recommendation");
+        console.log("User accepts recommendation");
         await window.temperatureActivityLogger.logRecommendationApplication({
           acId: "demo-ac",
           originalTemp: scenario.target,
@@ -981,7 +981,7 @@ class RLSystemTest {
     }
 
     // Show learning results
-    console.log("\n📊 Learning Results:");
+    console.log("\nLearning Results:");
     const stats = window.temperatureRL.getACStatistics("demo-ac");
     console.log("Statistics:", stats);
 
@@ -1025,7 +1025,7 @@ document.addEventListener("DOMContentLoaded", () => {
       );
     } else {
       console.log(
-        "⚠️ RL System not fully ready. Run RLSystemTest.runAllTests() for detailed diagnostics."
+        "RL System not fully ready. Run RLSystemTest.runAllTests() for detailed diagnostics."
       );
     }
   }, 5000);

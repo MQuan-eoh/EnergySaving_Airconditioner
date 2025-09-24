@@ -76,7 +76,6 @@ class FirebaseStorageManager {
 
       // Auto sign-in (works with or without Firebase)
 
-
       // Try to restore cached user session
       await this.restoreUserSession();
 
@@ -272,7 +271,7 @@ class FirebaseStorageManager {
       }
 
       await Promise.all(promises);
-      console.log("✅ Data synced to Firebase with new structure");
+      console.log("Data synced to Firebase with new structure");
       return true;
     } catch (error) {
       console.error("Firebase sync failed:", error);

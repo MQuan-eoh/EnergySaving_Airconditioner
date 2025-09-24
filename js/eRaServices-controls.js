@@ -1520,7 +1520,8 @@ class TemperatureController {
 
   /**
    * LOG MANUAL TEMPERATURE ADJUSTMENT
-   * Log manual temperature changes to activity logger with power consumption delta
+   * Log manual temperature changes to both activity logger and new temperature adjustment storage
+   * Enhanced with power consumption delta and dual storage approach
    */
   async logManualTemperatureAdjustment(
     previousTemp,
@@ -1528,14 +1529,6 @@ class TemperatureController {
     source = "manual_control"
   ) {
     try {
-      // Check if activity logger is available
-      if (!window.temperatureActivityLogger) {
-        console.warn(
-          "Temperature Activity Logger not available for logging manual adjustment"
-        );
-        return;
-      }
-
       // Skip logging if temperatures are the same
       if (previousTemp === newTemp) {
         return;
@@ -1579,65 +1572,116 @@ class TemperatureController {
         changedBy = "ai_system";
       }
 
-      // Prepare log data with power consumption information
-      const logData = {
-        acId: this.acId,
-        previousTemp: previousTemp,
-        newTemp: newTemp,
-        adjustedTemp: newTemp, // alias for compatibility
-        adjustmentTime: 0, // Immediate adjustment
-        changedBy: changedBy,
-        relatedRecommendationId: null, // No related recommendation for manual adjustment
-        powerConsumptionDelta: powerConsumptionDelta, // New field for power delta
-        powerMonitoringData: monitoringResult, // Detailed monitoring data
-        context: {
+      // LOG TO NEW TEMPERATURE ADJUSTMENT STORAGE (Primary method)
+      if (
+        window.temperatureAdjustmentStorage &&
+        window.temperatureAdjustmentStorage.isInitialized()
+      ) {
+        const adjustmentData = {
+          targetTemp: newTemp,
+          previousTemp: previousTemp,
           currentTemp: this.currentTemp,
-          currentMode: this.currentMode,
-          powerStatus: this.isPowerOn,
-          fanSpeed: this.fanSpeed,
-          adjustmentType: adjustmentType,
+          adjustmentType:
+            adjustmentType === "manual_control"
+              ? "manual"
+              : adjustmentType === "ai_recommendation_applied"
+              ? "ai_recommendation"
+              : "external",
+          adjustedBy: changedBy,
           source: source,
-          timestamp: new Date().toISOString(),
-          // Enhanced power monitoring context
-          powerMonitoringActive: powerConsumptionMonitoring.isMonitoring,
-          baselinePowerValue: powerConsumptionMonitoring.baselinePowerValue,
-          powerOnTimestamp: powerConsumptionMonitoring.powerOnTimestamp,
-        },
-        timestamp: Date.now(),
-      };
+          notes: `Temperature adjusted from ${previousTemp}°C to ${newTemp}°C via ${source}`,
+          timestamp: Date.now(),
+          // Power consumption data will be enriched automatically by the storage system
+          acId: this.acId,
+          fanSpeed: this.fanSpeed,
+          mode: this.currentMode,
+          powerStatus: this.isPowerOn,
+        };
 
-      // Log the adjustment
-      const logId = await window.temperatureActivityLogger.logManualAdjustment(
-        logData
-      );
+        const timestampId =
+          await window.temperatureAdjustmentStorage.logTemperatureAdjustment(
+            adjustmentData
+          );
 
-      if (logId) {
-        const powerInfo = powerConsumptionDelta
-          ? ` (Delta: ${powerConsumptionDelta}W)`
-          : "";
-        console.log(
-          `✅ Temperature adjustment logged: ${previousTemp}°C → ${newTemp}°C${powerInfo} (Source: ${source}, ID: ${logId})`
-        );
-
-        // Emit event for other components
-        if (window.acEventSystem) {
-          window.acEventSystem.emit("temperature-adjustment", {
-            acId: this.acId,
-            previousTemp: previousTemp,
-            newTemp: newTemp,
-            source: source,
-            adjustmentType: adjustmentType,
-            timestamp: Date.now(),
-            logId: logId,
-          });
-        }
-
-        // Update badge if UI is available
-        if (window.tempActivityLogUI && window.tempActivityLogUI.updateBadge) {
-          await window.tempActivityLogUI.updateBadge();
+        if (timestampId) {
+          console.log(
+            `Temperature adjustment logged to new storage: ${previousTemp}°C -> ${newTemp}°C (ID: ${timestampId})`
+          );
         }
       } else {
-        console.warn("Failed to log temperature adjustment");
+        console.warn("Temperature Adjustment Storage not available");
+      }
+
+      // LOG TO EXISTING ACTIVITY LOGGER (Legacy support)
+      if (window.temperatureActivityLogger) {
+        // Prepare log data with power consumption information
+        const logData = {
+          acId: this.acId,
+          previousTemp: previousTemp,
+          newTemp: newTemp,
+          adjustedTemp: newTemp, // alias for compatibility
+          adjustmentTime: 0, // Immediate adjustment
+          changedBy: changedBy,
+          relatedRecommendationId: null, // No related recommendation for manual adjustment
+          powerConsumptionDelta: powerConsumptionDelta, // New field for power delta
+          powerMonitoringData: monitoringResult, // Detailed monitoring data
+          context: {
+            currentTemp: this.currentTemp,
+            currentMode: this.currentMode,
+            powerStatus: this.isPowerOn,
+            fanSpeed: this.fanSpeed,
+            adjustmentType: adjustmentType,
+            source: source,
+            timestamp: new Date().toISOString(),
+            // Enhanced power monitoring context
+            powerMonitoringActive: powerConsumptionMonitoring.isMonitoring,
+            baselinePowerValue: powerConsumptionMonitoring.baselinePowerValue,
+            powerOnTimestamp: powerConsumptionMonitoring.powerOnTimestamp,
+          },
+          timestamp: Date.now(),
+        };
+
+        // Log the adjustment
+        const logId =
+          await window.temperatureActivityLogger.logManualAdjustment(logData);
+
+        if (logId) {
+          const powerInfo = powerConsumptionDelta
+            ? ` (Delta: ${powerConsumptionDelta}W)`
+            : "";
+          console.log(
+            `Temperature adjustment logged to activity logger: ${previousTemp}°C -> ${newTemp}°C${powerInfo} (Source: ${source}, ID: ${logId})`
+          );
+
+          // Update badge if UI is available
+          if (
+            window.tempActivityLogUI &&
+            window.tempActivityLogUI.updateBadge
+          ) {
+            await window.tempActivityLogUI.updateBadge();
+          }
+        } else {
+          console.warn(
+            "Failed to log temperature adjustment to activity logger"
+          );
+        }
+      } else {
+        console.warn(
+          "Temperature Activity Logger not available for logging manual adjustment"
+        );
+      }
+
+      // Emit event for other components
+      if (window.acEventSystem) {
+        window.acEventSystem.emit("temperature-adjustment", {
+          acId: this.acId,
+          previousTemp: previousTemp,
+          newTemp: newTemp,
+          source: source,
+          adjustmentType: adjustmentType,
+          timestamp: Date.now(),
+          powerDelta: powerConsumptionDelta,
+        });
       }
     } catch (error) {
       console.error("Error logging temperature adjustment:", error);

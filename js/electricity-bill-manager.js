@@ -88,11 +88,11 @@ class ElectricityBillManager {
           this.handleStorageEvent(event, data);
         });
 
-        console.log("✅ Firebase storage integration enabled");
+        console.log("Firebase storage integration enabled");
         this.showNotification("Đã kết nối cloud storage", "success");
       } else {
         console.warn(
-          "⚠️ Firebase storage manager not available - using LocalStorage only"
+          "Firebase storage manager not available - using LocalStorage only"
         );
         this.showNotification("Chế độ offline - dữ liệu lưu cục bộ", "warning");
       }
@@ -1374,7 +1374,7 @@ class ElectricityBillManager {
 
     // Format and display stats
     const statsMessage = `
-📊 THỐNG KÊ THÁNG ${
+THONG KE THANG ${
       this.currentDate.getMonth() + 1
     }/${this.currentDate.getFullYear()}
 
@@ -2209,9 +2209,7 @@ class ElectricityBillManager {
       // Create visualization chart
       this.createStatsChart(billDataArray);
 
-      console.log(
-        `✅ Monthly statistics loaded: ${billDataArray.length} months`
-      );
+      console.log(`Monthly statistics loaded: ${billDataArray.length} months`);
     } catch (error) {
       console.error("Error loading monthly statistics:", error);
       this.showNotification("Lỗi tải thống kê tháng", "error");
@@ -2243,7 +2241,7 @@ class ElectricityBillManager {
   populateMonthlyTable(billDataArray) {
     const container = document.getElementById("monthly-stats-list");
 
-    console.log("📊 PopulateMonthlyTable called with data:", billDataArray);
+    console.log("PopulateMonthlyTable called with data:", billDataArray);
 
     // Group data by year
     const dataByYear = {};
@@ -2266,10 +2264,10 @@ class ElectricityBillManager {
       // Sort months within year
       const monthsData = dataByYear[year].sort((a, b) => a.month - b.month);
 
-      console.log(`📊 Year ${year} months data:`, monthsData);
-      console.log(`📊 Year ${year} - calling getYearSummary with:`, monthsData);
+      console.log(`Year ${year} months data:`, monthsData);
+      console.log(`Year ${year} - calling getYearSummary with:`, monthsData);
       console.log(
-        `📊 Year ${year} - calling generateMonthsList with:`,
+        `Year ${year} - calling generateMonthsList with:`,
         monthsData
       );
 
@@ -2329,7 +2327,7 @@ class ElectricityBillManager {
 
     // Enhanced debug - inspect each month data structure
     monthsData.forEach((data, idx) => {
-      console.log(`📊 Raw month data ${idx}:`, {
+      console.log(`Raw month data ${idx}:`, {
         fullData: data,
         month: data.month,
         amount: data.amount,
@@ -2350,7 +2348,7 @@ class ElectricityBillManager {
 
         if (isMatch) {
           console.log(
-            `✅ Found match for month ${monthIndex}: dataMonth=${dataMonth}, data=`,
+            `Found match for month ${monthIndex}: dataMonth=${dataMonth}, data=`,
             data
           );
         }
@@ -2359,7 +2357,7 @@ class ElectricityBillManager {
       });
 
       if (existingData) {
-        console.log(`✅ Month ${monthIndex} HAS DATA:`, existingData);
+        console.log(`Month ${monthIndex} HAS DATA:`, existingData);
         return {
           ...existingData,
           hasData: true,
@@ -2415,7 +2413,7 @@ class ElectricityBillManager {
           data.totalWorkingDays ||
           0;
 
-        console.log(`📊 Month ${index + 1} data generation:`, {
+        console.log(`Month ${index + 1} data generation:`, {
           amount,
           kwh,
           workingDays,

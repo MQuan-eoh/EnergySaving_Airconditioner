@@ -94,7 +94,7 @@ class TemperatureActivityLogger {
       }
 
       this.initialized = true;
-      console.log("✅ Temperature Activity Logger ready");
+      console.log("Temperature Activity Logger ready");
 
       return true;
     } catch (error) {
@@ -284,7 +284,7 @@ class TemperatureActivityLogger {
         logEntry
       );
 
-      console.log(`✅ Successful recommendation logged for AC: ${data.acId}`);
+      console.log(`Successful recommendation logged for AC: ${data.acId}`);
       return logId;
     } catch (error) {
       console.error("Error logging successful recommendation:", error);
@@ -569,7 +569,7 @@ class TemperatureActivityLogger {
       }.xlsx`;
       XLSX.writeFile(workbook, fileName);
 
-      console.log("✅ Excel export completed:", fileName);
+      console.log("Excel export completed:", fileName);
       return true;
     } catch (error) {
       console.error("Error exporting to Excel:", error);
@@ -626,7 +626,7 @@ class TemperatureActivityLogger {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
-      console.log("✅ JSON export completed");
+      console.log("JSON export completed");
       return true;
     } catch (error) {
       console.error("Error exporting to JSON:", error);
@@ -945,7 +945,7 @@ class TemperatureActivityLogger {
     this.saveSyncQueue();
 
     if (processed.length > 0) {
-      console.log(`📤 Synced ${processed.length} activity logs to Firebase`);
+      console.log(`Synced ${processed.length} activity logs to Firebase`);
     }
   }
 
