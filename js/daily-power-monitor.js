@@ -508,16 +508,22 @@ class DailyPowerMonitor {
     let maxPeak = 0;
 
     sessions.forEach((session) => {
+      // Validate session data before processing
+      if (!session || !session.startTime || !session.endTime) {
+        console.warn("Invalid session data found, skipping session");
+        return; // Skip this session
+      }
+
       const sessionHours =
         (session.endTime - session.startTime) / (1000 * 60 * 60);
       totalHours += sessionHours;
       totalKwh += session.totalKwh || 0;
 
-      if (session.powerSamples) {
+      if (session.powerSamples && Array.isArray(session.powerSamples)) {
         allPowerSamples = allPowerSamples.concat(session.powerSamples);
       }
 
-      if (session.peakPower > maxPeak) {
+      if (session.peakPower && session.peakPower > maxPeak) {
         maxPeak = session.peakPower;
       }
     });
@@ -556,6 +562,17 @@ class DailyPowerMonitor {
       const userId = this.currentDayData.deviceUserId;
       const dateKey = this.currentDayData.date;
 
+      // Validate required data before saving
+      if (!userId || !dateKey) {
+        console.warn("Cannot save to Firebase - missing userId or dateKey");
+        return;
+      }
+
+      // Ensure lastUpdated is set
+      if (!this.currentDayData.lastUpdated) {
+        this.currentDayData.lastUpdated = new Date();
+      }
+
       // Firebase path: Air_Conditioner/{userId}/Daily_power_consumption/{date}
       const firebasePath = `Air_Conditioner/${userId}/Daily_power_consumption/${dateKey}`;
 
@@ -567,20 +584,12 @@ class DailyPowerMonitor {
         averagePower: this.currentDayData.averagePower,
         peakPower: this.currentDayData.peakPower,
         sessionsCount: this.currentDayData.sessions.length,
-        lastUpdated: this.currentDayData.lastUpdated.toISOString(),
+        lastUpdated: this.currentDayData.lastUpdated
+          ? this.currentDayData.lastUpdated.toISOString()
+          : new Date().toISOString(),
         deviceUserId: userId,
-        // Store simplified session data
-        sessions: this.currentDayData.sessions.map((session) => ({
-          startTime: session.startTime.toISOString(),
-          endTime: session.endTime.toISOString(),
-          duration: session.endTime - session.startTime,
-          startPower: session.startPower,
-          endPower: session.endPower,
-          averagePower: session.averagePower,
-          peakPower: session.peakPower,
-          totalKwh: session.totalKwh,
-          samplesCount: session.powerSamples ? session.powerSamples.length : 0,
-        })),
+        // Store simplified session data - filter out invalid sessions
+        sessions: this.processSessions(),
       };
 
       await this.storageManager.saveData(firebasePath, firebaseData);
@@ -613,19 +622,28 @@ class DailyPowerMonitor {
       const data = await this.storageManager.loadData(firebasePath);
 
       if (data) {
+        // Validate data structure before processing
+        const validatedSessions = Array.isArray(data.sessions)
+          ? data.sessions
+          : [];
+
         // Reconstruct Date objects from ISO strings
         const reconstructedData = {
           ...data,
-          lastUpdated: new Date(data.lastUpdated),
-          sessions: data.sessions.map((session) => ({
+          lastUpdated: data.lastUpdated
+            ? new Date(data.lastUpdated)
+            : new Date(),
+          sessions: validatedSessions.map((session) => ({
             ...session,
-            startTime: new Date(session.startTime),
-            endTime: new Date(session.endTime),
+            startTime: session.startTime ? new Date(session.startTime) : null,
+            endTime: session.endTime ? new Date(session.endTime) : null,
             powerSamples: [], // Don't load all samples to save memory
           })),
         };
 
-        console.log(`Loaded daily data from Firebase: ${dateKey}`);
+        console.log(
+          `Loaded daily data from Firebase: ${dateKey}. Sessions count: ${validatedSessions.length}`
+        );
         return reconstructedData;
       }
 
@@ -846,16 +864,28 @@ class DailyPowerMonitor {
 
   // Create historical chart HTML
   createHistoricalChartHTML(historicalData) {
-    if (!historicalData || historicalData.length === 0) {
+    if (
+      !historicalData ||
+      !Array.isArray(historicalData) ||
+      historicalData.length === 0
+    ) {
       return '<div class="no-data">Chưa có dữ liệu lịch sử</div>';
     }
 
-    // Generate chart bars
-    const maxKwh = Math.max(...historicalData.map((d) => d.totalKwh));
-    const chartBars = historicalData
+    // Filter valid data and generate chart bars
+    const validData = historicalData.filter(
+      (d) => d && typeof d.totalKwh === "number"
+    );
+
+    if (validData.length === 0) {
+      return '<div class="no-data">Chưa có dữ liệu lịch sử hợp lệ</div>';
+    }
+
+    const maxKwh = Math.max(...validData.map((d) => d.totalKwh || 0));
+    const chartBars = validData
       .map((dayData) => {
         const heightPercent =
-          maxKwh > 0 ? (dayData.totalKwh / maxKwh) * 100 : 0;
+          maxKwh > 0 ? ((dayData.totalKwh || 0) / maxKwh) * 100 : 0;
         const date = new Date(dayData.date);
         const dayName = date.toLocaleDateString("vi-VN", {
           weekday: "short",
@@ -864,14 +894,14 @@ class DailyPowerMonitor {
         return `
         <div class="chart-bar-container">
           <div class="chart-bar" style="height: ${heightPercent}%;" 
-               title="${dayData.date}: ${dayData.totalKwh.toFixed(
+               title="${dayData.date}: ${(dayData.totalKwh || 0).toFixed(
           3
-        )}kWh, ${dayData.totalOperatingHours.toFixed(1)}h">
+        )}kWh, ${(dayData.totalOperatingHours || 0).toFixed(1)}h">
             <div class="bar-fill"></div>
           </div>
           <div class="chart-label">
             <div class="day-name">${dayName}</div>
-            <div class="kwh-value">${dayData.totalKwh.toFixed(2)}</div>
+            <div class="kwh-value">${(dayData.totalKwh || 0).toFixed(2)}</div>
           </div>
         </div>
       `;
@@ -887,15 +917,15 @@ class DailyPowerMonitor {
         <div class="chart-summary">
           <div class="summary-item">
             <span class="summary-label">Tổng 7 ngày:</span>
-            <span class="summary-value">${historicalData
-              .reduce((sum, d) => sum + d.totalKwh, 0)
+            <span class="summary-value">${validData
+              .reduce((sum, d) => sum + (d.totalKwh || 0), 0)
               .toFixed(3)} kWh</span>
           </div>
           <div class="summary-item">
             <span class="summary-label">Trung bình/ngày:</span>
             <span class="summary-value">${(
-              historicalData.reduce((sum, d) => sum + d.totalKwh, 0) /
-              historicalData.length
+              validData.reduce((sum, d) => sum + (d.totalKwh || 0), 0) /
+              validData.length
             ).toFixed(3)} kWh</span>
           </div>
         </div>
@@ -930,7 +960,9 @@ class DailyPowerMonitor {
           totalKwh: this.currentDayData.totalKwh,
           averagePower: this.currentDayData.averagePower,
           peakPower: this.currentDayData.peakPower,
-          sessionsCount: this.currentDayData.sessions.length,
+          sessionsCount: Array.isArray(this.currentDayData.sessions)
+            ? this.currentDayData.sessions.length
+            : 0,
           isMonitoring: this.isMonitoringEnabled,
         }
       : null;
@@ -958,10 +990,97 @@ class DailyPowerMonitor {
   // Force save current data
   async forceSave() {
     if (this.currentDayData) {
+      // Ensure lastUpdated is set before saving
+      if (!this.currentDayData.lastUpdated) {
+        this.currentDayData.lastUpdated = new Date();
+      }
       await this.saveDailyDataToFirebase();
       return true;
     }
     return false;
+  }
+
+  /**
+   * Validate session data to prevent null reference errors
+   */
+  validateSessionData(session) {
+    if (!session) return false;
+
+    // Check if session has valid dates or at least startTime
+    const hasValidStartTime =
+      session.startTime && session.startTime instanceof Date;
+    const hasValidEndTime =
+      session.endTime === null || session.endTime instanceof Date;
+
+    return hasValidStartTime && hasValidEndTime;
+  }
+
+  /**
+   * Process sessions safely for Firebase storage
+   */
+  processSessions() {
+    try {
+      if (
+        !this.currentDayData.sessions ||
+        !Array.isArray(this.currentDayData.sessions)
+      ) {
+        return [];
+      }
+
+      return this.currentDayData.sessions
+        .filter((session) => {
+          try {
+            return this.validateSessionData(session);
+          } catch (error) {
+            console.warn(
+              "Invalid session data found, skipping:",
+              error.message
+            );
+            return false;
+          }
+        })
+        .map((session) => {
+          try {
+            return {
+              startTime: session.startTime
+                ? session.startTime.toISOString()
+                : null,
+              endTime: session.endTime ? session.endTime.toISOString() : null,
+              duration:
+                session.endTime && session.startTime
+                  ? session.endTime - session.startTime
+                  : 0,
+              startPower: session.startPower || 0,
+              endPower: session.endPower || 0,
+              averagePower: session.averagePower || 0,
+              peakPower: session.peakPower || 0,
+              totalKwh: session.totalKwh || 0,
+              samplesCount: session.powerSamples
+                ? session.powerSamples.length
+                : 0,
+            };
+          } catch (error) {
+            console.warn(
+              "Error processing session, using safe defaults:",
+              error.message
+            );
+            return {
+              startTime: null,
+              endTime: null,
+              duration: 0,
+              startPower: 0,
+              endPower: 0,
+              averagePower: 0,
+              peakPower: 0,
+              totalKwh: 0,
+              samplesCount: 0,
+            };
+          }
+        });
+    } catch (error) {
+      console.error("Error processing sessions:", error);
+      return [];
+    }
   }
 }
 
