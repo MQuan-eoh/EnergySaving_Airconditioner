@@ -122,9 +122,6 @@ class RLSystemTest {
           activityLogger:
             window.temperatureActivityLogger &&
             window.temperatureActivityLogger.isInitialized(),
-          activityUI:
-            window.tempActivityLogUI &&
-            window.tempActivityLogUI.isInitialized(),
           energyManager: window.energyEfficiencyManager !== undefined,
           eventSystem: window.acEventSystem !== undefined,
         };
@@ -179,17 +176,6 @@ class RLSystemTest {
           window.temperatureActivityLogger &&
           window.temperatureActivityLogger.isInitialized(),
         description: "Activity logger properly initialized",
-      },
-      {
-        name: "ActivityUI Available",
-        test: () => window.tempActivityLogUI !== undefined,
-        description: "Activity log UI component loaded",
-      },
-      {
-        name: "ActivityUI Initialized",
-        test: () =>
-          window.tempActivityLogUI && window.tempActivityLogUI.isInitialized(),
-        description: "Activity log UI properly initialized",
       },
       {
         name: "EnergyManager Available",
@@ -437,89 +423,6 @@ class RLSystemTest {
           `LOGGER_${test.name.replace(/\s+/g, "_").toUpperCase()}`,
           false,
           `Activity Logger: ${test.name} - Error: ${error.message}`
-        );
-      }
-    }
-  }
-
-  /**
-   * TEST UI COMPONENTS
-   */
-  async testUIComponents() {
-    console.log("🖥️ Testing UI Components...");
-
-    if (!window.tempActivityLogUI) {
-      this.addTestResult(
-        "UI_COMPONENTS",
-        false,
-        "Activity Log UI not available"
-      );
-      return;
-    }
-
-    const tests = [
-      {
-        name: "Header Button Created",
-        test: () => {
-          const button = document.getElementById("activity-log-btn");
-          return button !== null;
-        },
-      },
-      {
-        name: "Modal Created",
-        test: () => {
-          const modal = document.getElementById("activity-log-modal");
-          return modal !== null;
-        },
-      },
-      {
-        name: "Open Modal",
-        test: async () => {
-          await window.tempActivityLogUI.openModal();
-          const modal = document.getElementById("activity-log-modal");
-          return modal && modal.classList.contains("show");
-        },
-      },
-      {
-        name: "Close Modal",
-        test: () => {
-          window.tempActivityLogUI.closeModal();
-          const modal = document.getElementById("activity-log-modal");
-          return modal && !modal.classList.contains("show");
-        },
-      },
-      {
-        name: "CSS Loaded",
-        test: () => {
-          // Check if activity log CSS is loaded
-          const styles = Array.from(document.styleSheets);
-          return styles.some((sheet) => {
-            try {
-              return (
-                sheet.href &&
-                sheet.href.includes("temperature-activity-log.css")
-              );
-            } catch (e) {
-              return false;
-            }
-          });
-        },
-      },
-    ];
-
-    for (const test of tests) {
-      try {
-        const result = await test.test();
-        this.addTestResult(
-          `UI_${test.name.replace(/\s+/g, "_").toUpperCase()}`,
-          result,
-          `UI Components: ${test.name}`
-        );
-      } catch (error) {
-        this.addTestResult(
-          `UI_${test.name.replace(/\s+/g, "_").toUpperCase()}`,
-          false,
-          `UI Components: ${test.name} - Error: ${error.message}`
         );
       }
     }
@@ -829,9 +732,6 @@ class RLSystemTest {
       loggerInitialized:
         window.temperatureActivityLogger &&
         window.temperatureActivityLogger.isInitialized(),
-      uiLoaded: window.tempActivityLogUI !== undefined,
-      uiInitialized:
-        window.tempActivityLogUI && window.tempActivityLogUI.isInitialized(),
       energyManagerIntegrated:
         window.energyEfficiencyManager &&
         typeof window.energyEfficiencyManager.applyRLRecommendation ===

@@ -202,6 +202,51 @@
   font-size: 8px;
 }
 
+/* Daily Power Monitor Indicator styles */
+.daily-power-monitor-indicator {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 8px;
+  margin-top: 4px;
+  padding: 3px 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  color: #94a3b8;
+  font-size: 10px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+
+.daily-power-monitor-indicator.monitoring-active {
+  background: rgba(34, 197, 94, 0.15);
+  border-color: rgba(34, 197, 94, 0.3);
+  color: #22c55e;
+  animation: pulse-daily-monitoring 3s infinite;
+}
+
+.daily-power-monitor-indicator i {
+  font-size: 9px;
+  opacity: 0.8;
+}
+
+@keyframes pulse-daily-monitoring {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+    background: rgba(34, 197, 94, 0.15);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.02);
+    background: rgba(34, 197, 94, 0.25);
+  }
+}
+
 @keyframes pulse-monitoring {
   0%,
   100% {

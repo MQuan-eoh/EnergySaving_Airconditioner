@@ -95,11 +95,8 @@ class EnergyEfficiencyManager {
             const loggerReady =
               window.temperatureActivityLogger &&
               window.temperatureActivityLogger.isInitialized();
-            const uiReady =
-              window.tempActivityLogUI &&
-              window.tempActivityLogUI.isInitialized();
 
-            if (rlReady && loggerReady && uiReady) {
+            if (rlReady && loggerReady) {
               resolve(true);
             } else {
               waitTime += checkInterval;
@@ -126,11 +123,7 @@ class EnergyEfficiencyManager {
         if (window.acEventSystem) {
           window.acEventSystem.emit("rl-system-ready", {
             timestamp: new Date().toISOString(),
-            components: [
-              "temperatureRL",
-              "temperatureActivityLogger",
-              "tempActivityLogUI",
-            ],
+            components: ["temperatureRL", "temperatureActivityLogger"],
           });
         }
 
@@ -298,16 +291,6 @@ class EnergyEfficiencyManager {
           <i class="fas fa-chart-line" style="margin-right: 4px;"></i>
           Xem chi tiết
         </button>`;
-
-    // Add activity log button if available
-    if (window.tempActivityLogUI && window.tempActivityLogUI.isInitialized()) {
-      html += `
-        <button class="btn-activity-log" onclick="window.tempActivityLogUI.openModal()" style="padding: 8px 12px; background: rgba(168, 85, 247, 0.2); border: 1px solid rgba(168, 85, 247, 0.3); border-radius: 5px; color: #a855f7; font-size: 12px; cursor: pointer;">
-          <i class="fas fa-history" style="margin-right: 4px;"></i>
-          Lịch sử
-        </button>
-      `;
-    }
 
     html += `
       </div>

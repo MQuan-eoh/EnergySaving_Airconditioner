@@ -892,6 +892,85 @@ class FirebaseStorageManager {
   }
 
   /**
+   * GENERIC SAVE DATA METHOD
+   * Save any data to Firebase at specified path
+   * Compatible with Daily Power Monitor and other modules
+   */
+  async saveData(path, data) {
+    try {
+      if (!this.currentUser) {
+        console.warn("No user authenticated for saveData:", path);
+        return false;
+      }
+
+      if (!this.database) {
+        console.warn("Firebase database not available for saveData");
+        return false;
+      }
+
+      // Use Firebase database reference
+      const dataRef = this.database.ref(path);
+      await dataRef.set(data);
+
+      console.log(`Data saved to Firebase path: ${path}`);
+      return true;
+    } catch (error) {
+      console.error("saveData failed:", error);
+      return false;
+    }
+  }
+
+  /**
+   * GENERIC LOAD DATA METHOD
+   * Load any data from Firebase at specified path
+   * Compatible with Daily Power Monitor and other modules
+   */
+  async loadData(path) {
+    try {
+      if (!this.currentUser) {
+        console.warn("No user authenticated for loadData:", path);
+        return null;
+      }
+
+      if (!this.database) {
+        console.warn("Firebase database not available for loadData");
+        return null;
+      }
+
+      // Use Firebase database reference
+      const dataRef = this.database.ref(path);
+      const snapshot = await dataRef.once("value");
+
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        console.log(`Data loaded from Firebase path: ${path}`);
+        return data;
+      }
+
+      console.log(`No data found at Firebase path: ${path}`);
+      return null;
+    } catch (error) {
+      console.error("loadData failed:", error);
+      return null;
+    }
+  }
+
+  /**
+   * GET CURRENT USER ID
+   * Return current user ID for path construction
+   */
+  async getCurrentUserId() {
+    if (this.currentUser) {
+      return this.currentUser.uid;
+    }
+
+    // Try to restore user session if not available
+    await this.restoreUserSession();
+
+    return this.currentUser ? this.currentUser.uid : "default_user";
+  }
+
+  /**
    * CLEANUP METHOD
    */
   destroy() {

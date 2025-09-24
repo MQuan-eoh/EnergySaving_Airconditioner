@@ -1342,6 +1342,14 @@ class TemperatureController {
     this.updatePowerDisplay();
     this.addButtonAnimation("spa-power-btn", "success");
 
+    // Notify Daily Power Monitor about power state change
+    if (window.dailyPowerMonitor) {
+      // Small delay to ensure UI state is updated first
+      setTimeout(() => {
+        window.dailyPowerMonitor.handlePowerStateChange();
+      }, 100);
+    }
+
     // Update AC data in manager
     this.updateACDataInManager();
 
@@ -1652,14 +1660,6 @@ class TemperatureController {
           console.log(
             `Temperature adjustment logged to activity logger: ${previousTemp}°C -> ${newTemp}°C${powerInfo} (Source: ${source}, ID: ${logId})`
           );
-
-          // Update badge if UI is available
-          if (
-            window.tempActivityLogUI &&
-            window.tempActivityLogUI.updateBadge
-          ) {
-            await window.tempActivityLogUI.updateBadge();
-          }
         } else {
           console.warn(
             "Failed to log temperature adjustment to activity logger"

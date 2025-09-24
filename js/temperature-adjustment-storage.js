@@ -399,21 +399,20 @@ class TemperatureAdjustmentStorage {
 
       // Use energy efficiency manager to calculate metrics
       const efficiency =
-        await window.energyEfficiencyManager.calculateEnergyEfficiency(
+        window.energyEfficiencyManager.calculateEfficiencyForAC(
           "AC-001",
-          {
-            currentTemp: adjustmentData.currentTemp,
-            targetTemp: adjustmentData.targetTemp,
-            mode: window.tempController?.currentMode || "cool",
-            power: window.tempController?.isPowerOn || true,
-          }
+          adjustmentData.targetTemp,
+          adjustmentData.currentPower || 1000, // Power consumption
+          adjustmentData.outdoorTemp
         );
 
       return {
-        efficiencyRating: efficiency?.efficiencyRating || 0,
-        estimatedSavings: efficiency?.estimatedSavings || 0,
-        optimalTemp: efficiency?.optimalTemp || adjustmentData.targetTemp,
-        energyCost: efficiency?.energyCost || 0,
+        efficiencyRating: efficiency?.score || 0,
+        estimatedSavings: efficiency?.potentialSavings || 0,
+        optimalTemp:
+          efficiency?.recommendations?.[0]?.suggestedTemp ||
+          adjustmentData.targetTemp,
+        energyCost: efficiency?.hourlyCost || 0,
         calculatedAt: Date.now(),
       };
     } catch (error) {
