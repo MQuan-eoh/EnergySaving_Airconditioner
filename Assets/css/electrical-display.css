@@ -179,6 +179,41 @@
   }
 }
 
+/* Power monitoring indicator styles */
+.power-monitoring-indicator {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 8px;
+  padding: 2px 6px;
+  background: rgba(59, 130, 246, 0.1);
+  border-radius: 4px;
+  color: #3b82f6;
+  font-size: 10px;
+  font-weight: 500;
+  animation: pulse-monitoring 2s infinite;
+}
+
+.power-monitoring-indicator.hidden {
+  display: none;
+}
+
+.power-monitoring-indicator i {
+  font-size: 8px;
+}
+
+@keyframes pulse-monitoring {
+  0%,
+  100% {
+    opacity: 1;
+    background: rgba(59, 130, 246, 0.1);
+  }
+  50% {
+    opacity: 0.7;
+    background: rgba(59, 130, 246, 0.2);
+  }
+}
+
 @media (max-width: 480px) {
   .electrical-item {
     gap: 12px;

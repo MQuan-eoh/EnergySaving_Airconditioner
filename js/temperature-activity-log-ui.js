@@ -1053,6 +1053,7 @@ class TemperatureActivityLogUI {
                 <th>AC ID</th>
                 <th>Type</th>
                 <th>Temperature Change</th>
+                <th class="hide-mobile">Power Delta (W)</th>
                 <th class="hide-mobile">Confidence</th>
                 <th class="hide-mobile">Energy Savings</th>
                 <th class="hide-mobile">Context</th>
@@ -1073,7 +1074,7 @@ class TemperatureActivityLogUI {
 
   /**
    * RENDER TABLE ROW
-   * Render a single table row for a log entry
+   * Render a single table row for a log entry with power consumption delta
    */
   renderTableRow(log) {
     try {
@@ -1082,6 +1083,9 @@ class TemperatureActivityLogUI {
       const confidence = this.formatConfidence(log.confidence);
       const energySavings = log.energySavings ? `${log.energySavings}%` : "-";
       const context = this.formatContext(log.context);
+
+      // Format power consumption delta if available
+      const powerDelta = this.formatPowerConsumptionDelta(log);
 
       return `
         <tr class="log-entry">
@@ -1092,6 +1096,7 @@ class TemperatureActivityLogUI {
             "-"
           )}">${this.formatActivityType(log.type)}</span></td>
           <td>${tempChange}</td>
+          <td class="hide-mobile">${powerDelta}</td>
           <td class="hide-mobile">${confidence}</td>
           <td class="hide-mobile">${energySavings}</td>
           <td class="hide-mobile">${context}</td>
@@ -1099,7 +1104,7 @@ class TemperatureActivityLogUI {
       `;
     } catch (error) {
       console.error("Error rendering table row:", error);
-      return '<tr><td colspan="7">Error rendering row</td></tr>';
+      return '<tr><td colspan="8">Error rendering row</td></tr>';
     }
   }
 
@@ -1388,8 +1393,69 @@ class TemperatureActivityLogUI {
       recommendation_applied: "Recommendation",
       manual_adjustment: "Adjustment",
       successful_recommendation: "Success",
+      power_control: "Power Control",
     };
     return typeMap[type] || type;
+  }
+
+  /**
+   * FORMAT POWER CONSUMPTION DELTA
+   * Format power consumption delta for display
+   */
+  formatPowerConsumptionDelta(log) {
+    try {
+      // Check if power consumption delta data exists
+      if (
+        log.powerConsumptionDelta !== undefined &&
+        log.powerConsumptionDelta !== null
+      ) {
+        const delta = parseFloat(log.powerConsumptionDelta);
+
+        // Format delta with appropriate color coding
+        if (delta > 0) {
+          return `<span class="power-delta-increase">+${delta.toFixed(
+            1
+          )}W</span>`;
+        } else if (delta < 0) {
+          return `<span class="power-delta-decrease">${delta.toFixed(
+            1
+          )}W</span>`;
+        } else {
+          return `<span class="power-delta-neutral">0W</span>`;
+        }
+      }
+
+      // Check if power monitoring data exists
+      if (
+        log.powerMonitoringData &&
+        log.powerMonitoringData.currentDelta !== undefined
+      ) {
+        const delta = parseFloat(log.powerMonitoringData.currentDelta);
+
+        if (delta > 0) {
+          return `<span class="power-delta-increase">+${delta.toFixed(
+            1
+          )}W</span>`;
+        } else if (delta < 0) {
+          return `<span class="power-delta-decrease">${delta.toFixed(
+            1
+          )}W</span>`;
+        } else {
+          return `<span class="power-delta-neutral">0W</span>`;
+        }
+      }
+
+      // Check context for power monitoring information
+      if (log.context && log.context.powerMonitoringActive) {
+        return `<span class="power-monitoring-active">Monitoring</span>`;
+      }
+
+      // Default case - no power data
+      return `<span class="power-delta-na">-</span>`;
+    } catch (error) {
+      console.error("Error formatting power consumption delta:", error);
+      return `<span class="power-delta-error">Error</span>`;
+    }
   }
 
   getTimelineItemClass(type) {

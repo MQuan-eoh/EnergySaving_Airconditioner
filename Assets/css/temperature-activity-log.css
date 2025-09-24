@@ -1217,3 +1217,63 @@
   visibility: visible;
   transform: translateX(-50%) translateY(-4px);
 }
+
+/* Power Consumption Delta Styling */
+.power-delta-increase {
+  color: #ef4444;
+  font-weight: 600;
+  background: rgba(239, 68, 68, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.power-delta-decrease {
+  color: #10b981;
+  font-weight: 600;
+  background: rgba(16, 185, 129, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.power-delta-neutral {
+  color: #6b7280;
+  font-weight: 500;
+  background: rgba(107, 114, 128, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.power-delta-na {
+  color: #9ca3af;
+  font-style: italic;
+  font-size: 12px;
+}
+
+.power-delta-error {
+  color: #f59e0b;
+  font-weight: 500;
+  font-size: 12px;
+}
+
+.power-monitoring-active {
+  color: #3b82f6;
+  font-weight: 500;
+  background: rgba(59, 130, 246, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 12px;
+  animation: pulse-monitoring 2s infinite;
+}
+
+@keyframes pulse-monitoring {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}

@@ -26,6 +26,111 @@ let configTargetTempAir1 = null,
   currentAir1_value = null,
   voltageAir1_value = null,
   fanSpeedControl = null;
+
+// Power Consumption Delta Monitoring System
+let powerConsumptionMonitoring = {
+  isMonitoring: false,
+  baselinePowerValue: null,
+  powerOnTimestamp: null,
+  monitoringStartValue: null,
+
+  // Start monitoring when AC power turns on
+  startMonitoring() {
+    const powerValueElement = document.getElementById("spa-power-value");
+    if (powerValueElement) {
+      this.isMonitoring = true;
+      this.baselinePowerValue = parseFloat(powerValueElement.textContent) || 0;
+      this.powerOnTimestamp = new Date();
+      this.monitoringStartValue = this.baselinePowerValue;
+
+      // Show monitoring indicator
+      const monitoringIndicator = document.getElementById(
+        "power-monitoring-indicator"
+      );
+      if (monitoringIndicator) {
+        monitoringIndicator.classList.remove("hidden");
+      }
+
+      console.log(
+        `Power monitoring started - Baseline: ${
+          this.baselinePowerValue
+        }W at ${this.powerOnTimestamp.toISOString()}`
+      );
+    }
+  },
+
+  // Stop monitoring and calculate delta
+  stopMonitoring() {
+    if (!this.isMonitoring) return null;
+
+    const powerValueElement = document.getElementById("spa-power-value");
+    const currentPowerValue = powerValueElement
+      ? parseFloat(powerValueElement.textContent) || 0
+      : 0;
+    const deltaConsumption = currentPowerValue - this.monitoringStartValue;
+    const monitoringDuration = new Date() - this.powerOnTimestamp;
+
+    const monitoringResult = {
+      startValue: this.monitoringStartValue,
+      endValue: currentPowerValue,
+      deltaConsumption: deltaConsumption,
+      duration: monitoringDuration,
+      timestamp: new Date(),
+    };
+
+    // Hide monitoring indicator
+    const monitoringIndicator = document.getElementById(
+      "power-monitoring-indicator"
+    );
+    if (monitoringIndicator) {
+      monitoringIndicator.classList.add("hidden");
+    }
+
+    console.log(
+      `Power monitoring stopped - Delta: ${deltaConsumption}W over ${monitoringDuration}ms`
+    );
+
+    // Reset monitoring state
+    this.isMonitoring = false;
+    this.baselinePowerValue = null;
+    this.powerOnTimestamp = null;
+    this.monitoringStartValue = null;
+
+    return monitoringResult;
+  },
+
+  // Get current delta consumption while monitoring is active
+  getCurrentDelta() {
+    if (!this.isMonitoring) return 0;
+
+    const powerValueElement = document.getElementById("spa-power-value");
+    const currentPowerValue = powerValueElement
+      ? parseFloat(powerValueElement.textContent) || 0
+      : 0;
+    return currentPowerValue - this.monitoringStartValue;
+  },
+
+  // Reset monitoring state
+  reset() {
+    this.isMonitoring = false;
+    this.baselinePowerValue = null;
+    this.powerOnTimestamp = null;
+    this.monitoringStartValue = null;
+
+    // Hide monitoring indicator
+    const monitoringIndicator = document.getElementById(
+      "power-monitoring-indicator"
+    );
+    if (monitoringIndicator) {
+      monitoringIndicator.classList.add("hidden");
+    }
+
+    console.log("Power monitoring reset");
+  },
+};
+
+// Export power consumption monitoring globally for other components
+window.powerConsumptionMonitoring = powerConsumptionMonitoring;
 eraWidget.init({
   needRealtimeConfigs: true,
   needActions: true,
@@ -1293,8 +1398,26 @@ class TemperatureController {
     if (powerBtn) {
       if (this.isPowerOn) {
         powerBtn.classList.add("active");
+        // Start power consumption monitoring when AC turns ON
+        powerConsumptionMonitoring.startMonitoring();
       } else {
         powerBtn.classList.remove("active");
+        // Stop power consumption monitoring when AC turns OFF
+        const monitoringResult = powerConsumptionMonitoring.stopMonitoring();
+        if (monitoringResult && window.temperatureActivityLogger) {
+          // Log the power-off event with consumption data
+          window.temperatureActivityLogger.logActivity({
+            type: "power_control",
+            action: "power_off",
+            timestamp: new Date(),
+            powerConsumptionDelta: monitoringResult.deltaConsumption,
+            monitoringDuration: monitoringResult.duration,
+            powerData: {
+              startValue: monitoringResult.startValue,
+              endValue: monitoringResult.endValue,
+            },
+          });
+        }
       }
     }
 
@@ -1397,7 +1520,7 @@ class TemperatureController {
 
   /**
    * LOG MANUAL TEMPERATURE ADJUSTMENT
-   * Log manual temperature changes to activity logger
+   * Log manual temperature changes to activity logger with power consumption delta
    */
   async logManualTemperatureAdjustment(
     previousTemp,
@@ -1418,6 +1541,32 @@ class TemperatureController {
         return;
       }
 
+      // Get power consumption delta if monitoring is active
+      let powerConsumptionDelta = null;
+      let monitoringResult = null;
+
+      if (powerConsumptionMonitoring.isMonitoring) {
+        // Get current delta consumption
+        powerConsumptionDelta = powerConsumptionMonitoring.getCurrentDelta();
+
+        // Create monitoring result snapshot
+        monitoringResult = {
+          currentDelta: powerConsumptionDelta,
+          monitoringDuration:
+            new Date() - powerConsumptionMonitoring.powerOnTimestamp,
+          baselinePower: powerConsumptionMonitoring.monitoringStartValue,
+          currentPower: document.getElementById("spa-power-value")
+            ? parseFloat(
+                document.getElementById("spa-power-value").textContent
+              ) || 0
+            : 0,
+        };
+
+        console.log(
+          `Power consumption delta captured during temp adjustment: ${powerConsumptionDelta}W`
+        );
+      }
+
       // Determine adjustment type and source details
       let adjustmentType = "manual_control";
       let changedBy = "user";
@@ -1430,7 +1579,7 @@ class TemperatureController {
         changedBy = "ai_system";
       }
 
-      // Prepare log data
+      // Prepare log data with power consumption information
       const logData = {
         acId: this.acId,
         previousTemp: previousTemp,
@@ -1439,6 +1588,8 @@ class TemperatureController {
         adjustmentTime: 0, // Immediate adjustment
         changedBy: changedBy,
         relatedRecommendationId: null, // No related recommendation for manual adjustment
+        powerConsumptionDelta: powerConsumptionDelta, // New field for power delta
+        powerMonitoringData: monitoringResult, // Detailed monitoring data
         context: {
           currentTemp: this.currentTemp,
           currentMode: this.currentMode,
@@ -1447,6 +1598,10 @@ class TemperatureController {
           adjustmentType: adjustmentType,
           source: source,
           timestamp: new Date().toISOString(),
+          // Enhanced power monitoring context
+          powerMonitoringActive: powerConsumptionMonitoring.isMonitoring,
+          baselinePowerValue: powerConsumptionMonitoring.baselinePowerValue,
+          powerOnTimestamp: powerConsumptionMonitoring.powerOnTimestamp,
         },
         timestamp: Date.now(),
       };
@@ -1457,8 +1612,11 @@ class TemperatureController {
       );
 
       if (logId) {
+        const powerInfo = powerConsumptionDelta
+          ? ` (Delta: ${powerConsumptionDelta}W)`
+          : "";
         console.log(
-          `✅ Temperature adjustment logged: ${previousTemp}°C → ${newTemp}°C (Source: ${source}, ID: ${logId})`
+          `✅ Temperature adjustment logged: ${previousTemp}°C → ${newTemp}°C${powerInfo} (Source: ${source}, ID: ${logId})`
         );
 
         // Emit event for other components
