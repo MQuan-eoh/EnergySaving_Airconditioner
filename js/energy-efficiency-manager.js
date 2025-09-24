@@ -2025,7 +2025,11 @@ class EnergyEfficiencyManager {
       // Try to get weather data from multiple sources
       const weatherData = await this.getWeatherFromMultipleSources(location);
 
-      if (weatherData && weatherData.temperature && !isNaN(weatherData.temperature)) {
+      if (
+        weatherData &&
+        weatherData.temperature &&
+        !isNaN(weatherData.temperature)
+      ) {
         console.log(
           `✅ Đã lấy được nhiệt độ từ ${weatherData.source}: ${weatherData.temperature}°C`
         );
@@ -2040,7 +2044,7 @@ class EnergyEfficiencyManager {
           description: weatherData.description || "Thời tiết tốt",
           windSpeed: weatherData.windSpeed || 0,
           pressure: weatherData.pressure || 1013,
-          city: weatherData.city || location.split(',')[0],
+          city: weatherData.city || location.split(",")[0],
           source: weatherData.source,
           priority: weatherData.priority || 999,
           lastUpdated: new Date().toISOString(),
@@ -2063,7 +2067,6 @@ class EnergyEfficiencyManager {
 
         this.showWeatherLoadingIndicator(false);
         return weatherData.temperature;
-
       } else {
         throw new Error("Không thể lấy dữ liệu thời tiết từ bất kỳ API nào");
       }
@@ -2073,7 +2076,7 @@ class EnergyEfficiencyManager {
 
       // Enhanced intelligent fallback with Vietnam-specific logic
       const fallbackTemp = this.calculateVietnamIntelligentFallback();
-      
+
       // Store fallback weather info
       this.weatherInfo = {
         temperature: fallbackTemp,
@@ -2159,26 +2162,38 @@ class EnergyEfficiencyManager {
   showWeatherLoadingIndicator(show) {
     try {
       // Update any existing weather status indicators
-      const statusElements = document.querySelectorAll('.weather-status-badge, .weather-refresh-btn');
-      
-      statusElements.forEach(el => {
+      const statusElements = document.querySelectorAll(
+        ".weather-status-badge, .weather-refresh-btn"
+      );
+
+      statusElements.forEach((el) => {
         if (show) {
-          if (el.classList.contains('weather-refresh-btn')) {
+          if (el.classList.contains("weather-refresh-btn")) {
             el.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang tải...';
             el.disabled = true;
           } else {
-            el.className = 'weather-status-badge loading';
+            el.className = "weather-status-badge loading";
             el.innerHTML = '<i class="fas fa-circle"></i> Đang cập nhật';
           }
         } else {
-          if (el.classList.contains('weather-refresh-btn')) {
+          if (el.classList.contains("weather-refresh-btn")) {
             el.innerHTML = '<i class="fas fa-sync-alt"></i> Làm mới';
             el.disabled = false;
           } else {
             const tempInfo = this.getOutdoorTemperatureInfo();
-            const statusClass = tempInfo.reliability === "high" ? "online" : tempInfo.reliability === "medium" ? "loading" : "offline";
-            const statusText = tempInfo.reliability === "high" ? "Trực tuyến" : tempInfo.reliability === "medium" ? "Ổn định" : "Ngoại tuyến";
-            
+            const statusClass =
+              tempInfo.reliability === "high"
+                ? "online"
+                : tempInfo.reliability === "medium"
+                ? "loading"
+                : "offline";
+            const statusText =
+              tempInfo.reliability === "high"
+                ? "Trực tuyến"
+                : tempInfo.reliability === "medium"
+                ? "Ổn định"
+                : "Ngoại tuyến";
+
             el.className = `weather-status-badge ${statusClass}`;
             el.innerHTML = `<i class="fas fa-circle"></i> ${statusText}`;
           }
@@ -2203,7 +2218,7 @@ class EnergyEfficiencyManager {
 
     // Get enabled services sorted by priority
     const enabledServices = window.getEnabledWeatherServices();
-    
+
     if (enabledServices.length === 0) {
       console.warn("No weather services enabled");
       return null;
@@ -2212,17 +2227,25 @@ class EnergyEfficiencyManager {
     // Try each enabled API source by priority
     for (const service of enabledServices) {
       try {
-        console.log(`🌤️ Trying ${service.name} (priority ${service.priority})...`);
+        console.log(
+          `🌤️ Trying ${service.name} (priority ${service.priority})...`
+        );
         let data = null;
 
         switch (service.name) {
-          case 'OpenWeatherMap':
-            data = await this.fetchFromOpenWeatherMapEnhanced(location, service.config);
+          case "OpenWeatherMap":
+            data = await this.fetchFromOpenWeatherMapEnhanced(
+              location,
+              service.config
+            );
             break;
-          case 'WeatherAPI':
-            data = await this.fetchFromWeatherAPIEnhanced(location, service.config);
+          case "WeatherAPI":
+            data = await this.fetchFromWeatherAPIEnhanced(
+              location,
+              service.config
+            );
             break;
-          case 'Wttr.in':
+          case "Wttr.in":
             data = await this.fetchFromWttrEnhanced(location, service.config);
             break;
           default:
@@ -2231,7 +2254,9 @@ class EnergyEfficiencyManager {
         }
 
         if (data && data.temperature && !isNaN(data.temperature)) {
-          console.log(`✅ Successfully got weather from ${service.name}: ${data.temperature}°C`);
+          console.log(
+            `✅ Successfully got weather from ${service.name}: ${data.temperature}°C`
+          );
           return { ...data, source: service.name, priority: service.priority };
         }
       } catch (error) {
@@ -2272,22 +2297,28 @@ class EnergyEfficiencyManager {
    * Enhanced OpenWeatherMap API fetch with config support
    */
   async fetchFromOpenWeatherMapEnhanced(location, config) {
-    if (!config || !config.apiKey || config.apiKey === "YOUR_OPENWEATHER_API_KEY") {
+    if (
+      !config ||
+      !config.apiKey ||
+      config.apiKey === "YOUR_OPENWEATHER_API_KEY"
+    ) {
       throw new Error("OpenWeatherMap API key not configured");
     }
 
-    const url = `${config.baseUrl}?q=${encodeURIComponent(location)}&appid=${config.apiKey}&units=metric&lang=vi`;
+    const url = `${config.baseUrl}?q=${encodeURIComponent(location)}&appid=${
+      config.apiKey
+    }&units=metric&lang=vi`;
 
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
 
     try {
-      const response = await fetch(url, { 
+      const response = await fetch(url, {
         signal: controller.signal,
         headers: {
-          'Accept': 'application/json',
-          'User-Agent': 'SmartAC-Weather/1.0'
-        }
+          Accept: "application/json",
+          "User-Agent": "SmartAC-Weather/1.0",
+        },
       });
 
       clearTimeout(timeoutId);
@@ -2306,7 +2337,7 @@ class EnergyEfficiencyManager {
       const data = await response.json();
 
       // Validate response data
-      if (!data.main || typeof data.main.temp !== 'number') {
+      if (!data.main || typeof data.main.temp !== "number") {
         throw new Error("Invalid weather data received");
       }
 
@@ -2316,13 +2347,14 @@ class EnergyEfficiencyManager {
         description: data.weather[0]?.description || "Thời tiết tốt",
         windSpeed: data.wind?.speed || 0,
         pressure: data.main.pressure || 1013,
-        city: data.name || location.split(',')[0],
-        feels_like: Math.round((data.main.feels_like || data.main.temp) * 10) / 10,
+        city: data.name || location.split(",")[0],
+        feels_like:
+          Math.round((data.main.feels_like || data.main.temp) * 10) / 10,
         visibility: data.visibility ? Math.round(data.visibility / 1000) : null, // Convert to km
       };
     } catch (error) {
       clearTimeout(timeoutId);
-      if (error.name === 'AbortError') {
+      if (error.name === "AbortError") {
         throw new Error("OpenWeatherMap request timed out");
       }
       throw error;
@@ -2365,17 +2397,19 @@ class EnergyEfficiencyManager {
       throw new Error("WeatherAPI key not configured");
     }
 
-    const url = `${config.baseUrl}?key=${config.apiKey}&q=${encodeURIComponent(location)}&lang=vi`;
+    const url = `${config.baseUrl}?key=${config.apiKey}&q=${encodeURIComponent(
+      location
+    )}&lang=vi`;
 
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000);
 
     try {
-      const response = await fetch(url, { 
+      const response = await fetch(url, {
         signal: controller.signal,
         headers: {
-          'Accept': 'application/json'
-        }
+          Accept: "application/json",
+        },
       });
 
       clearTimeout(timeoutId);
@@ -2397,13 +2431,15 @@ class EnergyEfficiencyManager {
         description: data.current.condition.text || "Thời tiết tốt",
         windSpeed: (data.current.wind_kph || 0) / 3.6, // Convert to m/s
         pressure: data.current.pressure_mb || 1013,
-        city: data.location.name || location.split(',')[0],
-        feels_like: Math.round((data.current.feelslike_c || data.current.temp_c) * 10) / 10,
+        city: data.location.name || location.split(",")[0],
+        feels_like:
+          Math.round((data.current.feelslike_c || data.current.temp_c) * 10) /
+          10,
         visibility: data.current.vis_km || null,
       };
     } catch (error) {
       clearTimeout(timeoutId);
-      if (error.name === 'AbortError') {
+      if (error.name === "AbortError") {
         throw new Error("WeatherAPI request timed out");
       }
       throw error;
@@ -2415,7 +2451,9 @@ class EnergyEfficiencyManager {
    */
   async fetchFromWeatherAPI(location) {
     // WeatherAPI requires a valid key - this method is disabled until configured
-    throw new Error("WeatherAPI key chưa được cấu hình - vui lòng đăng ký tại weatherapi.com");
+    throw new Error(
+      "WeatherAPI key chưa được cấu hình - vui lòng đăng ký tại weatherapi.com"
+    );
   }
 
   /**
@@ -2428,12 +2466,12 @@ class EnergyEfficiencyManager {
     const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout for wttr
 
     try {
-      const response = await fetch(url, { 
+      const response = await fetch(url, {
         signal: controller.signal,
         headers: {
-          'Accept': 'application/json',
-          'User-Agent': 'SmartAC-Weather/1.0'
-        }
+          Accept: "application/json",
+          "User-Agent": "SmartAC-Weather/1.0",
+        },
       });
 
       clearTimeout(timeoutId);
@@ -2452,18 +2490,26 @@ class EnergyEfficiencyManager {
       const current = data.current_condition[0];
 
       return {
-        temperature: Math.round(parseFloat(current.temp_C || current.tempC || 30) * 10) / 10,
+        temperature:
+          Math.round(parseFloat(current.temp_C || current.tempC || 30) * 10) /
+          10,
         humidity: parseInt(current.humidity || 70),
-        description: current.weatherDesc?.[0]?.value || current.lang_vi?.[0]?.value || "Thời tiết tốt",
+        description:
+          current.weatherDesc?.[0]?.value ||
+          current.lang_vi?.[0]?.value ||
+          "Thời tiết tốt",
         windSpeed: parseFloat(current.windspeedKmph || 0) / 3.6, // Convert to m/s
         pressure: parseFloat(current.pressure || 1013),
         city: location.split(",")[0], // Extract city name
-        feels_like: Math.round(parseFloat(current.FeelsLikeC || current.temp_C || 30) * 10) / 10,
+        feels_like:
+          Math.round(
+            parseFloat(current.FeelsLikeC || current.temp_C || 30) * 10
+          ) / 10,
         visibility: parseFloat(current.visibility || 10), // km
       };
     } catch (error) {
       clearTimeout(timeoutId);
-      if (error.name === 'AbortError') {
+      if (error.name === "AbortError") {
         throw new Error("Wttr.in request timed out");
       }
       throw new Error(`Wttr.in error: ${error.message}`);
@@ -2491,7 +2537,11 @@ class EnergyEfficiencyManager {
       const data = await response.json();
 
       // Better data validation for wttr.in
-      if (!data.current_condition || !Array.isArray(data.current_condition) || data.current_condition.length === 0) {
+      if (
+        !data.current_condition ||
+        !Array.isArray(data.current_condition) ||
+        data.current_condition.length === 0
+      ) {
         throw new Error("Invalid weather data structure from Wttr.in");
       }
 
@@ -2506,7 +2556,7 @@ class EnergyEfficiencyManager {
         city: location.split(",")[0], // Extract city name
       };
     } catch (error) {
-      if (error.name === 'AbortError') {
+      if (error.name === "AbortError") {
         throw new Error("Wttr.in request timed out");
       }
       throw new Error(`Wttr.in error: ${error.message}`);
@@ -3771,8 +3821,67 @@ window.testAll3DWeatherIcons = () =>
 window.forceRefreshWeatherPanel = () =>
   window.energyEfficiencyManager.forceRefreshWeatherPanel();
 
-console.log("Energy Efficiency Manager initialized");
-console.log("Test commands available:");
+// NEW: Weather API testing functions
+window.testWeatherAPI = async () => {
+  console.log("🧪 Testing Weather API...");
+  const result = await window.energyEfficiencyManager.fetchWeatherTemperature();
+  console.log(`Weather API test result: ${result}°C`);
+  return result;
+};
+
+window.testAllWeatherSources = async () => {
+  console.log("🔄 Testing all weather sources...");
+  const location = "Ho Chi Minh City, Vietnam";
+
+  // Test OpenWeatherMap
+  try {
+    const owm = await window.energyEfficiencyManager.fetchFromOpenWeatherMap(
+      location
+    );
+    console.log("✅ OpenWeatherMap:", owm);
+  } catch (error) {
+    console.error("❌ OpenWeatherMap failed:", error.message);
+  }
+
+  // Test Wttr.in
+  try {
+    const wttr = await window.energyEfficiencyManager.fetchFromWttr(location);
+    console.log("✅ Wttr.in:", wttr);
+  } catch (error) {
+    console.error("❌ Wttr.in failed:", error.message);
+  }
+
+  // Test WeatherAPI (will fail without key)
+  try {
+    const wapi = await window.energyEfficiencyManager.fetchFromWeatherAPI(
+      location
+    );
+    console.log("✅ WeatherAPI:", wapi);
+  } catch (error) {
+    console.error("❌ WeatherAPI failed:", error.message);
+  }
+};
+
+window.checkWeatherConfig = () => {
+  if (window.validateWeatherConfig) {
+    const validation = window.validateWeatherConfig();
+    console.log("Weather Config Validation:", validation);
+
+    const services = window.getEnabledWeatherServices();
+    console.log("Enabled Weather Services:", services);
+
+    return { validation, services };
+  } else {
+    console.error("Weather config not loaded!");
+    return null;
+  }
+};
+
+console.log("Energy Efficiency Manager initialized with Weather API fixes");
+console.log("🌤️ Weather API Commands:");
+console.log("- testWeatherAPI() - Test current weather fetching");
+console.log("- testAllWeatherSources() - Test all weather APIs individually");
+console.log("- checkWeatherConfig() - Validate weather API configuration");
 console.log("- testWeatherPanel() - Test weather panel with random conditions");
 console.log("- testAll3DWeatherIcons() - Showcase all 3D weather icons");
 console.log(
