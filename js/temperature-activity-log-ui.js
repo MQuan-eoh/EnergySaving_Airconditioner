@@ -690,11 +690,15 @@ class TemperatureActivityLogUI {
    */
   async calculateDayEnergyStats(dayData) {
     try {
+      console.log("Calculating energy stats for day:", dayData.date, dayData);
+
       // Get AC configuration for power calculations
       const acConfig = await this.getACConfiguration(this.currentFilters.acId);
+      console.log("AC Configuration:", acConfig);
 
       // Calculate operating hours (estimate based on log frequency)
       const operatingHours = this.estimateOperatingHours(dayData.logs);
+      console.log("Operating hours:", operatingHours);
 
       // Calculate total kWh based on temperature levels and AC specifications
       const totalKwh = this.calculateDailyKwh(
@@ -702,6 +706,7 @@ class TemperatureActivityLogUI {
         operatingHours,
         acConfig
       );
+      console.log("Total kWh:", totalKwh);
 
       // Calculate baseline kWh (what would be consumed without AI recommendations)
       const baselineKwh = this.calculateBaselineKwh(
@@ -709,6 +714,7 @@ class TemperatureActivityLogUI {
         operatingHours,
         acConfig
       );
+      console.log("Baseline kWh:", baselineKwh);
 
       // Calculate energy savings percentage
       const energySavingsPercent =
@@ -721,7 +727,7 @@ class TemperatureActivityLogUI {
         ? "ai-recommended"
         : "manual-control";
 
-      return {
+      const result = {
         date: dayData.date,
         temperatureLevels: Array.from(dayData.temperatureLevels).sort(
           (a, b) => a - b
@@ -736,6 +742,9 @@ class TemperatureActivityLogUI {
         adjustments: dayData.adjustments,
         rawEnergyVN: dayData.energySavings || 0,
       };
+
+      console.log("Final energy stats result:", result);
+      return result;
     } catch (error) {
       console.error("Error calculating day energy stats:", error);
       return {
@@ -820,40 +829,116 @@ class TemperatureActivityLogUI {
    * Calculate actual kWh consumption based on temperature levels and AC specs
    */
   calculateDailyKwh(temperatureLevels, operatingHours, acConfig) {
-    if (temperatureLevels.length === 0 || operatingHours === 0) return 0;
+    try {
+      // Validate input parameters
+      if (!temperatureLevels || temperatureLevels.length === 0) {
+        console.warn("No temperature levels provided for kWh calculation");
+        return 0;
+      }
 
-    // Get average temperature used
-    const avgTemp =
-      Array.from(temperatureLevels).reduce((sum, temp) => sum + temp, 0) /
-      temperatureLevels.length;
+      if (!operatingHours || operatingHours <= 0 || isNaN(operatingHours)) {
+        console.warn(
+          "Invalid operating hours for kWh calculation:",
+          operatingHours
+        );
+        return 0;
+      }
 
-    // Calculate power consumption based on temperature efficiency
-    // Lower temperatures = higher power consumption
-    const outdoorTemp = 30; // Estimate - in real app, get from weather API
-    const tempDifference = Math.abs(outdoorTemp - avgTemp);
+      if (!acConfig || typeof acConfig !== "object") {
+        console.warn("Invalid AC configuration for kWh calculation:", acConfig);
+        return 0;
+      }
 
-    // Base power consumption (from AC specs)
-    const basePower = acConfig.nominalPower || 1200; // Watts
+      // Convert Set to Array if needed and filter out invalid temperatures
+      const tempArray = Array.from(temperatureLevels).filter(
+        (temp) =>
+          typeof temp === "number" && !isNaN(temp) && temp > 0 && temp < 50
+      );
 
-    // Power factor based on temperature difference
-    // More cooling needed = higher power consumption
-    const powerFactor = 0.5 + tempDifference / 20; // Range: 0.5 to 1.0+
+      if (tempArray.length === 0) {
+        console.warn(
+          "No valid temperature levels after filtering:",
+          temperatureLevels
+        );
+        return 0;
+      }
 
-    // Technology efficiency factor
-    const techFactors = {
-      "non-inverter": 1.0,
-      inverter: 0.85,
-      "dual-inverter": 0.75,
-    };
-    const techFactor = techFactors[acConfig.technology] || 0.85;
+      // Get average temperature used
+      const avgTemp =
+        tempArray.reduce((sum, temp) => sum + temp, 0) / tempArray.length;
 
-    // Calculate power consumption (Watts)
-    const actualPower = basePower * powerFactor * techFactor;
+      if (isNaN(avgTemp)) {
+        console.warn(
+          "Average temperature calculation resulted in NaN:",
+          tempArray
+        );
+        return 0;
+      }
 
-    // Convert to kWh (Watts * Hours / 1000)
-    const kwhConsumed = (actualPower * operatingHours) / 1000;
+      // Calculate power consumption based on temperature efficiency
+      // Lower temperatures = higher power consumption
+      const outdoorTemp = 30; // Estimate - in real app, get from weather API
+      const tempDifference = Math.abs(outdoorTemp - avgTemp);
 
-    return kwhConsumed;
+      // Base power consumption (from AC specs)
+      const basePower = acConfig.nominalPower || 1200; // Watts
+
+      if (isNaN(basePower) || basePower <= 0) {
+        console.warn("Invalid base power:", basePower);
+        return 0;
+      }
+
+      // Power factor based on temperature difference
+      // More cooling needed = higher power consumption
+      const powerFactor = 0.5 + tempDifference / 20; // Range: 0.5 to 1.0+
+
+      // Technology efficiency factor
+      const techFactors = {
+        "non-inverter": 1.0,
+        inverter: 0.85,
+        "dual-inverter": 0.75,
+      };
+      const techFactor = techFactors[acConfig.technology] || 0.85;
+
+      // Calculate power consumption (Watts)
+      const actualPower = basePower * powerFactor * techFactor;
+
+      if (isNaN(actualPower)) {
+        console.warn("Actual power calculation resulted in NaN:", {
+          basePower,
+          powerFactor,
+          techFactor,
+          avgTemp,
+          tempDifference,
+        });
+        return 0;
+      }
+
+      // Convert to kWh (Watts * Hours / 1000)
+      const kwhConsumed = (actualPower * operatingHours) / 1000;
+
+      if (isNaN(kwhConsumed)) {
+        console.warn("kWh calculation resulted in NaN:", {
+          actualPower,
+          operatingHours,
+          result: kwhConsumed,
+        });
+        return 0;
+      }
+
+      console.log("kWh calculation successful:", {
+        tempArray,
+        avgTemp,
+        operatingHours,
+        actualPower,
+        kwhConsumed: kwhConsumed.toFixed(3),
+      });
+
+      return kwhConsumed;
+    } catch (error) {
+      console.error("Error in calculateDailyKwh:", error);
+      return 0;
+    }
   }
 
   /**
@@ -861,25 +946,103 @@ class TemperatureActivityLogUI {
    * Calculate what kWh would be consumed without AI optimization
    */
   calculateBaselineKwh(temperatureLevels, operatingHours, acConfig) {
-    if (temperatureLevels.length === 0 || operatingHours === 0) return 0;
+    try {
+      // Validate input parameters
+      if (!temperatureLevels || temperatureLevels.length === 0) {
+        console.warn(
+          "No temperature levels provided for baseline kWh calculation"
+        );
+        return 0;
+      }
 
-    // Assume baseline would use less optimal temperatures (typically 2-3 degrees lower)
-    const avgTemp =
-      Array.from(temperatureLevels).reduce((sum, temp) => sum + temp, 0) /
-      temperatureLevels.length;
-    const baselineTemp = avgTemp - 2.5; // Less efficient baseline
+      if (!operatingHours || operatingHours <= 0 || isNaN(operatingHours)) {
+        console.warn(
+          "Invalid operating hours for baseline kWh calculation:",
+          operatingHours
+        );
+        return 0;
+      }
 
-    const outdoorTemp = 30;
-    const tempDifference = Math.abs(outdoorTemp - baselineTemp);
+      if (!acConfig || typeof acConfig !== "object") {
+        console.warn(
+          "Invalid AC configuration for baseline kWh calculation:",
+          acConfig
+        );
+        return 0;
+      }
 
-    const basePower = acConfig.nominalPower || 1200;
-    const powerFactor = 0.5 + tempDifference / 20;
+      // Convert Set to Array if needed and filter out invalid temperatures
+      const tempArray = Array.from(temperatureLevels).filter(
+        (temp) =>
+          typeof temp === "number" && !isNaN(temp) && temp > 0 && temp < 50
+      );
 
-    // Baseline assumes less efficient operation (no smart optimization)
-    const baselineEfficiency = 1.0; // No optimization
-    const actualPower = basePower * powerFactor * baselineEfficiency;
+      if (tempArray.length === 0) {
+        console.warn(
+          "No valid temperature levels for baseline calculation:",
+          temperatureLevels
+        );
+        return 0;
+      }
 
-    return (actualPower * operatingHours) / 1000;
+      // Assume baseline would use less optimal temperatures (typically 2-3 degrees lower)
+      const avgTemp =
+        tempArray.reduce((sum, temp) => sum + temp, 0) / tempArray.length;
+
+      if (isNaN(avgTemp)) {
+        console.warn(
+          "Baseline average temperature calculation resulted in NaN:",
+          tempArray
+        );
+        return 0;
+      }
+
+      const baselineTemp = avgTemp - 2.5; // Less efficient baseline
+
+      const outdoorTemp = 30;
+      const tempDifference = Math.abs(outdoorTemp - baselineTemp);
+
+      const basePower = acConfig.nominalPower || 1200;
+
+      if (isNaN(basePower) || basePower <= 0) {
+        console.warn("Invalid base power for baseline calculation:", basePower);
+        return 0;
+      }
+
+      const powerFactor = 0.5 + tempDifference / 20;
+
+      // Baseline assumes less efficient operation (no smart optimization)
+      const baselineEfficiency = 1.0; // No optimization
+      const actualPower = basePower * powerFactor * baselineEfficiency;
+
+      if (isNaN(actualPower)) {
+        console.warn("Baseline actual power calculation resulted in NaN:", {
+          basePower,
+          powerFactor,
+          baselineEfficiency,
+          avgTemp,
+          baselineTemp,
+          tempDifference,
+        });
+        return 0;
+      }
+
+      const baselineKwh = (actualPower * operatingHours) / 1000;
+
+      if (isNaN(baselineKwh)) {
+        console.warn("Baseline kWh calculation resulted in NaN:", {
+          actualPower,
+          operatingHours,
+          result: baselineKwh,
+        });
+        return 0;
+      }
+
+      return baselineKwh;
+    } catch (error) {
+      console.error("Error in calculateBaselineKwh:", error);
+      return 0;
+    }
   }
 
   /**
@@ -892,7 +1055,7 @@ class TemperatureActivityLogUI {
       const formattedDate = date.toLocaleDateString("vi-VN");
 
       const tempLevelsDisplay =
-        dayStats.temperatureLevels.length > 0
+        dayStats.temperatureLevels && dayStats.temperatureLevels.length > 0
           ? dayStats.temperatureLevels.map((temp) => `${temp}°C`).join(", ")
           : "No data";
 
@@ -907,10 +1070,30 @@ class TemperatureActivityLogUI {
           ? "fas fa-robot"
           : "fas fa-user";
 
+      // Validate and format operating hours
+      const operatingHours =
+        typeof dayStats.operatingHours === "number" &&
+        !isNaN(dayStats.operatingHours)
+          ? dayStats.operatingHours.toFixed(1)
+          : "0.0";
+
+      // Validate and format kWh
+      const totalKwh =
+        typeof dayStats.totalKwh === "number" && !isNaN(dayStats.totalKwh)
+          ? dayStats.totalKwh.toFixed(2)
+          : "0.00";
+
+      // Validate and format energy savings
+      const energySavingsPercent =
+        typeof dayStats.energySavingsPercent === "number" &&
+        !isNaN(dayStats.energySavingsPercent)
+          ? dayStats.energySavingsPercent
+          : 0;
+
       const savingsClass =
-        dayStats.energySavingsPercent > 0
+        energySavingsPercent > 0
           ? "savings-positive"
-          : dayStats.energySavingsPercent < 0
+          : energySavingsPercent < 0
           ? "savings-negative"
           : "savings-neutral";
 
@@ -922,10 +1105,10 @@ class TemperatureActivityLogUI {
               ${tempLevelsDisplay}
             </div>
           </td>
-          <td class="col-hours">${dayStats.operatingHours}h</td>
+          <td class="col-hours">${operatingHours}h</td>
           <td class="col-kwh">
             <div class="kwh-display">
-              <span class="kwh-value">${dayStats.totalKwh}</span>
+              <span class="kwh-value">${totalKwh}</span>
               <span class="kwh-unit">kWh</span>
             </div>
           </td>
@@ -937,15 +1120,13 @@ class TemperatureActivityLogUI {
           </td>
           <td class="col-savings">
             <span class="savings-value ${savingsClass}">
-              ${dayStats.energySavingsPercent >= 0 ? "+" : ""}${
-        dayStats.energySavingsPercent
-      }%
+              ${energySavingsPercent >= 0 ? "+" : ""}${energySavingsPercent}%
             </span>
           </td>
         </tr>
       `;
     } catch (error) {
-      console.error("Error rendering energy stats row:", error);
+      console.error("Error rendering energy stats row:", error, dayStats);
       return '<tr><td colspan="6">Error rendering data</td></tr>';
     }
   }
@@ -955,25 +1136,106 @@ class TemperatureActivityLogUI {
    */
 
   calculateAverageConsumption(dailyData) {
-    if (dailyData.length === 0) return "0.0";
-    const totalKwh = dailyData.reduce((sum, day) => sum + day.totalKwh, 0);
-    return (totalKwh / dailyData.length).toFixed(1);
+    try {
+      if (!dailyData || dailyData.length === 0) {
+        console.warn("No daily data for average consumption calculation");
+        return "0.0";
+      }
+
+      // Filter out invalid kWh values
+      const validData = dailyData.filter(
+        (day) =>
+          day &&
+          typeof day.totalKwh === "number" &&
+          !isNaN(day.totalKwh) &&
+          day.totalKwh >= 0
+      );
+
+      if (validData.length === 0) {
+        console.warn("No valid kWh data for average consumption calculation");
+        return "0.0";
+      }
+
+      const totalKwh = validData.reduce((sum, day) => sum + day.totalKwh, 0);
+      const average = totalKwh / validData.length;
+
+      if (isNaN(average)) {
+        console.warn("Average consumption calculation resulted in NaN:", {
+          totalKwh,
+          count: validData.length,
+        });
+        return "0.0";
+      }
+
+      return average.toFixed(1);
+    } catch (error) {
+      console.error("Error calculating average consumption:", error);
+      return "0.0";
+    }
   }
 
   calculateTotalSavings(dailyData) {
-    if (dailyData.length === 0) return "0.0";
-    const avgSavings =
-      dailyData.reduce((sum, day) => sum + day.energySavingsPercent, 0) /
-      dailyData.length;
-    return avgSavings.toFixed(1);
+    try {
+      if (!dailyData || dailyData.length === 0) {
+        console.warn("No daily data for total savings calculation");
+        return "0.0";
+      }
+
+      // Filter out invalid savings values
+      const validData = dailyData.filter(
+        (day) =>
+          day &&
+          typeof day.energySavingsPercent === "number" &&
+          !isNaN(day.energySavingsPercent)
+      );
+
+      if (validData.length === 0) {
+        console.warn("No valid savings data for total savings calculation");
+        return "0.0";
+      }
+
+      const avgSavings =
+        validData.reduce((sum, day) => sum + day.energySavingsPercent, 0) /
+        validData.length;
+
+      if (isNaN(avgSavings)) {
+        console.warn("Total savings calculation resulted in NaN");
+        return "0.0";
+      }
+
+      return avgSavings.toFixed(1);
+    } catch (error) {
+      console.error("Error calculating total savings:", error);
+      return "0.0";
+    }
   }
 
   calculateRecommendationUsage(dailyData) {
-    if (dailyData.length === 0) return "0";
-    const recommendedDays = dailyData.filter(
-      (day) => day.hasRecommendations
-    ).length;
-    return Math.round((recommendedDays / dailyData.length) * 100);
+    try {
+      if (!dailyData || dailyData.length === 0) {
+        console.warn("No daily data for recommendation usage calculation");
+        return "0";
+      }
+
+      const recommendedDays = dailyData.filter(
+        (day) =>
+          day &&
+          typeof day.hasRecommendations === "boolean" &&
+          day.hasRecommendations
+      ).length;
+
+      const usage = Math.round((recommendedDays / dailyData.length) * 100);
+
+      if (isNaN(usage)) {
+        console.warn("Recommendation usage calculation resulted in NaN");
+        return "0";
+      }
+
+      return usage.toString();
+    } catch (error) {
+      console.error("Error calculating recommendation usage:", error);
+      return "0";
+    }
   }
   async renderStatistics() {
     try {

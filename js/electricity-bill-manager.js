@@ -43,6 +43,9 @@ class ElectricityBillManager {
     this.calendarExpanded = true; // Default expanded to show full calendar
     this.expandAnimationDuration = 300; // Animation duration in milliseconds
 
+    // Validate initial working config
+    this.validateWorkingConfig();
+
     ElectricityBillManager.instance = this;
     console.log("Electricity Bill Manager initialized");
   }
@@ -1365,6 +1368,15 @@ class ElectricityBillManager {
   calculateWorkingDays() {
     if (!this.selectedDate) return 0;
 
+    // Ensure workingDays is always an array
+    if (!Array.isArray(this.workingConfig.workingDays)) {
+      console.warn(
+        "workingConfig.workingDays is not an array, resetting to default:",
+        this.workingConfig.workingDays
+      );
+      this.workingConfig.workingDays = [1, 2, 3, 4, 5];
+    }
+
     const year = this.selectedDate.getFullYear();
     const month = this.selectedDate.getMonth();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
@@ -1391,7 +1403,13 @@ class ElectricityBillManager {
         selectedDays.push(parseInt(checkbox.value));
       });
 
-    this.workingConfig.workingDays = selectedDays;
+    // Ensure selectedDays is a valid array before assigning
+    this.workingConfig.workingDays =
+      Array.isArray(selectedDays) && selectedDays.length > 0
+        ? selectedDays
+        : [1, 2, 3, 4, 5];
+
+    console.log("Updated working days:", this.workingConfig.workingDays);
     this.updateSelectionInfo();
 
     console.log("Working days updated:", selectedDays);
@@ -1514,7 +1532,16 @@ class ElectricityBillManager {
       const billAmount = data.amount || data.billAmount || 0;
       const powerConsumption = data.kwh || data.powerConsumption || 0;
       const hoursPerDay = data.hoursPerDay || 8;
-      const workingDays = data.workingDays || [1, 2, 3, 4, 5];
+
+      // Ensure workingDays is always an array
+      let workingDays = data.workingDays || [1, 2, 3, 4, 5];
+      if (!Array.isArray(workingDays)) {
+        console.warn(
+          "workingDays is not an array, resetting to default:",
+          workingDays
+        );
+        workingDays = [1, 2, 3, 4, 5];
+      }
 
       // Populate form with existing data
       document.getElementById("bill-amount").value = billAmount;
@@ -2655,6 +2682,69 @@ class ElectricityBillManager {
 
   unsubscribe(observer) {
     this.observers = this.observers.filter((obs) => obs !== observer);
+  }
+
+  /**
+   * VALIDATE WORKING CONFIG
+   * Ensure working configuration data is valid
+   */
+  validateWorkingConfig() {
+    try {
+      // Validate workingDays is an array
+      if (!Array.isArray(this.workingConfig.workingDays)) {
+        console.warn(
+          "Invalid workingDays detected, resetting to default:",
+          this.workingConfig.workingDays
+        );
+        this.workingConfig.workingDays = [1, 2, 3, 4, 5];
+      }
+
+      // Validate workingDays contains valid day numbers (0-6)
+      const validDays = this.workingConfig.workingDays.filter(
+        (day) => typeof day === "number" && day >= 0 && day <= 6
+      );
+
+      if (validDays.length !== this.workingConfig.workingDays.length) {
+        console.warn(
+          "Invalid day numbers in workingDays, filtering:",
+          this.workingConfig.workingDays
+        );
+        this.workingConfig.workingDays =
+          validDays.length > 0 ? validDays : [1, 2, 3, 4, 5];
+      }
+
+      // Validate hoursPerDay is a valid number
+      if (
+        typeof this.workingConfig.hoursPerDay !== "number" ||
+        this.workingConfig.hoursPerDay <= 0 ||
+        this.workingConfig.hoursPerDay > 24
+      ) {
+        console.warn(
+          "Invalid hoursPerDay detected, resetting to default:",
+          this.workingConfig.hoursPerDay
+        );
+        this.workingConfig.hoursPerDay = 8;
+      }
+
+      // Validate isFlexible is boolean
+      if (typeof this.workingConfig.isFlexible !== "boolean") {
+        console.warn(
+          "Invalid isFlexible detected, resetting to default:",
+          this.workingConfig.isFlexible
+        );
+        this.workingConfig.isFlexible = false;
+      }
+
+      console.log("Working config validated:", this.workingConfig);
+    } catch (error) {
+      console.error("Error validating working config:", error);
+      // Reset to safe defaults
+      this.workingConfig = {
+        workingDays: [1, 2, 3, 4, 5],
+        hoursPerDay: 8,
+        isFlexible: false,
+      };
+    }
   }
 
   notify(event, data) {

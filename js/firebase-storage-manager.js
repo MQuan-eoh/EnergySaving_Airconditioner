@@ -75,7 +75,7 @@ class FirebaseStorageManager {
       }
 
       // Auto sign-in (works with or without Firebase)
-      await this.autoSignIn();
+
 
       // Try to restore cached user session
       await this.restoreUserSession();
@@ -89,52 +89,10 @@ class FirebaseStorageManager {
     } catch (error) {
       console.error("Storage Manager initialization failed:", error);
       // Still initialize in offline mode
-      await this.autoSignIn();
+
       this.initialized = true;
       this.showNotification("Chạy ở chế độ offline", "warning");
       return false;
-    }
-  }
-
-  /**
-   * AUTHENTICATION METHODS
-   * Simplified approach: Auto-create anonymous user or use device ID
-   */
-  async autoSignIn() {
-    try {
-      // Try to get cached device ID first
-      const deviceId = this.getOrCreateDeviceId();
-
-      // Option 1: Use Anonymous Authentication (recommended)
-      if (this.auth) {
-        const result = await this.auth.signInAnonymously();
-        this.currentUser = result.user;
-        this.cacheUserSession(this.currentUser);
-        console.log("Auto signed-in anonymously:", this.currentUser.uid);
-        return this.currentUser;
-      } else {
-        // Option 2: Use Device ID as fallback
-        this.currentUser = {
-          uid: deviceId,
-          isAnonymous: true,
-          deviceBased: true,
-        };
-        this.cacheUserSession(this.currentUser);
-        console.log("Using device-based authentication:", deviceId);
-        return this.currentUser;
-      }
-    } catch (error) {
-      console.error("Auto sign-in failed:", error);
-      // Fallback to device ID
-      const deviceId = this.getOrCreateDeviceId();
-      this.currentUser = {
-        uid: deviceId,
-        isAnonymous: true,
-        deviceBased: true,
-      };
-      this.cacheUserSession(this.currentUser);
-      console.log("Fallback to device ID:", deviceId);
-      return this.currentUser;
     }
   }
 
@@ -158,64 +116,6 @@ class FirebaseStorageManager {
 
     return deviceId;
   }
-
-  /**
-   * MANUAL GOOGLE SIGN-IN (Optional - for data sync between devices)
-   */
-  async signInWithGoogle() {
-    try {
-      if (!this.auth) {
-        throw new Error("Firebase Auth not available");
-      }
-
-      const provider = new firebase.auth.GoogleAuthProvider();
-      const result = await this.auth.signInWithPopup(provider);
-
-      // Migrate device data to Google account
-      const oldDeviceData = await this.loadBillData();
-
-      this.currentUser = result.user;
-      this.cacheUserSession(this.currentUser);
-
-      // Migrate old data to new account
-      if (oldDeviceData && oldDeviceData.size > 0) {
-        await this.saveBillData(oldDeviceData);
-        this.showNotification(
-          `Chào mừng ${this.currentUser.displayName}! Đã chuyển ${oldDeviceData.size} tháng dữ liệu.`,
-          "success"
-        );
-      } else {
-        this.showNotification(
-          `Chào mừng ${this.currentUser.displayName}!`,
-          "success"
-        );
-      }
-
-      return this.currentUser;
-    } catch (error) {
-      console.error("Google sign-in failed:", error);
-      this.showNotification(
-        "Đăng nhập Google thất bại. Tiếp tục với tài khoản hiện tại.",
-        "warning"
-      );
-      return null;
-    }
-  }
-
-  async signOut() {
-    try {
-      if (this.auth && this.currentUser && !this.currentUser.deviceBased) {
-        await this.auth.signOut();
-      }
-
-      // Switch back to device-based authentication
-      await this.autoSignIn();
-      this.showNotification("Đã chuyển về tài khoản thiết bị!", "success");
-    } catch (error) {
-      console.error("Sign-out failed:", error);
-    }
-  }
-
   /**
    * DATA STORAGE METHODS
    * Enhanced to work with new Air Conditioner structure
