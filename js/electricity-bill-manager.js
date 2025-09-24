@@ -1042,6 +1042,11 @@ class ElectricityBillManager {
     this.updateCalendar();
     this.updateNavigationDisplay();
 
+    // Update compact view content for the new year
+    if (!this.calendarExpanded) {
+      this.updateCompactViewContent();
+    }
+
     // Auto-select day 1 of the new year/month
     this.autoSelectDay1();
   }
@@ -1050,6 +1055,11 @@ class ElectricityBillManager {
     this.currentDate.setMonth(this.currentDate.getMonth() + direction);
     this.updateCalendar();
     this.updateNavigationDisplay();
+
+    // Update compact view content for the new month
+    if (!this.calendarExpanded) {
+      this.updateCompactViewContent();
+    }
 
     // Auto-select day 1 of the new month
     this.autoSelectDay1();
@@ -1218,13 +1228,33 @@ class ElectricityBillManager {
       const currentDayNumber = compactCurrentDay.querySelector(
         ".current-day-number"
       );
-      if (currentDayNumber) {
-        // Show current day if we're viewing current month, otherwise show day 1
+      const currentDayLabel =
+        compactCurrentDay.querySelector(".current-day-label");
+
+      if (currentDayNumber && currentDayLabel) {
+        // Check if we're viewing current month
         const isCurrentMonth =
           this.currentDate.getMonth() === today.getMonth() &&
           this.currentDate.getFullYear() === today.getFullYear();
 
-        currentDayNumber.textContent = isCurrentMonth ? today.getDate() : "1";
+        console.log("Updating compact day display:", {
+          currentMonth: this.currentDate.getMonth() + 1,
+          currentYear: this.currentDate.getFullYear(),
+          todayMonth: today.getMonth() + 1,
+          todayYear: today.getFullYear(),
+          isCurrentMonth,
+        });
+
+        if (isCurrentMonth) {
+          // Show current day and "Hôm nay" label for current month
+          currentDayNumber.textContent = today.getDate();
+          currentDayLabel.textContent = "Hôm nay";
+          currentDayLabel.style.display = "block";
+        } else {
+          // Show day 1 and hide "Hôm nay" label for other months
+          currentDayNumber.textContent = "1";
+          currentDayLabel.style.display = "none";
+        }
       }
     }
 
