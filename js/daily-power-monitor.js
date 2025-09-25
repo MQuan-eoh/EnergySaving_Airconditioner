@@ -26,6 +26,9 @@ class DailyPowerMonitor {
     this.currentDayData = null;
     this.monitoringSession = null;
     this.storageManager = null;
+    this.dashboardUpdateInterval = null; // Add dashboard update interval
+    this.powerStateDebounceTimer = null; // Add debounce timer for power state changes
+    this.devicePowerDebounceTimer = null; // Add debounce timer for device power changes
 
     // Power tracking configuration
     this.powerTrackingConfig = {
@@ -70,7 +73,9 @@ class DailyPowerMonitor {
             );
           }
 
-          window.dailyPowerMonitor.init();
+          window.dailyPowerMonitor.init().then(() => {
+            this.integratePowerButtonMonitoring();
+          });
         }, 1000); // 1 second delay
       });
     } else {
@@ -93,7 +98,9 @@ class DailyPowerMonitor {
           );
         }
 
-        window.dailyPowerMonitor.init();
+        window.dailyPowerMonitor.init().then(() => {
+          this.integratePowerButtonMonitoring();
+        });
       }, 1000); // 1 second delay
     }
   }
@@ -193,53 +200,173 @@ class DailyPowerMonitor {
   /**
    * SETUP POWER BUTTON MONITORING
    * Monitor power button state changes for monitoring control
+   * FIXED: Avoid interference with E-RA device synchronization
    */
   setupPowerButtonMonitoring() {
-    // Hook into existing power button events by overriding the handlePowerToggle method
-    // This is already handled in eRaServices-controls.js via direct call to handlePowerStateChange()
-
-    // Add fallback direct monitoring as backup
-    const powerBtn = document.getElementById(
-      this.powerTrackingConfig.powerButtonElement
+    // PRIMARY: Let eRaServices-controls.js handle power button events
+    // Daily Monitor will receive notifications via handlePowerStateChange() calls
+    console.log(
+      "Power monitoring integrated with E-RA services - no direct button monitoring needed"
     );
 
-    if (powerBtn) {
-      // Add click event listener as backup
-      powerBtn.addEventListener("click", () => {
-        // Add delay to let power state update first
-        setTimeout(() => {
-          this.handlePowerStateChange();
-        }, 200);
+    // BACKUP: Monitor global device data changes instead of button clicks
+    if (window.globalDeviceDataManager) {
+      window.globalDeviceDataManager.subscribe((deviceData) => {
+        if (
+          deviceData &&
+          deviceData.power !== null &&
+          deviceData.power !== undefined
+        ) {
+          console.log(
+            `Daily Monitor received device power update: ${deviceData.power}`
+          );
+          // Use device data change instead of button clicks
+          this.handleDevicePowerChange(deviceData.power);
+        }
       });
+      console.log(
+        "Daily Monitor subscribed to device data updates for power monitoring"
+      );
+    }
 
-      console.log("Power button direct monitoring setup as backup");
-    } else {
-      console.warn("Power button element not found - will retry in 2 seconds");
+    // FALLBACK: Only setup direct monitoring if E-RA integration fails
+    this.setupFallbackPowerMonitoring();
+  }
 
-      // Retry after DOM is fully loaded
+  /**
+   * HANDLE DEVICE POWER CHANGE FROM E-RA DATA
+   * Handles power state changes from actual device data (more reliable)
+   */
+  handleDevicePowerChange(powerState) {
+    console.log(
+      `Device power changed via E-RA data: ${powerState ? "ONLINE" : "OFFLINE"}`
+    );
+
+    // Add small debounce for device data changes
+    if (this.devicePowerDebounceTimer) {
+      clearTimeout(this.devicePowerDebounceTimer);
+    }
+
+    this.devicePowerDebounceTimer = setTimeout(() => {
+      if (powerState) {
+        this.startDailyMonitoring();
+      } else {
+        this.stopDailyMonitoring();
+      }
+    }, 100); // Shorter debounce for device data (100ms)
+  }
+
+  /**
+   * SETUP FALLBACK POWER MONITORING
+   * Only used when E-RA integration is not available
+   */
+  setupFallbackPowerMonitoring() {
+    const powerBtn = document.getElementById("spa-power-btn");
+
+    if (powerBtn) {
+      // Only add event listener if E-RA integration is not working
       setTimeout(() => {
-        this.setupPowerButtonMonitoring();
+        if (!window.globalDeviceDataManager || !window.deviceDataReceived) {
+          console.log(
+            "E-RA integration not available - setting up fallback power monitoring"
+          );
+
+          powerBtn.addEventListener("click", () => {
+            // Add delay to let E-RA services handle the update first
+            setTimeout(() => {
+              this.handlePowerStateChange();
+            }, 300);
+          });
+        } else {
+          console.log(
+            "E-RA integration working - fallback power monitoring not needed"
+          );
+        }
       }, 2000);
+    } else {
+      console.warn(
+        "Power button element (spa-power-btn) not found for fallback monitoring"
+      );
     }
   }
 
   /**
    * HANDLE POWER STATE CHANGE
    * Main handler for power button state changes
+   * FIXED: Add device data priority and debounced state checking
    */
   handlePowerStateChange() {
-    const powerBtn = document.getElementById(
-      this.powerTrackingConfig.powerButtonElement
-    );
-    const isACOnline = powerBtn && powerBtn.classList.contains("active");
+    // PRIORITY 1: Check E-RA device data first (most reliable source)
+    const devicePowerState = this.getDevicePowerState();
+
+    // PRIORITY 2: Check UI button state as fallback
+    const powerBtn = document.getElementById("spa-power-btn");
+    const uiPowerState = powerBtn && powerBtn.classList.contains("active");
+
+    // Use device data if available, otherwise fallback to UI state
+    const isACOnline =
+      devicePowerState !== null ? devicePowerState : uiPowerState;
 
     console.log(`Power state changed: AC ${isACOnline ? "ONLINE" : "OFFLINE"}`);
+    console.log(
+      `- Device state: ${devicePowerState !== null ? devicePowerState : "N/A"}`
+    );
+    console.log(`- UI state: ${uiPowerState}`);
+    console.log(`- Selected state: ${isACOnline}`);
 
-    if (isACOnline) {
-      this.startDailyMonitoring();
-    } else {
-      this.stopDailyMonitoring();
+    // Add debounce to prevent rapid state changes during system initialization
+    if (this.powerStateDebounceTimer) {
+      clearTimeout(this.powerStateDebounceTimer);
     }
+
+    this.powerStateDebounceTimer = setTimeout(() => {
+      if (isACOnline) {
+        this.startDailyMonitoring();
+      } else {
+        this.stopDailyMonitoring();
+      }
+    }, 500); // 500ms debounce delay
+  }
+
+  /**
+   * GET DEVICE POWER STATE FROM E-RA DATA
+   * Prioritize actual device data over UI state
+   */
+  getDevicePowerState() {
+    // Check global device data manager first (E-RA source)
+    if (
+      window.globalDeviceDataManager &&
+      window.globalDeviceDataManager.getDeviceData
+    ) {
+      const deviceData = window.globalDeviceDataManager.getDeviceData();
+      if (
+        deviceData &&
+        deviceData.power !== null &&
+        deviceData.power !== undefined
+      ) {
+        console.log(`Device power state from E-RA: ${deviceData.power}`);
+        return deviceData.power;
+      }
+    }
+
+    // Check latest device values as fallback
+    if (window.latestDeviceValues && window.latestDeviceValues.power !== null) {
+      console.log(
+        `Device power state from latest values: ${window.latestDeviceValues.power}`
+      );
+      return window.latestDeviceValues.power;
+    }
+
+    // Check temperature controller state
+    if (window.tempController && window.tempController.isPowerOn !== null) {
+      console.log(
+        `Device power state from temp controller: ${window.tempController.isPowerOn}`
+      );
+      return window.tempController.isPowerOn;
+    }
+
+    console.log("No reliable device power state found - will use UI state");
+    return null; // No reliable device state found
   }
 
   /**
@@ -407,12 +534,11 @@ class DailyPowerMonitor {
    * Extract current power consumption from DOM element
    */
   getCurrentPowerValue() {
-    const powerElement = document.getElementById(
-      this.powerTrackingConfig.powerValueElement
-    );
+    // Use correct element ID from spa_app.html
+    const powerElement = document.getElementById("spa-power-value");
 
     if (!powerElement) {
-      console.warn("Power value element not found");
+      console.warn("Power value element (spa-power-value) not found");
       return 0;
     }
 
@@ -548,7 +674,7 @@ class DailyPowerMonitor {
 
   /**
    * SAVE DAILY DATA TO FIREBASE
-   * Store daily power consumption data to Firebase
+   * Store daily power consumption data to Firebase with Temperature Storage integration
    */
   async saveDailyDataToFirebase() {
     if (!this.storageManager || !this.currentDayData) {
@@ -593,6 +719,34 @@ class DailyPowerMonitor {
       };
 
       await this.storageManager.saveData(firebasePath, firebaseData);
+
+      // Also integrate with Temperature Adjustment Storage for cross-reference
+      if (
+        window.temperatureAdjustmentStorage &&
+        window.temperatureAdjustmentStorage.logTemperatureAdjustment
+      ) {
+        try {
+          await window.temperatureAdjustmentStorage.logTemperatureAdjustment({
+            targetTemp: 22, // Default temp for power monitoring log
+            adjustmentType: "power_monitoring",
+            adjustedBy: "daily_power_monitor",
+            kwh: this.currentDayData.totalKwh,
+            powerDelta: this.getCurrentPowerValue(),
+            notes: `Daily power monitoring data: ${firebaseData.totalKwh.toFixed(
+              3
+            )}kWh, ${firebaseData.totalOperatingHours.toFixed(2)}h`,
+          });
+
+          console.log(
+            "Daily power data also logged to Temperature Adjustment Storage"
+          );
+        } catch (tempStorageError) {
+          console.warn(
+            "Failed to log to Temperature Adjustment Storage:",
+            tempStorageError
+          );
+        }
+      }
 
       console.log(`Daily data saved to Firebase: ${firebasePath}`);
       console.log(
@@ -725,7 +879,7 @@ class DailyPowerMonitor {
     }
   }
 
-  // Create Dashboard UI
+  // Create Dashboard UI with proper IDs and real-time data
   createDashboardUI(currentStats, historicalData) {
     // Remove existing dashboard
     const existingDashboard = document.getElementById("daily-power-dashboard");
@@ -733,7 +887,7 @@ class DailyPowerMonitor {
       existingDashboard.remove();
     }
 
-    // Create dashboard HTML
+    // Create dashboard HTML with unique IDs for each element
     const dashboardHTML = `
       <div id="daily-power-dashboard" class="modal-overlay">
         <div class="modal-container daily-power-modal">
@@ -747,16 +901,16 @@ class DailyPowerMonitor {
           <div class="modal-body">
             <!-- Current Day Stats -->
             <div class="current-day-section">
-              <h3>Hôm Nay - ${
+              <h3 id="daily-power-current-date">Hôm Nay - ${
                 currentStats
                   ? currentStats.date
                   : new Date().toISOString().split("T")[0]
               }</h3>
               <div class="stats-grid">
-                <div class="stat-card">
-                  <div class="stat-icon"><i class="fas fa-power-off"></i></div>
+                <div class="stat-card" id="operating-hours-card">
+                  <div class="stat-icon"><i class="fas fa-clock"></i></div>
                   <div class="stat-content">
-                    <div class="stat-value">${
+                    <div class="stat-value" id="daily-operating-hours">${
                       currentStats
                         ? currentStats.totalOperatingHours.toFixed(1)
                         : "0.0"
@@ -765,68 +919,110 @@ class DailyPowerMonitor {
                   </div>
                 </div>
                 
-                <div class="stat-card">
+                <div class="stat-card" id="kwh-consumption-card">
                   <div class="stat-icon"><i class="fas fa-bolt"></i></div>
                   <div class="stat-content">
-                    <div class="stat-value">${
+                    <div class="stat-value" id="daily-kwh-consumption">${
                       currentStats ? currentStats.totalKwh.toFixed(3) : "0.000"
                     }</div>
                     <div class="stat-label">kWh Tiêu Thụ</div>
                   </div>
                 </div>
                 
-                <div class="stat-card">
+                <div class="stat-card" id="average-power-card">
                   <div class="stat-icon"><i class="fas fa-tachometer-alt"></i></div>
                   <div class="stat-content">
-                    <div class="stat-value">${
+                    <div class="stat-value" id="daily-average-power">${
                       currentStats ? Math.round(currentStats.averagePower) : "0"
                     }</div>
                     <div class="stat-label">Công Suất TB (W)</div>
                   </div>
                 </div>
                 
-                <div class="stat-card">
+                <div class="stat-card" id="peak-power-card">
                   <div class="stat-icon"><i class="fas fa-chart-line"></i></div>
                   <div class="stat-content">
-                    <div class="stat-value">${
+                    <div class="stat-value" id="daily-peak-power">${
                       currentStats ? Math.round(currentStats.peakPower) : "0"
                     }</div>
                     <div class="stat-label">Công Suất Peak (W)</div>
                   </div>
                 </div>
                 
-                <div class="stat-card">
+                <div class="stat-card" id="sessions-count-card">
                   <div class="stat-icon"><i class="fas fa-play"></i></div>
                   <div class="stat-content">
-                    <div class="stat-value">${
+                    <div class="stat-value" id="daily-sessions-count">${
                       currentStats ? currentStats.sessionsCount : "0"
                     }</div>
                     <div class="stat-label">Số Lần Bật</div>
                   </div>
                 </div>
                 
-                <div class="stat-card monitoring-status">
+                <div class="stat-card monitoring-status" id="monitoring-status-card">
                   <div class="stat-icon">
                     <i class="fas ${
                       currentStats && currentStats.isMonitoring
-                        ? "fa-circle"
-                        : "fa-circle-o"
-                    }"></i>
+                        ? "fa-circle text-success"
+                        : "fa-circle-o text-muted"
+                    }" id="monitoring-status-icon"></i>
                   </div>
                   <div class="stat-content">
-                    <div class="stat-value">${
+                    <div class="stat-value" id="monitoring-status-text">${
                       currentStats && currentStats.isMonitoring
-                        ? "ACTIVE"
-                        : "STOPPED"
+                        ? "HOẠT ĐỘNG"
+                        : "TẮT"
                     }</div>
                     <div class="stat-label">Trạng Thái Monitor</div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Real-time Electrical Values -->
+              <div class="real-time-section" id="real-time-section">
+                <h4>Giá Trị Thời Gian Thực</h4>
+                <div class="real-time-grid">
+                  <div class="real-time-card" id="current-power-card">
+                    <div class="real-time-icon"><i class="fas fa-bolt"></i></div>
+                    <div class="real-time-content">
+                      <div class="real-time-value" id="current-power-value">${
+                        currentStats
+                          ? Math.round(currentStats.currentPower)
+                          : "0"
+                      }</div>
+                      <div class="real-time-label">Công Suất (W)</div>
+                    </div>
+                  </div>
+                  
+                  <div class="real-time-card" id="current-amperage-card">
+                    <div class="real-time-icon"><i class="fas fa-wave-square"></i></div>
+                    <div class="real-time-content">
+                      <div class="real-time-value" id="current-amperage-value">${
+                        currentStats
+                          ? currentStats.currentAmperage.toFixed(2)
+                          : "0.00"
+                      }</div>
+                      <div class="real-time-label">Dòng Điện (A)</div>
+                    </div>
+                  </div>
+                  
+                  <div class="real-time-card" id="current-voltage-card">
+                    <div class="real-time-icon"><i class="fas fa-zap"></i></div>
+                    <div class="real-time-content">
+                      <div class="real-time-value" id="current-voltage-value">${
+                        currentStats
+                          ? Math.round(currentStats.currentVoltage)
+                          : "0"
+                      }</div>
+                      <div class="real-time-label">Điện Áp (V)</div>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
             
             <!-- Historical Data -->
-            <div class="historical-section">
+            <div class="historical-section" id="historical-section">
               <h3>7 Ngày Qua</h3>
               <div class="historical-chart" id="daily-power-historical-chart">
                 ${this.createHistoricalChartHTML(historicalData)}
@@ -834,17 +1030,21 @@ class DailyPowerMonitor {
             </div>
             
             <!-- Actions -->
-            <div class="dashboard-actions">
-              <button class="action-btn primary" onclick="window.dailyPowerMonitor.forceSave()">
+            <div class="dashboard-actions" id="dashboard-actions">
+              <button class="action-btn primary" id="force-save-btn" onclick="window.dailyPowerMonitor.forceSave()">
                 <i class="fas fa-save"></i>
                 Lưu Dữ Liệu
               </button>
-              <button class="action-btn secondary" onclick="window.dailyPowerMonitor.exportDailyData()">
+              <button class="action-btn secondary" id="export-data-btn" onclick="window.dailyPowerMonitor.exportDailyData()">
                 <i class="fas fa-download"></i>
                 Xuất Excel
               </button>
-              <button class="action-btn secondary" onclick="location.reload()">
+              <button class="action-btn info" id="refresh-data-btn" onclick="window.dailyPowerMonitor.refreshDashboardData()">
                 <i class="fas fa-sync"></i>
+                Cập Nhật
+              </button>
+              <button class="action-btn secondary" id="reload-page-btn" onclick="location.reload()">
+                <i class="fas fa-redo"></i>
                 Tải Lại
               </button>
             </div>
@@ -856,10 +1056,135 @@ class DailyPowerMonitor {
     // Add dashboard to DOM
     document.body.insertAdjacentHTML("beforeend", dashboardHTML);
 
-    // Add event listeners
+    // Add event listeners and setup real-time updates
     this.setupDashboardEvents();
+    this.startRealTimeUpdates();
 
-    console.log("Daily Power Dashboard displayed");
+    console.log(
+      "Daily Power Dashboard displayed with real-time data integration"
+    );
+  }
+
+  /**
+   * REFRESH DASHBOARD DATA
+   * Update dashboard with latest real-time data
+   */
+  async refreshDashboardData() {
+    try {
+      const currentStats = this.getCurrentDayStats();
+
+      // Update stat values
+      const elements = {
+        operatingHours: document.getElementById("daily-operating-hours"),
+        kwhConsumption: document.getElementById("daily-kwh-consumption"),
+        averagePower: document.getElementById("daily-average-power"),
+        peakPower: document.getElementById("daily-peak-power"),
+        sessionsCount: document.getElementById("daily-sessions-count"),
+        monitoringStatus: document.getElementById("monitoring-status-text"),
+        monitoringIcon: document.getElementById("monitoring-status-icon"),
+        currentPower: document.getElementById("current-power-value"),
+        currentAmperage: document.getElementById("current-amperage-value"),
+        currentVoltage: document.getElementById("current-voltage-value"),
+      };
+
+      // Update each element if it exists
+      if (elements.operatingHours) {
+        elements.operatingHours.textContent =
+          currentStats.totalOperatingHours.toFixed(1);
+      }
+      if (elements.kwhConsumption) {
+        elements.kwhConsumption.textContent = currentStats.totalKwh.toFixed(3);
+      }
+      if (elements.averagePower) {
+        elements.averagePower.textContent = Math.round(
+          currentStats.averagePower
+        );
+      }
+      if (elements.peakPower) {
+        elements.peakPower.textContent = Math.round(currentStats.peakPower);
+      }
+      if (elements.sessionsCount) {
+        elements.sessionsCount.textContent = currentStats.sessionsCount;
+      }
+      if (elements.monitoringStatus) {
+        elements.monitoringStatus.textContent = currentStats.isMonitoring
+          ? "HOẠT ĐỘNG"
+          : "TẮT";
+      }
+      if (elements.monitoringIcon) {
+        elements.monitoringIcon.className = `fas ${
+          currentStats.isMonitoring
+            ? "fa-circle text-success"
+            : "fa-circle-o text-muted"
+        }`;
+      }
+
+      // Update real-time values
+      if (elements.currentPower) {
+        elements.currentPower.textContent = Math.round(
+          currentStats.currentPower
+        );
+      }
+      if (elements.currentAmperage) {
+        elements.currentAmperage.textContent =
+          currentStats.currentAmperage.toFixed(2);
+      }
+      if (elements.currentVoltage) {
+        elements.currentVoltage.textContent = Math.round(
+          currentStats.currentVoltage
+        );
+      }
+
+      // Update timestamp
+      const timestampElement = document.getElementById(
+        "daily-power-current-date"
+      );
+      if (timestampElement) {
+        timestampElement.textContent = `Hôm Nay - ${
+          currentStats.date
+        } (Cập nhật: ${new Date().toLocaleTimeString("vi-VN")})`;
+      }
+
+      console.log("Dashboard data refreshed successfully");
+    } catch (error) {
+      console.error("Error refreshing dashboard data:", error);
+      this.showNotification("Lỗi cập nhật dữ liệu dashboard", "error");
+    }
+  }
+
+  /**
+   * START REAL-TIME UPDATES
+   * Begin periodic updates of dashboard data
+   */
+  startRealTimeUpdates() {
+    // Update every 5 seconds when dashboard is visible
+    if (this.dashboardUpdateInterval) {
+      clearInterval(this.dashboardUpdateInterval);
+    }
+
+    this.dashboardUpdateInterval = setInterval(() => {
+      const dashboard = document.getElementById("daily-power-dashboard");
+      if (dashboard && dashboard.style.display !== "none") {
+        this.refreshDashboardData();
+      } else {
+        // Stop updating if dashboard is not visible
+        this.stopRealTimeUpdates();
+      }
+    }, 5000); // Update every 5 seconds
+
+    console.log("Real-time dashboard updates started");
+  }
+
+  /**
+   * STOP REAL-TIME UPDATES
+   * Stop periodic updates
+   */
+  stopRealTimeUpdates() {
+    if (this.dashboardUpdateInterval) {
+      clearInterval(this.dashboardUpdateInterval);
+      this.dashboardUpdateInterval = null;
+      console.log("Real-time dashboard updates stopped");
+    }
   }
 
   // Create historical chart HTML
@@ -951,21 +1276,91 @@ class DailyPowerMonitor {
     this.showNotification("Chức năng xuất Excel đang được phát triển", "info");
   }
 
-  // Get current daily statistics
+  // Get current daily statistics with real-time data integration
   getCurrentDayStats() {
-    return this.currentDayData
-      ? {
-          date: this.currentDayData.date,
-          totalOperatingHours: this.currentDayData.totalOperatingHours,
-          totalKwh: this.currentDayData.totalKwh,
-          averagePower: this.currentDayData.averagePower,
-          peakPower: this.currentDayData.peakPower,
-          sessionsCount: Array.isArray(this.currentDayData.sessions)
+    try {
+      const today = new Date().toISOString().split("T")[0];
+      const powerBtn = document.getElementById("spa-power-btn");
+      const isMonitoring = powerBtn && powerBtn.classList.contains("active");
+
+      // Get real-time power values from DOM
+      const currentPowerElement = document.getElementById("spa-power-value");
+      const currentElement = document.getElementById("spa-current-value");
+      const voltageElement = document.getElementById("spa-voltage-value");
+
+      const currentPower = currentPowerElement
+        ? parseFloat(currentPowerElement.textContent) || 0
+        : 0;
+      const current = currentElement
+        ? parseFloat(currentElement.textContent) || 0
+        : 0;
+      const voltage = voltageElement
+        ? parseFloat(voltageElement.textContent) || 0
+        : 0;
+
+      // Get power button click count from temperature adjustment storage
+      let sessionsCount = 0;
+      if (
+        window.temperatureAdjustmentStorage &&
+        window.temperatureAdjustmentStorage.adjustmentData
+      ) {
+        const todayKey = `${new Date().getFullYear()}-${String(
+          new Date().getMonth() + 1
+        ).padStart(2, "0")}`;
+        const todayAdjustments =
+          window.temperatureAdjustmentStorage.adjustmentData.get(todayKey) ||
+          [];
+
+        // Filter adjustments for today and count power-related events
+        const todayDate = new Date().toDateString();
+        sessionsCount = todayAdjustments.filter((adj) => {
+          return new Date(adj.timestamp).toDateString() === todayDate;
+        }).length;
+      }
+
+      // Use current day data if available, otherwise create from real-time values
+      const stats = {
+        date: today,
+        totalOperatingHours: this.currentDayData
+          ? this.currentDayData.totalOperatingHours
+          : 0,
+        totalKwh: this.currentDayData
+          ? this.currentDayData.totalKwh
+          : currentPower * 0.001, // Convert W to kW
+        averagePower: this.currentDayData
+          ? this.currentDayData.averagePower
+          : currentPower,
+        peakPower: this.currentDayData
+          ? Math.max(this.currentDayData.peakPower, currentPower)
+          : currentPower,
+        sessionsCount:
+          this.currentDayData && this.currentDayData.sessions
             ? this.currentDayData.sessions.length
-            : 0,
-          isMonitoring: this.isMonitoringEnabled,
-        }
-      : null;
+            : Math.max(sessionsCount, isMonitoring ? 1 : 0),
+        isMonitoring: isMonitoring,
+        currentPower: currentPower,
+        currentAmperage: current,
+        currentVoltage: voltage,
+        lastUpdated: new Date(),
+      };
+
+      return stats;
+    } catch (error) {
+      console.error("Error getting current day stats:", error);
+      return {
+        date: new Date().toISOString().split("T")[0],
+        totalOperatingHours: 0,
+        totalKwh: 0,
+        averagePower: 0,
+        peakPower: 0,
+        sessionsCount: 0,
+        isMonitoring: false,
+        currentPower: 0,
+        currentAmperage: 0,
+        currentVoltage: 0,
+        lastUpdated: new Date(),
+      };
+    }
   }
 
   // Get historical data for date range
@@ -1081,6 +1476,68 @@ class DailyPowerMonitor {
       console.error("Error processing sessions:", error);
       return [];
     }
+  }
+
+  /**
+   * INTEGRATE POWER BUTTON MONITORING
+   * FIXED: Use E-RA device data subscription instead of direct button monitoring
+   */
+  integratePowerButtonMonitoring() {
+    console.log("Integrating Daily Power Monitor with E-RA power system...");
+
+    // PRIORITY 1: Subscribe to E-RA device data changes (most reliable)
+    if (window.globalDeviceDataManager) {
+      window.globalDeviceDataManager.subscribe((deviceData) => {
+        if (
+          deviceData &&
+          deviceData.power !== null &&
+          deviceData.power !== undefined
+        ) {
+          console.log(
+            `Daily Monitor: E-RA power state = ${
+              deviceData.power ? "ON" : "OFF"
+            }`
+          );
+          this.handleDevicePowerChange(deviceData.power);
+        }
+      });
+      console.log("Daily Monitor integrated with E-RA global device data");
+    }
+
+    // PRIORITY 2: Hook into temperature controller power updates
+    if (window.tempController) {
+      const originalUpdatePowerDisplay =
+        window.tempController.updatePowerDisplay;
+
+      window.tempController.updatePowerDisplay = function () {
+        // Call original method first
+        originalUpdatePowerDisplay.call(this);
+
+        // Then notify Daily Monitor
+        setTimeout(() => {
+          if (window.dailyPowerMonitor) {
+            window.dailyPowerMonitor.handleDevicePowerChange(this.isPowerOn);
+          }
+        }, 100);
+      };
+      console.log(
+        "Daily Monitor hooked into temperature controller power updates"
+      );
+    }
+
+    // PRIORITY 3: Fallback to button monitoring only if needed
+    setTimeout(() => {
+      if (!window.globalDeviceDataManager || !window.deviceDataReceived) {
+        console.log(
+          "E-RA integration not available - using fallback button monitoring"
+        );
+        this.setupFallbackPowerMonitoring();
+      } else {
+        console.log(
+          "E-RA integration active - no fallback button monitoring needed"
+        );
+      }
+    }, 3000); // Wait 3 seconds to ensure E-RA is fully initialized
   }
 }
 

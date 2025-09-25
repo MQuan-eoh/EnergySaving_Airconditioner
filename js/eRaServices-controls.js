@@ -36,7 +36,7 @@ let powerConsumptionMonitoring = {
 
   // Start monitoring when AC power turns on
   startMonitoring() {
-    const powerValueElement = document.getElementById("spa-power-value");
+    const powerValueElement = document.getElementById("spa-power-btn");
     if (powerValueElement) {
       this.isMonitoring = true;
       this.baselinePowerValue = parseFloat(powerValueElement.textContent) || 0;
@@ -908,6 +908,11 @@ class TemperatureController {
     this.current = 0;
     this.voltage = 0;
     this.powerConsumption = 0; // in KWh
+
+    // FIXED: Add device synchronization state tracking
+    this.deviceSyncInProgress = false; // Prevent UI conflicts during device sync
+    this.lastDeviceUpdateTime = null; // Track last device data update
+
     // AC Configuration Properties - integration với AC Configuration Manager
     this.hpCapacity = "2HP";
     this.technology = "inverter";
@@ -1297,8 +1302,15 @@ class TemperatureController {
 
   /**
    * UPDATE FROM DEVICE - Enhanced to handle mode
+   * FIXED: Add device sync lock to prevent UI conflicts
    */
   updateFromDevice(newTemp, newMode) {
+    console.log(`Updating from device: temp=${newTemp}, mode=${newMode}`);
+
+    // Set device sync flag to prevent UI conflicts
+    this.deviceSyncInProgress = true;
+    this.lastDeviceUpdateTime = new Date();
+
     // Handle temperature update
     if (newTemp !== null && newTemp !== undefined) {
       const oldTemp = this.currentTemp;
@@ -1331,6 +1343,12 @@ class TemperatureController {
 
     // Update AC data in SPA manager
     this.updateACDataInManager();
+
+    // Clear device sync flag after a short delay to allow UI updates to complete
+    setTimeout(() => {
+      this.deviceSyncInProgress = false;
+      console.log("Device sync completed - UI updates allowed");
+    }, 200);
   }
 
   handlePowerToggle() {
@@ -1342,12 +1360,15 @@ class TemperatureController {
     this.updatePowerDisplay();
     this.addButtonAnimation("spa-power-btn", "success");
 
-    // Notify Daily Power Monitor about power state change
+    // FIXED: Notify Daily Power Monitor using device power state, not UI state
     if (window.dailyPowerMonitor) {
-      // Small delay to ensure UI state is updated first
+      // Use device power state instead of UI state for better reliability
       setTimeout(() => {
-        window.dailyPowerMonitor.handlePowerStateChange();
-      }, 100);
+        console.log(
+          `Notifying Daily Power Monitor: Device power = ${this.isPowerOn}`
+        );
+        window.dailyPowerMonitor.handleDevicePowerChange(this.isPowerOn);
+      }, 150); // Slightly longer delay to ensure state is stable
     }
 
     // Update AC data in manager
@@ -1395,8 +1416,17 @@ class TemperatureController {
   /**
    * UPDATE POWER DISPLAY
    * Update the power button and related UI elements
+   * FIXED: Add state lock to prevent UI flickering during synchronization
    */
   updatePowerDisplay() {
+    // Check if we're currently syncing with device to avoid UI conflicts
+    if (this.deviceSyncInProgress) {
+      console.log(
+        "Device sync in progress - skipping UI update to prevent flickering"
+      );
+      return;
+    }
+
     // Update power button state
     const powerBtn = document.getElementById("spa-power-btn");
     const statusIndicator = document.getElementById("spa-status-indicator");

@@ -1,0 +1,532 @@
+/**
+ * DAILY POWER MONITOR DASHBOARD STYLES
+ * CSS styles for the daily power monitoring dashboard modal
+ */
+
+/* Daily Power Modal Overrides */
+.daily-power-modal {
+  max-width: 1000px !important;
+  width: 90vw !important;
+  max-height: 85vh !important;
+  background: rgba(15, 23, 42, 0.95) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(148, 163, 184, 0.2) !important;
+  border-radius: 12px !important;
+}
+
+.daily-power-modal .modal-header {
+  background: rgba(30, 41, 59, 0.8) !important;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.2) !important;
+  padding: 16px 20px !important;
+  border-radius: 12px 12px 0 0 !important;
+}
+
+.daily-power-modal .modal-header h2 {
+  color: #f8fafc !important;
+  font-size: 1.3rem !important;
+  font-weight: 600 !important;
+  margin: 0 !important;
+}
+
+.daily-power-modal .modal-body {
+  padding: 20px !important;
+  max-height: 65vh !important;
+  overflow-y: auto !important;
+}
+
+/* Current Day Section */
+.current-day-section {
+  margin-bottom: 24px;
+}
+
+.current-day-section h3 {
+  color: #f8fafc;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 16px;
+  text-align: center;
+  padding: 10px;
+  background: rgba(30, 41, 59, 0.6);
+  border-radius: 6px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+/* Stats Grid */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.stat-card {
+  background: rgba(30, 41, 59, 0.8) !important;
+  border: 1px solid rgba(148, 163, 184, 0.2) !important;
+  border-radius: 10px !important;
+  padding: 16px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  transition: all 0.3s ease !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  backdrop-filter: blur(10px) !important;
+}
+
+.stat-card:hover {
+  background: rgba(51, 65, 85, 0.9) !important;
+  border-color: rgba(59, 130, 246, 0.5) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3) !important;
+}
+
+.stat-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(59, 130, 246, 0.2);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.stat-icon i {
+  font-size: 1.1rem;
+  color: #60a5fa;
+}
+
+.stat-content {
+  flex: 1;
+}
+
+.stat-value {
+  font-size: 1.5rem !important;
+  font-weight: 700 !important;
+  color: #f8fafc !important;
+  margin-bottom: 2px !important;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif !important;
+}
+
+.stat-label {
+  font-size: 0.8rem !important;
+  color: #94a3b8 !important;
+  font-weight: 500 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+}
+
+/* Monitoring Status Colors */
+.monitoring-status .stat-icon {
+  background: rgba(34, 197, 94, 0.2);
+  border-color: rgba(34, 197, 94, 0.3);
+}
+
+.monitoring-status .stat-icon i.text-success {
+  color: #4ade80;
+}
+
+.monitoring-status .stat-icon i.text-muted {
+  color: #6b7280;
+  background: rgba(107, 114, 128, 0.2);
+  border-color: rgba(107, 114, 128, 0.3);
+}
+
+/* Real-time Section */
+.real-time-section {
+  margin: 20px 0;
+  padding: 16px;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 10px;
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+
+.real-time-section h4 {
+  color: #f8fafc;
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+  text-align: center;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.real-time-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+}
+
+.real-time-card {
+  background: rgba(30, 41, 59, 0.7);
+  border: 1px solid rgba(148, 163, 184, 0.15);
+  border-radius: 6px;
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.3s ease;
+}
+
+.real-time-card:hover {
+  background: rgba(51, 65, 85, 0.8);
+  border-color: rgba(34, 197, 94, 0.4);
+  transform: scale(1.02);
+}
+
+.real-time-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(34, 197, 94, 0.2);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.real-time-icon i {
+  font-size: 0.9rem;
+  color: #4ade80;
+}
+
+.real-time-content {
+  flex: 1;
+}
+
+.real-time-value {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #4ade80;
+  margin-bottom: 1px;
+  font-family: "Inter", monospace;
+}
+
+.real-time-label {
+  font-size: 0.7rem;
+  color: #94a3b8;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Historical Section */
+.historical-section {
+  margin: 20px 0;
+}
+
+.historical-section h3 {
+  color: #f8fafc;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 16px;
+  text-align: center;
+  padding: 10px;
+  background: rgba(30, 41, 59, 0.6);
+  border-radius: 6px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+/* Chart Styles */
+.historical-chart-container {
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 10px;
+  padding: 16px;
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+
+.chart-title {
+  color: #f8fafc;
+  font-size: 1rem;
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: 16px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.chart-bars {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  height: 180px;
+  padding: 0 8px;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.chart-bar-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+}
+
+.chart-bar {
+  width: 100%;
+  max-width: 35px;
+  background: rgba(59, 130, 246, 0.3);
+  border: 1px solid rgba(59, 130, 246, 0.5);
+  border-radius: 3px 3px 0 0;
+  position: relative;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  margin-bottom: 6px;
+}
+
+.chart-bar:hover {
+  background: rgba(59, 130, 246, 0.6);
+  border-color: rgba(59, 130, 246, 0.8);
+  transform: scaleY(1.05);
+}
+
+.bar-fill {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    to top,
+    rgba(59, 130, 246, 0.8),
+    rgba(59, 130, 246, 0.4)
+  );
+  border-radius: 3px 3px 0 0;
+}
+
+.chart-label {
+  text-align: center;
+  margin-top: auto;
+}
+
+.day-name {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  font-weight: 500;
+  margin-bottom: 2px;
+}
+
+.kwh-value {
+  font-size: 0.875rem;
+  color: #60a5fa;
+  font-weight: 600;
+  font-family: "Inter", monospace;
+}
+
+.chart-summary {
+  display: flex;
+  justify-content: space-around;
+  padding-top: 12px;
+  border-top: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.summary-item {
+  text-align: center;
+}
+
+.summary-label {
+  display: block;
+  font-size: 0.875rem;
+  color: #94a3b8;
+  margin-bottom: 4px;
+}
+
+.summary-value {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #60a5fa;
+  font-family: "Inter", monospace;
+}
+
+.no-data {
+  text-align: center;
+  padding: 40px;
+  color: #6b7280;
+  font-style: italic;
+  font-size: 1.125rem;
+}
+
+/* Dashboard Actions */
+.dashboard-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+  padding: 16px 0;
+  border-top: 1px solid rgba(148, 163, 184, 0.2);
+  margin-top: 20px;
+}
+
+.action-btn {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  min-width: 120px;
+  justify-content: center;
+}
+
+.action-btn.primary {
+  background: rgba(59, 130, 246, 0.9);
+  color: #ffffff;
+  border: 1px solid rgba(59, 130, 246, 0.5);
+}
+
+.action-btn.primary:hover {
+  background: rgba(37, 99, 235, 1);
+  border-color: rgba(37, 99, 235, 0.8);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
+}
+
+.action-btn.secondary {
+  background: rgba(71, 85, 105, 0.9);
+  color: #e2e8f0;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+}
+
+.action-btn.secondary:hover {
+  background: rgba(51, 65, 85, 1);
+  border-color: rgba(148, 163, 184, 0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+.action-btn.info {
+  background: rgba(34, 197, 94, 0.9);
+  color: #ffffff;
+  border: 1px solid rgba(34, 197, 94, 0.5);
+}
+
+.action-btn.info:hover {
+  background: rgba(22, 163, 74, 1);
+  border-color: rgba(22, 163, 74, 0.8);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(34, 197, 94, 0.3);
+}
+
+.action-btn i {
+  font-size: 0.9rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .daily-power-modal {
+    width: 96vw !important;
+    margin: 2vh auto !important;
+    max-height: 96vh !important;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 10px;
+  }
+
+  .stat-card {
+    padding: 12px !important;
+  }
+
+  .stat-value {
+    font-size: 1.3rem !important;
+  }
+
+  .real-time-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .chart-bars {
+    height: 140px;
+    gap: 3px;
+  }
+
+  .dashboard-actions {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .action-btn {
+    width: 100%;
+    max-width: 180px;
+  }
+}
+
+@media (max-width: 480px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .chart-summary {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .real-time-section h4 {
+    font-size: 1rem;
+  }
+
+  .real-time-value {
+    font-size: 1.25rem;
+  }
+}
+
+/* Animation for stat updates */
+@keyframes statUpdate {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.stat-value.updating {
+  animation: statUpdate 0.5s ease-in-out;
+}
+
+.real-time-value.updating {
+  animation: statUpdate 0.5s ease-in-out;
+}
+
+/* Loading states */
+.stat-card.loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.stat-card.loading .stat-value::after {
+  content: "...";
+  animation: loading 1s infinite;
+}
+
+@keyframes loading {
+  0%,
+  33% {
+    content: "";
+  }
+  34%,
+  66% {
+    content: ".";
+  }
+  67%,
+  99% {
+    content: "..";
+  }
+  100% {
+    content: "...";
+  }
+}
