@@ -38,6 +38,7 @@
     <link rel="stylesheet" href="Assets/css/weather-panel.css" />
     <link rel="stylesheet" href="Assets/css/compact-panels.css" />
     <link rel="stylesheet" href="Assets/css/electricity-bill.css" />
+    <link rel="stylesheet" href="Assets/css/power-consumption.css" />
     <!-- RL Activity Log CSS -->
     <link rel="stylesheet" href="Assets/css/temperature-activity-log.css" />
 
@@ -805,8 +806,6 @@
         font-size: 14px;
       }
 
-
-
       /* Energy Settings Content */
       .energy-settings-content {
         display: flex;
@@ -1359,7 +1358,12 @@
             >
               <i class="fas fa-chart-line"></i>
               <span class="btn-text">Activity Log</span>
-              <span class="activity-badge" id="activity-badge" style="display: none;">0</span>
+              <span
+                class="activity-badge"
+                id="activity-badge"
+                style="display: none"
+                >0</span
+              >
             </button>
             <!-- AC Settings Button -->
             <button
@@ -1516,7 +1520,10 @@
                                 >264</span
                               >
                               <span class="electrical-unit">W</span>
-                              <span class="power-monitoring-indicator hidden" id="power-monitoring-indicator">
+                              <span
+                                class="power-monitoring-indicator hidden"
+                                id="power-monitoring-indicator"
+                              >
                                 <i class="fas fa-chart-line"></i>
                                 <span>Monitoring</span>
                               </span>
@@ -1596,7 +1603,10 @@
                 <!-- Enhanced 3D Weather Panel -->
                 <div id="spa-weather-panel-container">
                   <!-- Dynamic weather panel will be inserted here by JavaScript -->
-                  <div class="weather-panel glass-effect compact" id="spa-weather-panel-fallback">
+                  <div
+                    class="weather-panel glass-effect compact"
+                    id="spa-weather-panel-fallback"
+                  >
                     <div class="weather-header">
                       <div class="weather-location">
                         <i class="fas fa-map-marker-alt"></i>
@@ -1608,7 +1618,9 @@
                     <div class="weather-main">
                       <div class="weather-temperature">
                         <div class="temp-value">30°C</div>
-                        <div class="temp-description">Đang tải thời tiết...</div>
+                        <div class="temp-description">
+                          Đang tải thời tiết...
+                        </div>
                       </div>
                       <div class="weather-icon-3d weather-icon-sunny">
                         <i class="icon-base fas fa-sun"></i>
@@ -1625,7 +1637,7 @@
                           <div class="weather-detail-value">70%</div>
                         </div>
                       </div>
-                      
+
                       <div class="weather-detail-item">
                         <div class="weather-detail-icon wind">
                           <i class="fas fa-wind"></i>
@@ -1658,7 +1670,10 @@
                     </div>
 
                     <div class="weather-actions">
-                      <button class="weather-refresh-btn" onclick="window.energyEfficiencyManager.refreshOutdoorTemp()">
+                      <button
+                        class="weather-refresh-btn"
+                        onclick="window.energyEfficiencyManager.refreshOutdoorTemp()"
+                      >
                         <i class="fas fa-sync-alt"></i>
                         Làm mới
                       </button>
@@ -1671,20 +1686,27 @@
                     </div>
 
                     <div class="weather-manual-input">
-                      <button class="manual-temp-toggle" onclick="this.classList.toggle('active'); this.nextElementSibling.classList.toggle('active')">
+                      <button
+                        class="manual-temp-toggle"
+                        onclick="this.classList.toggle('active'); this.nextElementSibling.classList.toggle('active')"
+                      >
                         <i class="fas fa-edit"></i> Nhập thủ công
                       </button>
                       <div class="manual-input-group">
                         <div class="manual-temp-controls">
-                          <input type="number" 
-                                 class="manual-temp-input" 
-                                 id="spa-manual-temp"
-                                 min="15" 
-                                 max="45" 
-                                 step="0.5"
-                                 placeholder="Nhập nhiệt độ...">
-                          <button class="manual-temp-apply" 
-                                  onclick="window.energyEfficiencyManager.setManualOutdoorTemp(document.getElementById('spa-manual-temp').value)">
+                          <input
+                            type="number"
+                            class="manual-temp-input"
+                            id="spa-manual-temp"
+                            min="15"
+                            max="45"
+                            step="0.5"
+                            placeholder="Nhập nhiệt độ..."
+                          />
+                          <button
+                            class="manual-temp-apply"
+                            onclick="window.energyEfficiencyManager.setManualOutdoorTemp(document.getElementById('spa-manual-temp').value)"
+                          >
                             Áp dụng
                           </button>
                         </div>
@@ -1879,6 +1901,85 @@
                 </div>
               </div>
             </div>
+
+            <!-- Row 3: Power Consumption Monitoring -->
+            <div class="row g-4 mb-4">
+              <div class="col-12">
+                <div class="power-consumption-section glass-effect">
+                  <div class="power-header">
+                    <div class="power-title">
+                      <i class="fas fa-bolt"></i>
+                      <h3>Power Consumption Monitoring</h3>
+                    </div>
+                    <div class="power-controls">
+                      <div class="view-mode-group">
+                        <button class="view-mode-btn active" data-mode="day">
+                          Day
+                        </button>
+                        <button class="view-mode-btn" data-mode="week">
+                          Week
+                        </button>
+                        <button class="view-mode-btn" data-mode="month">
+                          Month
+                        </button>
+                        <button class="view-mode-btn" data-mode="year">
+                          Year
+                        </button>
+                      </div>
+                      <div class="power-inputs">
+                        <input
+                          type="date"
+                          id="power-date-picker"
+                          class="glass-date-picker"
+                        />
+                        <input
+                          type="number"
+                          id="power-price-input"
+                          class="glass-price-input"
+                          placeholder="Price/kWh"
+                          title="Electricity Price (VND/kWh)"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="power-chart-container">
+                    <canvas id="power-consumption-chart"></canvas>
+                  </div>
+
+                  <div class="power-stats-footer">
+                    <div class="power-stat-card">
+                      <div class="stat-icon energy">
+                        <i class="fas fa-plug"></i>
+                      </div>
+                      <div class="stat-info">
+                        <span class="stat-label">Total Consumption</span>
+                        <div class="stat-value-wrapper">
+                          <span class="stat-value" id="power-total-consumption"
+                            >0.000</span
+                          >
+                          <span class="stat-unit">kWh</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="power-stat-card">
+                      <div class="stat-icon cost">
+                        <i class="fas fa-coins"></i>
+                      </div>
+                      <div class="stat-info">
+                        <span class="stat-label">Total Cost</span>
+                        <div class="stat-value-wrapper">
+                          <span class="stat-value" id="power-total-cost"
+                            >0</span
+                          >
+                          <span class="stat-unit">VND</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
         <!-- Page: Dashboard (AC Management) -->
@@ -2004,7 +2105,6 @@
               </tbody>
             </table>
           </div>
-
         </div>
 
         <!-- Page: Energy -->
@@ -2111,14 +2211,6 @@
     </div>
 
     <!-- AC Configuration Modal -->
-                      <!-- Dynamic content populated by AC Config Manager -->
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-
-    <!-- AC Configuration Modal -->
     <div class="modal" id="ac-config-modal">
       <div class="modal-content glass-effect">
         <div class="modal-header">
@@ -2130,17 +2222,13 @@
             <i class="fas fa-times"></i>
           </button>
         </div>
-        
+
         <form id="ac-config-form">
           <!-- AC Basic Information -->
           <div class="form-row">
             <div class="form-group">
               <label for="ac-id">AC Unit ID</label>
-              <select
-                id="ac-id"
-                class="glass-select"
-                required
-              >
+              <select id="ac-id" class="glass-select" required>
                 <option value="">Select AC Unit</option>
                 <!-- Options will be populated dynamically -->
               </select>
@@ -2348,227 +2436,6 @@
         </form>
       </div>
     </div>
-          </div>
-        </div>
-      </main>
-    </div>
-
-    <!-- Add AC Modal -->
-    <div class="modal" id="spa-add-modal">
-      <div class="modal-content glass-effect">
-        <div class="modal-header">
-          <h3>Add New Air Conditioner</h3>
-          <button class="close-btn" onclick="window.spaApp.closeAddModal()">
-            <i class="fas fa-times"></i>
-          </button>
-        </div>
-        <div class="modal-body">
-          <div class="form-group">
-            <label>AC Unit ID</label>
-            <input
-              type="text"
-              class="form-control glass-input"
-              placeholder="e.g. AC-006"
-            />
-          </div>
-          <div class="form-group">
-            <label>Location</label>
-            <input
-              type="text"
-              class="form-control glass-input"
-              placeholder="e.g. Guest Room"
-            />
-          </div>
-          <div class="form-group">
-            <label>Initial Mode</label>
-            <select class="form-control glass-select">
-              <option value="auto">Auto</option>
-              <option value="cool">Cool</option>
-              <option value="dry">Dry</option>
-              <option value="fan">Fan</option>
-            </select>
-          </div>
-          <div class="form-actions">
-            <button
-              class="dashboard-glass-btn"
-              onclick="window.spaApp.closeAddModal()"
-            >
-              Cancel
-            </button>
-            <button
-              class="dashboard-glass-btn add primary"
-              onclick="window.spaApp.saveAC()"
-            >
-              Add AC Unit
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- AC Configuration Modal -->
-    <div class="modal" id="ac-config-modal">
-      <div class="modal-content glass-effect">
-        <div class="modal-header">
-          <h3 id="config-modal-title">Configure AC Unit</h3>
-          <button
-            class="close-btn"
-            onclick="window.acConfigManager.closeConfigModal()"
-          >
-            <i class="fas fa-times"></i>
-          </button>
-        </div>
-        <div class="modal-body">
-          <form id="ac-config-form">
-            <div class="form-row">
-              <div class="form-group half-width">
-                <label for="config-ac-id">AC Unit ID</label>
-                <select id="config-ac-id" class="glass-select" required>
-                  <option value="">Select AC Unit</option>
-                  <!-- Dynamically populated -->
-                </select>
-              </div>
-              <div class="form-group half-width">
-                <label for="config-location">Location</label>
-                <input
-                  type="text"
-                  id="config-location"
-                  class="glass-input"
-                  placeholder="e.g. Living Room"
-                  readonly
-                />
-              </div>
-            </div>
-
-            <div class="form-row">
-              <div class="form-group half-width">
-                <label for="config-hp-capacity">HP Capacity</label>
-                <select id="config-hp-capacity" class="glass-select" required>
-                  <option value="">Select HP Capacity</option>
-                  <option value="1HP">1 HP (800W - 1000W)</option>
-                  <option value="1.5HP">1.5 HP (1200W - 1500W)</option>
-                  <option value="2HP">2 HP (1600W - 2000W)</option>
-                  <option value="2.5HP">2.5 HP (2000W - 2500W)</option>
-                </select>
-              </div>
-              <div class="form-group half-width">
-                <label for="config-technology">Technology Type</label>
-                <select id="config-technology" class="glass-select" required>
-                  <option value="">Select Technology</option>
-                  <option value="non-inverter">
-                    Non-Inverter (25W/°C, 70% efficiency)
-                  </option>
-                  <option value="inverter">
-                    Inverter (18W/°C, 85% efficiency)
-                  </option>
-                  <option value="dual-inverter">
-                    Dual-Inverter (15W/°C, 95% efficiency)
-                  </option>
-                </select>
-              </div>
-            </div>
-
-            <div class="form-row">
-              <div class="form-group half-width">
-                <label for="config-room-size">Room Size Category</label>
-                <select id="config-room-size" class="glass-select" required>
-                  <option value="">Select Room Size</option>
-                  <option value="small">Small (10-20m²) - Bedroom</option>
-                  <option value="medium">Medium (20-35m²) - Living Room</option>
-                  <option value="large">Large (35-50m²) - Open Space</option>
-                  <option value="xlarge">X-Large (50+m²) - Commercial</option>
-                </select>
-              </div>
-              <div class="form-group half-width">
-                <label for="config-energy-cost">Energy Cost (per kWh)</label>
-                <input
-                  type="number"
-                  id="config-energy-cost"
-                  class="glass-input"
-                  placeholder="0.12"
-                  min="0.01"
-                  max="1.00"
-                  step="0.01"
-                  value="0.12"
-                />
-              </div>
-            </div>
-
-            <!-- Power Specifications Display -->
-            <div
-              class="power-specs-display"
-              id="power-specs-display"
-              style="display: none"
-            >
-              <h4>Calculated Power Specifications</h4>
-              <div class="power-specs-grid">
-                <div class="power-spec-item">
-                  <label>Nominal Power:</label>
-                  <span id="spec-nominal-power">-</span>
-                </div>
-                <div class="power-spec-item">
-                  <label>Maximum Power:</label>
-                  <span id="spec-max-power">-</span>
-                </div>
-                <div class="power-spec-item">
-                  <label>Minimum Power:</label>
-                  <span id="spec-min-power">-</span>
-                </div>
-                <div class="power-spec-item">
-                  <label>Power per Degree:</label>
-                  <span id="spec-power-per-degree">-</span>
-                </div>
-                <div class="power-spec-item">
-                  <label>Efficiency Rating:</label>
-                  <span id="spec-efficiency">-</span>
-                </div>
-                <div class="power-spec-item">
-                  <label>Room Multiplier:</label>
-                  <span id="spec-room-multiplier">-</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Example Calculation -->
-            <div
-              class="example-calculation"
-              id="example-calculation"
-              style="display: none"
-            >
-              <h4>Example: 30°C Outdoor → 22°C Indoor</h4>
-              <div class="calculation-result">
-                <div class="calc-step">
-                  <span class="calc-label">Temperature Difference:</span>
-                  <span class="calc-value" id="calc-temp-diff">8°C</span>
-                </div>
-                <div class="calc-step">
-                  <span class="calc-label">Optimal Power Required:</span>
-                  <span class="calc-value" id="calc-optimal-power">512W</span>
-                </div>
-                <div class="calc-step">
-                  <span class="calc-label">Estimated Cost per Hour:</span>
-                  <span class="calc-value" id="calc-hourly-cost">$0.061</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="form-actions">
-              <button
-                type="button"
-                class="dashboard-glass-btn"
-                onclick="window.acConfigManager.closeConfigModal()"
-              >
-                Cancel
-              </button>
-              <button type="submit" class="dashboard-glass-btn add primary">
-                <i class="fas fa-save"></i>
-                Save Configuration
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
 
     <!-- Fixed Back Button -->
     <button
@@ -2583,17 +2450,16 @@
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://www.unpkg.com/@eohjsc/era-widget@1.1.3/src/index.js"></script>
-    
+
     <!-- SheetJS for Excel Export -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
     <!-- Event-Driven Architecture System -->
     <script src="js/event-system.js"></script>
-    
+
     <!-- TEMPERATURE ADJUSTMENT STORAGE SYSTEM -->
     <!-- Temperature Adjustment Storage Manager -->
- 
-    
+
     <!-- REINFORCEMENT LEARNING SYSTEM -->
     <!-- Temperature RL Algorithm -->
     <script src="js/temperature-reinforcement-learning.js"></script>
@@ -2601,7 +2467,8 @@
     <script src="js/temperature-activity-logger.js"></script>
     <!-- Activity Log UI Components -->
     <script src="js/temperature-activity-log-ui.js"></script>
-    
+    <script src="js/power-consumption-manager.js"></script>
+    <script src="js/spa-management.js"></script>
     <!-- Energy Efficiency Management System -->
     <!-- Weather Configuration -->
     <script src="js/weather-config.js"></script>
